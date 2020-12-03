@@ -28,10 +28,10 @@ func Request(vmessOption *outbound.VmessOption) (int64, error) {
 		Host:     remoteHost,
 	}
 	remoteConn, err := vmess.DialContext(ctx, meta)
+	defer remoteConn.Close()
 	if err != nil {
 		return 0, err
 	}
-	defer remoteConn.Close()
 	remoteConn.SetDeadline(time.Now().Add(tcpTimeout))
 	start := time.Now()
 	httpRequest := "GET /generate_204 HTTP/1.1\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36\r\n\r\n"
