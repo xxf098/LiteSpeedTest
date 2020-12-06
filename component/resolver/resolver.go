@@ -91,6 +91,10 @@ func ResolveIP(host string) (net.IP, error) {
 		return ip, nil
 	}
 
+	if DefaultResolver != nil {
+		return DefaultResolver.ResolveIP(host)
+	}
+
 	ipAddr, err := net.ResolveIPAddr("ip", host)
 	if err != nil {
 		return nil, err
