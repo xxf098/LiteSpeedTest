@@ -85,9 +85,9 @@ func dualStackDialContext(ctx context.Context, network, address string) (net.Con
 
 		var ip net.IP
 		if ipv6 {
-			ip, result.error = resolver.ResolveIP(host)
+			ip, result.error = resolver.ResolveIPv6(host)
 		} else {
-			ip, result.error = resolver.ResolveIP(host)
+			ip, result.error = resolver.ResolveIPv4(host)
 		}
 		if result.error != nil {
 			return
