@@ -128,10 +128,10 @@ func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error
 		return nil, err
 	}
 	vmessOption := outbound.VmessOption{
-		HTTPOpts: outbound.HTTPOptions{
-			Method: "GET",
-			Path:   []string{"/"},
-		},
+		// HTTPOpts: outbound.HTTPOptions{
+		// 	Method: "GET",
+		// 	Path:   []string{"/"},
+		// },
 		Name:           "vmess",
 		Server:         config.Add,
 		Port:           port,

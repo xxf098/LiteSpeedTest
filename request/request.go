@@ -10,7 +10,7 @@ import (
 	"github.com/xxf098/lite-proxy/outbound"
 )
 
-func Request(vmessOption *outbound.VmessOption) (int64, error) {
+func PingVmess(vmessOption *outbound.VmessOption) (int64, error) {
 	tcpTimeout := 2100 * time.Second
 	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
 	defer cancel()
