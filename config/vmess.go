@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"regexp"
 	"strconv"
 
+	"github.com/xxf098/lite-proxy/dns"
 	"github.com/xxf098/lite-proxy/outbound"
 )
 
@@ -49,18 +51,21 @@ type RawConfig struct {
 	Outbounds []Outbound `json:outbounds`
 }
 
+var defaultResolver *dns.Resolver
+
 type VmessConfig struct {
-	Add  string          `json:"add"`
-	Aid  json.RawMessage `json:"aid"`
-	Host string          `json:"host"`
-	ID   string          `json:"id"`
-	Net  string          `json:"net"`
-	Path string          `json:"path"`
-	Port json.RawMessage `json:"port"`
-	Ps   string          `json:"ps"`
-	TLS  string          `json:"tls"`
-	Type string          `json:"type"`
-	V    json.RawMessage `json:"v"`
+	Add      string          `json:"add"`
+	Aid      json.RawMessage `json:"aid"`
+	Host     string          `json:"host"`
+	ID       string          `json:"id"`
+	Net      string          `json:"net"`
+	Path     string          `json:"path"`
+	Port     json.RawMessage `json:"port"`
+	Ps       string          `json:"ps"`
+	TLS      string          `json:"tls"`
+	Type     string          `json:"type"`
+	V        json.RawMessage `json:"v"`
+	Security string          `json:"security"`
 }
 
 func RawConfigToVmessOption(config *RawConfig) (*outbound.VmessOption, error) {
@@ -127,6 +132,7 @@ func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error
 	if err != nil {
 		return nil, err
 	}
+
 	vmessOption := outbound.VmessOption{
 		// HTTPOpts: outbound.HTTPOptions{
 		// 	Method: "GET",
@@ -137,14 +143,25 @@ func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error
 		Port:           port,
 		UUID:           config.ID,
 		AlterID:        aid,
-		Cipher:         "auto",
+		Cipher:         "none",
 		TLS:            false,
 		UDP:            false,
 		Network:        "tcp",
 		SkipCertVerify: false,
 	}
+	ipAddr := net.ParseIP(vmessOption.Server)
+	if ipAddr == nil {
+		ipAddr, err = defaultResolver.ResolveIP(vmessOption.Server)
+		if err == nil && ipAddr != nil {
+			vmessOption.ServerName = vmessOption.Server
+			vmessOption.Server = ipAddr.String()
+		}
+	}
 	if config.TLS == "tls" {
 		vmessOption.TLS = true
+	}
+	if config.Security != "" {
+		vmessOption.Cipher = config.Security
 	}
 	if config.Net == "ws" {
 		vmessOption.Network = "ws"
@@ -195,4 +212,20 @@ func ToVmessOption(path string) (*outbound.VmessOption, error) {
 		return nil, err
 	}
 	return VmessConfigToVmessOption(&config1)
+}
+
+func init() {
+	c := dns.Config{
+		Main: []dns.NameServer{
+			{
+				Net:  "udp",
+				Addr: "223.5.5.5:53",
+			},
+			{
+				Net:  "udp",
+				Addr: "8.8.8.8:53",
+			},
+		},
+	}
+	defaultResolver = dns.NewResolver(c)
 }
