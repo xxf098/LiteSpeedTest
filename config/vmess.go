@@ -5,11 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"regexp"
 	"strconv"
 
-	"github.com/xxf098/lite-proxy/dns"
 	"github.com/xxf098/lite-proxy/outbound"
 )
 
@@ -50,8 +48,6 @@ type Outbound struct {
 type RawConfig struct {
 	Outbounds []Outbound `json:outbounds`
 }
-
-var defaultResolver *dns.Resolver
 
 type VmessConfig struct {
 	Add      string          `json:"add"`
@@ -149,13 +145,9 @@ func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error
 		Network:        "tcp",
 		SkipCertVerify: false,
 	}
-	ipAddr := net.ParseIP(vmessOption.Server)
-	if ipAddr == nil {
-		ipAddr, err = defaultResolver.ResolveIP(vmessOption.Server)
-		if err == nil && ipAddr != nil {
-			vmessOption.ServerName = vmessOption.Server
-			vmessOption.Server = ipAddr.String()
-		}
+	if ipAddr, err := resolveIP(vmessOption.Server); err == nil && ipAddr != "" {
+		vmessOption.ServerName = vmessOption.Server
+		vmessOption.Server = ipAddr
 	}
 	if config.TLS == "tls" {
 		vmessOption.TLS = true
@@ -212,20 +204,4 @@ func ToVmessOption(path string) (*outbound.VmessOption, error) {
 		return nil, err
 	}
 	return VmessConfigToVmessOption(&config1)
-}
-
-func init() {
-	c := dns.Config{
-		Main: []dns.NameServer{
-			{
-				Net:  "udp",
-				Addr: "223.5.5.5:53",
-			},
-			{
-				Net:  "udp",
-				Addr: "8.8.8.8:53",
-			},
-		},
-	}
-	defaultResolver = dns.NewResolver(c)
 }
