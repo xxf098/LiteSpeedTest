@@ -8,12 +8,14 @@ import (
 	"io"
 	"time"
 
+	"github.com/xxf098/lite-proxy/component/resolver"
 	C "github.com/xxf098/lite-proxy/constant"
+	"github.com/xxf098/lite-proxy/dns"
 	"github.com/xxf098/lite-proxy/outbound"
 )
 
 func PingVmess(vmessOption *outbound.VmessOption) (int64, error) {
-	tcpTimeout := 2100 * time.Second
+	tcpTimeout := 2358 * time.Millisecond
 	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
 	defer cancel()
 	vmess, err := outbound.NewVmess(*vmessOption)
@@ -161,4 +163,26 @@ func RequestTrojan(trojanOption *outbound.TrojanOption) (int64, error) {
 	fmt.Print(string(buf))
 	// fmt.Printf("server: %s port: %d elapsed: %d\n", vmessOption.Server, vmessOption.Port, elapsed)
 	return elapsed, nil
+}
+
+func setDefaultResolver() {
+	servers := []dns.NameServer{
+		{
+			Net:  "udp",
+			Addr: "223.5.5.5:53",
+		},
+		{
+			Net:  "udp",
+			Addr: "8.8.8.8:53",
+		},
+	}
+	c := dns.Config{
+		Main:    servers,
+		Default: servers,
+	}
+	resolver.DefaultResolver = dns.NewResolver(c)
+}
+
+func init() {
+	setDefaultResolver()
 }
