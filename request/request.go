@@ -126,7 +126,7 @@ func parseUintBuf(b []byte) (int, int, error) {
 	return v, n, nil
 }
 
-func RequestTrojan(trojanOption *outbound.TrojanOption) (int64, error) {
+func PingTrojan(trojanOption *outbound.TrojanOption) (int64, error) {
 	tcpTimeout := 2100 * time.Millisecond
 	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
 	defer cancel()
