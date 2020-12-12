@@ -37,6 +37,7 @@ type VmessOption struct {
 	WSHeaders      map[string]string `proxy:"ws-headers,omitempty"`
 	SkipCertVerify bool              `proxy:"skip-cert-verify,omitempty"`
 	ServerName     string            `proxy:"servername,omitempty"`
+	Type           string            `proxy:"type,omitempty"`
 }
 
 type HTTPOptions struct {
