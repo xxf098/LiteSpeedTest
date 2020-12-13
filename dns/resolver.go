@@ -54,7 +54,7 @@ func (r *Resolver) ResolveIP(host string) (ip net.IP, err error) {
 	}()
 
 	ip, err = r.resolveIP(host, D.TypeA)
-	if err == nil {
+	if err == nil && ip != nil {
 		return
 	}
 
