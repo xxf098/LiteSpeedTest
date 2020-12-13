@@ -127,7 +127,7 @@ func parseUintBuf(b []byte) (int, int, error) {
 }
 
 func PingTrojan(trojanOption *outbound.TrojanOption) (int64, error) {
-	tcpTimeout := 2100 * time.Millisecond
+	tcpTimeout := 2000 * time.Millisecond
 	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
 	defer cancel()
 	trojan, err := outbound.NewTrojan(*trojanOption)
@@ -144,10 +144,10 @@ func PingTrojan(trojanOption *outbound.TrojanOption) (int64, error) {
 		Host:     remoteHost,
 	}
 	remoteConn, err := trojan.DialContext(ctx, meta)
-	defer remoteConn.Close()
 	if err != nil {
 		return 0, err
 	}
+	defer remoteConn.Close()
 	remoteConn.SetDeadline(time.Now().Add(tcpTimeout))
 	start := time.Now()
 	httpRequest := "GET /generate_204 HTTP/1.1\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36\r\n\r\n"
@@ -160,7 +160,7 @@ func PingTrojan(trojanOption *outbound.TrojanOption) (int64, error) {
 		return 0, err
 	}
 	elapsed := time.Since(start).Milliseconds()
-	fmt.Print(string(buf))
+	// fmt.Print(string(buf))
 	// fmt.Printf("server: %s port: %d elapsed: %d\n", vmessOption.Server, vmessOption.Port, elapsed)
 	return elapsed, nil
 }
