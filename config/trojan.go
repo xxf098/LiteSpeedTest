@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -12,6 +11,7 @@ import (
 // type TrojanGoOption struct {
 // }
 
+// TODO: SkipCertVerify
 func TrojanLinkToTrojanOption(link string) (*outbound.TrojanOption, error) {
 	u, err := url.Parse(link)
 	if err != nil {
@@ -25,14 +25,17 @@ func TrojanLinkToTrojanOption(link string) (*outbound.TrojanOption, error) {
 	if err != nil {
 		return nil, err
 	}
-	frag := u.Fragment
-	fmt.Printf("password: %s, host: %s, port: %d, frag: %s\n", pass, host, port, frag)
+	// frag := u.Fragment
+	// fmt.Printf("password: %s, host: %s, port: %d, frag: %s\n", pass, host, port, frag)
 	trojanOption := outbound.TrojanOption{
 		Name:     "trojan",
 		Password: pass,
 		Port:     port,
 		Server:   host,
 		ALPN:     []string{"h2", "http/1.1"},
+	}
+	if rawQuery, err := url.ParseQuery(u.RawQuery); err == nil {
+		trojanOption.SNI = rawQuery.Get("sni")
 	}
 	return &trojanOption, nil
 }
