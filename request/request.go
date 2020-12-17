@@ -11,11 +11,15 @@ import (
 	"github.com/xxf098/lite-proxy/component/resolver"
 	C "github.com/xxf098/lite-proxy/constant"
 	"github.com/xxf098/lite-proxy/dns"
+	"github.com/xxf098/lite-proxy/log"
 	"github.com/xxf098/lite-proxy/outbound"
 )
 
+const (
+	tcpTimeout = 2358 * time.Millisecond
+)
+
 func PingVmess(vmessOption *outbound.VmessOption) (int64, error) {
-	tcpTimeout := 2358 * time.Millisecond
 	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
 	defer cancel()
 	vmess, err := outbound.NewVmess(*vmessOption)
@@ -54,6 +58,7 @@ func PingVmess(vmessOption *outbound.VmessOption) (int64, error) {
 	elapsed := time.Since(start).Milliseconds()
 	// fmt.Print(string(buf))
 	// fmt.Printf("server: %s port: %d elapsed: %d\n", vmessOption.Server, vmessOption.Port, elapsed)
+	log.Print(string(buf))
 	return elapsed, nil
 }
 
@@ -127,7 +132,6 @@ func parseUintBuf(b []byte) (int, int, error) {
 }
 
 func PingTrojan(trojanOption *outbound.TrojanOption) (int64, error) {
-	tcpTimeout := 2000 * time.Millisecond
 	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
 	defer cancel()
 	trojan, err := outbound.NewTrojan(*trojanOption)
