@@ -13,6 +13,7 @@ import (
 	"github.com/xxf098/lite-proxy/component/resolver"
 	"github.com/xxf098/lite-proxy/component/vmess"
 	C "github.com/xxf098/lite-proxy/constant"
+	"github.com/xxf098/lite-proxy/log"
 )
 
 type Vmess struct {
@@ -156,12 +157,14 @@ func (v *Vmess) StreamConn(c net.Conn, metadata *C.Metadata) (net.Conn, error) {
 }
 
 func (v *Vmess) DialContext(ctx context.Context, metadata *C.Metadata) (net.Conn, error) {
+	log.I("start dial from %s to %s:%s", v.addr, metadata.DstIP, metadata.DstPort)
 	c, err := dialer.DialContext(ctx, "tcp", v.addr)
 	if err != nil {
 		return nil, fmt.Errorf("%s connect error: %s", v.addr, err.Error())
 	}
 	tcpKeepAlive(c)
 
+	log.I("start StreamConn from %s to  %s:%s", v.addr, metadata.DstIP, metadata.DstPort)
 	c, err = v.StreamConn(c, metadata)
 	return c, err
 }

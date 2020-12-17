@@ -24,7 +24,7 @@ func Dialer() (*net.Dialer, error) {
 				for _, ctl := range controllers {
 					if err := ctl(network, address, fd); err != nil {
 						// errors.New("failed to apply external controller").Base(err).WriteToLog(session.ExportIDToError(ctx))
-						log.Print("failed to apply external controller")
+						log.E("failed to apply external controller")
 						continue
 					}
 				}

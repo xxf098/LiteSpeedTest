@@ -58,7 +58,7 @@ func PingVmess(vmessOption *outbound.VmessOption) (int64, error) {
 	elapsed := time.Since(start).Milliseconds()
 	// fmt.Print(string(buf))
 	// fmt.Printf("server: %s port: %d elapsed: %d\n", vmessOption.Server, vmessOption.Port, elapsed)
-	log.Print(string(buf))
+	log.I(string(buf))
 	return elapsed, nil
 }
 

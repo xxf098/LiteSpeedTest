@@ -25,21 +25,21 @@ func Write(msg Message) {
 	logger.Print(msg.String() + "\n")
 }
 
-func Info(format string, v ...interface{}) {
+func I(format string, v ...interface{}) {
 	if INFO < level {
 		return
 	}
 	print(format, v...)
 }
 
-func Warn(format string, v ...interface{}) {
+func W(format string, v ...interface{}) {
 	if WARNING < level {
 		return
 	}
 	print(format, v...)
 }
 
-func Error(format string, v ...interface{}) {
+func E(format string, v ...interface{}) {
 	if ERROR < level {
 		return
 	}
