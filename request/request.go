@@ -17,6 +17,7 @@ import (
 
 const (
 	tcpTimeout = 2358 * time.Millisecond
+	remoteHost = "clients3.google.com"
 )
 
 func PingVmess(vmessOption *outbound.VmessOption) (int64, error) {
@@ -26,7 +27,6 @@ func PingVmess(vmessOption *outbound.VmessOption) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	remoteHost := "clients3.google.com"
 	meta := &C.Metadata{
 		NetWork:  0,
 		Type:     0,
@@ -138,7 +138,6 @@ func PingTrojan(trojanOption *outbound.TrojanOption) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	remoteHost := "clients3.google.com"
 	meta := &C.Metadata{
 		NetWork:  0,
 		Type:     0,
