@@ -11,12 +11,11 @@ import (
 	"github.com/xxf098/lite-proxy/component/resolver"
 	C "github.com/xxf098/lite-proxy/constant"
 	"github.com/xxf098/lite-proxy/dns"
-	"github.com/xxf098/lite-proxy/log"
 	"github.com/xxf098/lite-proxy/outbound"
 )
 
 const (
-	tcpTimeout = 2358 * time.Millisecond
+	tcpTimeout = 2400 * time.Millisecond
 	remoteHost = "clients3.google.com"
 )
 
@@ -47,25 +46,36 @@ func PingVmess(vmessOption *outbound.VmessOption) (int64, error) {
 	remoteConn.SetDeadline(time.Now().Add(tcpTimeout))
 	start := time.Now()
 	// httpRequest := "GET /generate_204 HTTP/1.1\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36\r\n\r\n"
-	if _, err := remoteConn.Write(httpRequest); err != nil {
-		return 0, err
-	}
-	// if _, err = fmt.Fprint(remoteConn, httpRequest); err != nil {
-	// 	return 0, err
-	// }
-	buf := make([]byte, 25)
-	_, err = remoteConn.Read(buf)
-	if err != nil && err != io.EOF {
-		return 0, err
-	}
-	_, err = parseFirstLine(buf)
-	if err != nil {
-		return 0, err
+	errChan := make(chan error, 2)
+	go func() {
+		_, err := remoteConn.Write(httpRequest)
+		errChan <- err
+	}()
+
+	go func() {
+		defer close(errChan)
+		buf := make([]byte, 25)
+		_, err = remoteConn.Read(buf)
+		if err != nil && err != io.EOF {
+			errChan <- err
+			return
+		}
+		_, err = parseFirstLine(buf)
+		if err != nil {
+			errChan <- err
+			return
+		}
+		errChan <- nil
+	}()
+	for err := range errChan {
+		if err != nil {
+			return 0, err
+		}
 	}
 	elapsed := time.Since(start).Milliseconds()
 	// fmt.Print(string(buf))
 	// fmt.Printf("server: %s port: %d elapsed: %d\n", vmessOption.Server, vmessOption.Port, elapsed)
-	log.I(string(buf))
+	// log.I(string(buf))
 	return elapsed, nil
 }
 
