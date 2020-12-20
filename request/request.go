@@ -16,8 +16,9 @@ import (
 )
 
 const (
-	tcpTimeout = 2358 * time.Millisecond
-	remoteHost = "clients3.google.com"
+	tcpTimeout  = 2358 * time.Millisecond
+	remoteHost  = "clients3.google.com"
+	httpRequest = "GET /generate_204 HTTP/1.1\r\nHost: clients3.google.com\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36\r\n\r\n"
 )
 
 func PingVmess(vmessOption *outbound.VmessOption) (int64, error) {
@@ -42,8 +43,8 @@ func PingVmess(vmessOption *outbound.VmessOption) (int64, error) {
 	defer remoteConn.Close()
 	remoteConn.SetDeadline(time.Now().Add(tcpTimeout))
 	start := time.Now()
-	httpRequest := "GET /generate_204 HTTP/1.1\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36\r\n\r\n"
-	if _, err = fmt.Fprintf(remoteConn, httpRequest, remoteHost); err != nil {
+	// httpRequest := "GET /generate_204 HTTP/1.1\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36\r\n\r\n"
+	if _, err = fmt.Fprint(remoteConn, httpRequest); err != nil {
 		return 0, err
 	}
 	buf := make([]byte, 25)
@@ -153,8 +154,8 @@ func PingTrojan(trojanOption *outbound.TrojanOption) (int64, error) {
 	defer remoteConn.Close()
 	remoteConn.SetDeadline(time.Now().Add(tcpTimeout))
 	start := time.Now()
-	httpRequest := "GET /generate_204 HTTP/1.1\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36\r\n\r\n"
-	if _, err = fmt.Fprintf(remoteConn, httpRequest, remoteHost); err != nil {
+	// httpRequest := "GET /generate_204 HTTP/1.1\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36\r\n\r\n"
+	if _, err = fmt.Fprint(remoteConn, httpRequest); err != nil {
 		return 0, err
 	}
 	buf := make([]byte, 25)
