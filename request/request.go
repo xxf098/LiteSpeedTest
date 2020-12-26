@@ -53,7 +53,6 @@ func PingVmess(vmessOption *outbound.VmessOption) (int64, error) {
 	}()
 
 	go func() {
-		defer close(errChan)
 		buf := make([]byte, 25)
 		_, err = remoteConn.Read(buf)
 		if err != nil && err != io.EOF {
@@ -67,10 +66,11 @@ func PingVmess(vmessOption *outbound.VmessOption) (int64, error) {
 		}
 		errChan <- nil
 	}()
-	for err := range errChan {
-		if err != nil {
+	for i := 0; i <= 1; i++ {
+		if err := <-errChan; err != nil {
 			return 0, err
 		}
+
 	}
 	elapsed := time.Since(start).Milliseconds()
 	// fmt.Print(string(buf))
