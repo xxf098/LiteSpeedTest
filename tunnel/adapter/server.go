@@ -79,6 +79,12 @@ func (s *Server) AcceptConn(overlay tunnel.Tunnel) (tunnel.Conn, error) {
 	}
 }
 
+func (s *Server) AcceptPacket(tunnel.Tunnel) (tunnel.PacketConn, error) {
+	return &freedom.PacketConn{
+		UDPConn: s.udpListener.(*net.UDPConn),
+	}, nil
+}
+
 func (s *Server) Close() error {
 	s.cancel()
 	s.tcpListener.Close()
