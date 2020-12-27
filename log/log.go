@@ -25,6 +25,14 @@ func Write(msg Message) {
 	logger.Print(msg.String() + "\n")
 }
 
+func D(format string, v ...interface{}) {
+	print(format, v...)
+}
+
+func Debug(format Message, v ...interface{}) {
+	D(format.String(), v...)
+}
+
 func I(format string, v ...interface{}) {
 	if INFO < level {
 		return
@@ -46,15 +54,8 @@ func E(format string, v ...interface{}) {
 	print(format, v...)
 }
 
-func Error(format string, v ...interface{}) {
-	E(format, v...)
-}
-
-func Debug(format string, v ...interface{}) {
-	if DEBUG < level {
-		return
-	}
-	print(format, v...)
+func Error(format Message, v ...interface{}) {
+	E(format.String(), v...)
 }
 
 func print(msg string, args ...interface{}) {
