@@ -154,7 +154,7 @@ func (s *Server) AcceptConn(tunnel.Tunnel) (tunnel.Conn, error) {
 	}
 }
 
-func (s *Server) AcceptPacket(tunnel.Tunnel) (net.PacketConn, error) {
+func (s *Server) AcceptPacket(tunnel.Tunnel) (tunnel.PacketConn, error) {
 	<-s.ctx.Done()
 	return nil, errors.New("http server closed")
 }
