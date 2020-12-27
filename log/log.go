@@ -46,6 +46,17 @@ func E(format string, v ...interface{}) {
 	print(format, v...)
 }
 
+func Error(format string, v ...interface{}) {
+	E(format, v...)
+}
+
+func Debug(format string, v ...interface{}) {
+	if DEBUG < level {
+		return
+	}
+	print(format, v...)
+}
+
 func print(msg string, args ...interface{}) {
 	m := fmt.Sprintf(msg, args...)
 	logger.Println(m)
