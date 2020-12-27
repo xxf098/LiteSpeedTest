@@ -44,6 +44,7 @@ type Client interface {
 
 type Server interface {
 	ConnListener
+	PacketListener
 	io.Closer
 }
 
