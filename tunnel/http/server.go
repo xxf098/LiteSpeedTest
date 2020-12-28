@@ -173,5 +173,6 @@ func NewServer(ctx context.Context, underlay tunnel.Server) (*Server, error) {
 		cancel:   cancel,
 	}
 	go server.acceptLoop()
+	log.D("http server created")
 	return server, nil
 }
