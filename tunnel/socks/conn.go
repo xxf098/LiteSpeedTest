@@ -8,6 +8,15 @@ import (
 	"github.com/xxf098/lite-proxy/tunnel"
 )
 
+type Conn struct {
+	net.Conn
+	metadata *tunnel.Metadata
+}
+
+func (c *Conn) Metadata() *tunnel.Metadata {
+	return c.metadata
+}
+
 type packetInfo struct {
 	metadata *tunnel.Metadata
 	payload  []byte
