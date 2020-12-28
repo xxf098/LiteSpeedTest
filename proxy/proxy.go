@@ -59,6 +59,7 @@ func (p *Proxy) relayConnLoop() {
 						log.Error(common.NewError("proxy failed to dial connection").Base(err))
 						return
 					}
+					log.D("connect to:", inbound.Metadata().Address)
 					defer outbound.Close()
 					errChan := make(chan error, 2)
 					copyConn := func(a, b net.Conn) {
@@ -77,7 +78,7 @@ func (p *Proxy) relayConnLoop() {
 						log.D("shutting down conn relay")
 						return
 					}
-					log.D("conn relay ends")
+					// log.D("conn relay ends")
 				}(inbound)
 			}
 		}(source)

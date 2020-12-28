@@ -46,12 +46,12 @@ func (s *Server) acceptConnLoop() {
 			continue
 		}
 		if buf[0] == 5 && s.nextSocks {
-			log.D("socks5 connection")
+			// log.D("socks5 connection")
 			s.socksConn <- &freedom.Conn{
 				Conn: rewindConn,
 			}
 		} else {
-			log.D("http connection")
+			// log.D("http connection")
 			s.httpConn <- &freedom.Conn{
 				Conn: rewindConn,
 			}
