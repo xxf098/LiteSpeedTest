@@ -238,6 +238,8 @@ func NewServer(ctx context.Context, underlay tunnel.Server) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	localHost := ctx.Value("LocalHost").(string)
+	localPort := ctx.Value("LocalPort").(int)
 	ctx, cancel := context.WithCancel(ctx)
 	server := &Server{
 		underlay:         underlay,
@@ -245,8 +247,8 @@ func NewServer(ctx context.Context, underlay tunnel.Server) (*Server, error) {
 		cancel:           cancel,
 		connChan:         make(chan tunnel.Conn, 32),
 		packetChan:       make(chan tunnel.PacketConn, 32),
-		localHost:        "127.0.0.1",
-		localPort:        8090,
+		localHost:        localHost,
+		localPort:        localPort,
 		timeout:          5 * time.Second,
 		listenPacketConn: listenPacketConn,
 		mapping:          make(map[string]*PacketConn),

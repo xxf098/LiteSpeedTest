@@ -95,7 +95,9 @@ func (s *Server) Close() error {
 func NewServer(ctx context.Context, _ tunnel.Server) (*Server, error) {
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(ctx)
-	addr := tunnel.NewAddressFromHostPort("tcp", "127.0.0.1", 8090)
+	localHost := ctx.Value("LocalHost").(string)
+	localPort := ctx.Value("LocalPort").(int)
+	addr := tunnel.NewAddressFromHostPort("tcp", localHost, localPort)
 	tcpListener, err := net.Listen("tcp", addr.String())
 	if err != nil {
 		return nil, common.NewError("adapter failed to create tcp listener").Base(err)
