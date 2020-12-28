@@ -48,9 +48,6 @@ func W(format string, v ...interface{}) {
 }
 
 func E(format string, v ...interface{}) {
-	if ERROR < level {
-		return
-	}
 	print(format, v...)
 }
 
