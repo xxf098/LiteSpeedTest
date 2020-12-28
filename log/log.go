@@ -48,7 +48,7 @@ func W(format string, v ...interface{}) {
 }
 
 func E(format string, v ...interface{}) {
-	print(format, v...)
+	printErr(format, v...)
 }
 
 func Error(format Message, v ...interface{}) {
@@ -56,11 +56,16 @@ func Error(format Message, v ...interface{}) {
 }
 
 func print(msg string, args ...interface{}) {
-	m := fmt.Sprintf(msg, args...)
-	logger.Println(m)
+	// m := fmt.Sprintf(msg, args...)
+	for _, arg := range args {
+		msg += fmt.Sprintf(" %v", arg)
+	}
+	logger.Println(msg)
 }
 
 func printErr(msg string, args ...interface{}) {
-	m := fmt.Sprintf(msg, args...)
-	loggerErr.Println(m)
+	for _, arg := range args {
+		msg += fmt.Sprintf(" %v", arg)
+	}
+	loggerErr.Println(msg)
 }
