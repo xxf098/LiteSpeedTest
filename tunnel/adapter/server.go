@@ -10,6 +10,7 @@ import (
 	"github.com/xxf098/lite-proxy/tunnel"
 	"github.com/xxf098/lite-proxy/tunnel/freedom"
 	"github.com/xxf098/lite-proxy/tunnel/http"
+	"github.com/xxf098/lite-proxy/tunnel/socks"
 )
 
 type Server struct {
@@ -66,14 +67,14 @@ func (s *Server) AcceptConn(overlay tunnel.Tunnel) (tunnel.Conn, error) {
 		case <-s.ctx.Done():
 			return nil, errors.New("adapter closed")
 		}
-		// } else if _, ok := overlay.(*socks.Tunnel); ok {
-		// 	s.nextSocks = true
-		// 	select {
-		// 	case conn := <-s.socksConn:
-		// 		return conn, nil
-		// 	case <-s.ctx.Done():
-		// 		return nil, errors.New("adapter closed")
-		// 	}
+	} else if _, ok := overlay.(*socks.Tunnel); ok {
+		s.nextSocks = true
+		select {
+		case conn := <-s.socksConn:
+			return conn, nil
+		case <-s.ctx.Done():
+			return nil, errors.New("adapter closed")
+		}
 	} else {
 		panic("invalid overlay")
 	}
