@@ -1,9 +1,13 @@
 package tunnel
 
 import (
+	"encoding/binary"
 	"fmt"
+	"io"
 	"net"
 	"strconv"
+
+	"github.com/xxf098/lite-proxy/common"
 )
 
 type AddressType byte
@@ -52,6 +56,82 @@ func (a *Address) ResolveIP() (net.IP, error) {
 	}
 	a.IP = addr.IP
 	return addr.IP, nil
+}
+
+func (a *Address) ReadFrom(r io.Reader) error {
+	byteBuf := [1]byte{}
+	_, err := io.ReadFull(r, byteBuf[:])
+	if err != nil {
+		return common.NewError("unable to read ATYP").Base(err)
+	}
+	a.AddressType = AddressType(byteBuf[0])
+	switch a.AddressType {
+	case IPv4:
+		var buf [6]byte
+		_, err := io.ReadFull(r, buf[:])
+		if err != nil {
+			return common.NewError("failed to read IPv4").Base(err)
+		}
+		a.IP = buf[0:4]
+		a.Port = int(binary.BigEndian.Uint16(buf[4:6]))
+	case IPv6:
+		var buf [18]byte
+		_, err := io.ReadFull(r, buf[:])
+		if err != nil {
+			return common.NewError("failed to read IPv6").Base(err)
+		}
+		a.IP = buf[0:16]
+		a.Port = int(binary.BigEndian.Uint16(buf[16:18]))
+	case DomainName:
+		_, err := io.ReadFull(r, byteBuf[:])
+		length := byteBuf[0]
+		if err != nil {
+			return common.NewError("failed to read domain name length")
+		}
+		buf := make([]byte, length+2)
+		_, err = io.ReadFull(r, buf)
+		if err != nil {
+			return common.NewError("failed to read domain name")
+		}
+		//the fucking browser uses IP as a domain name sometimes
+		host := buf[0:length]
+		if ip := net.ParseIP(string(host)); ip != nil {
+			a.IP = ip
+			if ip.To4() != nil {
+				a.AddressType = IPv4
+			} else {
+				a.AddressType = IPv6
+			}
+		} else {
+			a.DomainName = string(host)
+		}
+		a.Port = int(binary.BigEndian.Uint16(buf[length : length+2]))
+	default:
+		return common.NewError("invalid ATYP " + strconv.FormatInt(int64(a.AddressType), 10))
+	}
+	return nil
+}
+
+func (a *Address) WriteTo(w io.Writer) error {
+	_, err := w.Write([]byte{byte(a.AddressType)})
+	switch a.AddressType {
+	case DomainName:
+		w.Write([]byte{byte(len(a.DomainName))})
+		_, err = w.Write([]byte(a.DomainName))
+	case IPv4:
+		_, err = w.Write(a.IP.To4())
+	case IPv6:
+		_, err = w.Write(a.IP.To16())
+	default:
+		return common.NewError("invalid ATYP " + strconv.FormatInt(int64(a.AddressType), 10))
+	}
+	if err != nil {
+		return err
+	}
+	port := [2]byte{}
+	binary.BigEndian.PutUint16(port[:], uint16(a.Port))
+	_, err = w.Write(port[:])
+	return err
 }
 
 func NewAddressFromAddr(network string, addr string) (*Address, error) {
