@@ -6,6 +6,7 @@ import (
 
 var (
 	link = flag.String("link", "", "proxy link")
+	port = flag.Int("port", 8090, "local port")
 )
 
 func main() {
@@ -15,7 +16,7 @@ func main() {
 	}
 	c := Config{
 		LocalHost: "127.0.0.1",
-		LocalPort: 8090,
+		LocalPort: *port,
 		Link:      *link,
 	}
 	p, err := startInstance(c)
