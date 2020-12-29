@@ -151,7 +151,7 @@ func parseUintBuf(b []byte) (int, int, error) {
 func PingTrojan(trojanOption *outbound.TrojanOption) (int64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
 	defer cancel()
-	trojan, err := outbound.NewTrojan(*trojanOption)
+	trojan, err := outbound.NewTrojan(trojanOption)
 	if err != nil {
 		return 0, err
 	}

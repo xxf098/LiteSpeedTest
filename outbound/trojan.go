@@ -80,7 +80,7 @@ func (t *Trojan) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func NewTrojan(option TrojanOption) (*Trojan, error) {
+func NewTrojan(option *TrojanOption) (*Trojan, error) {
 	addr := net.JoinHostPort(option.Server, strconv.Itoa(option.Port))
 
 	tOption := &trojan.Option{
