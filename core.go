@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
+	"strings"
 
 	"github.com/xxf098/lite-proxy/config"
 	"github.com/xxf098/lite-proxy/outbound"
 	"github.com/xxf098/lite-proxy/proxy"
+	"github.com/xxf098/lite-proxy/proxy/trojan"
 	"github.com/xxf098/lite-proxy/proxy/vmess"
 	"github.com/xxf098/lite-proxy/tunnel"
 	"github.com/xxf098/lite-proxy/tunnel/adapter"
@@ -30,15 +33,37 @@ func startInstance(c Config) (*proxy.Proxy, error) {
 		return nil, err
 	}
 	sources := []tunnel.Server{httpServer, socksServer}
-	vmessOption, err := config.VmessLinkToVmessOption(c.Link)
+	sink, err := createSink(ctx, c.Link)
 	if err != nil {
 		return nil, err
 	}
-	v, err := outbound.NewVmess(*vmessOption)
-	if err != nil {
-		return nil, err
-	}
-	sink := vmess.NewClient(ctx, v)
 	p := proxy.NewProxy(ctx, cancel, sources, sink)
 	return p, nil
+}
+
+func createSink(ctx context.Context, link string) (tunnel.Client, error) {
+	if strings.HasPrefix(link, "vmess://") {
+		vmessOption, err := config.VmessLinkToVmessOption(link)
+		if err != nil {
+			return nil, err
+		}
+		v, err := outbound.NewVmess(*vmessOption)
+		if err != nil {
+			return nil, err
+		}
+		return vmess.NewClient(ctx, v), nil
+	}
+
+	if strings.HasPrefix(link, "trojan://") {
+		trojanOption, err := config.TrojanLinkToTrojanOption(link)
+		if err != nil {
+			return nil, err
+		}
+		t, err := outbound.NewTrojan(trojanOption)
+		if err != nil {
+			return nil, err
+		}
+		return trojan.NewClient(ctx, t), nil
+	}
+	return nil, errors.New("not supported link")
 }
