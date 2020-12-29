@@ -185,24 +185,24 @@ func PingTrojan(trojanOption *outbound.TrojanOption) (int64, error) {
 	return elapsed, nil
 }
 
-func setDefaultResolver() {
-	servers := []dns.NameServer{
-		{
-			Net:  "udp",
-			Addr: "223.5.5.5:53",
-		},
-		{
-			Net:  "udp",
-			Addr: "8.8.8.8:53",
-		},
-	}
-	c := dns.Config{
-		Main:    servers,
-		Default: servers,
-	}
-	resolver.DefaultResolver = dns.NewResolver(c)
-}
+// func setDefaultResolver() {
+// 	servers := []dns.NameServer{
+// 		{
+// 			Net:  "udp",
+// 			Addr: "223.5.5.5:53",
+// 		},
+// 		{
+// 			Net:  "udp",
+// 			Addr: "8.8.8.8:53",
+// 		},
+// 	}
+// 	c := dns.Config{
+// 		Main:    servers,
+// 		Default: servers,
+// 	}
+// 	resolver.DefaultResolver = dns.NewResolver(c)
+// }
 
 func init() {
-	setDefaultResolver()
+	resolver.DefaultResolver = dns.DefaultResolver()
 }

@@ -288,3 +288,21 @@ func NewResolver(config Config) *Resolver {
 
 	return r
 }
+
+func DefaultResolver() *Resolver {
+	servers := []NameServer{
+		{
+			Net:  "udp",
+			Addr: "223.5.5.5:53",
+		},
+		{
+			Net:  "udp",
+			Addr: "8.8.8.8:53",
+		},
+	}
+	c := Config{
+		Main:    servers,
+		Default: servers,
+	}
+	return NewResolver(c)
+}

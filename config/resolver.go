@@ -25,18 +25,6 @@ func resolveIP(host string) (string, error) {
 }
 
 func init() {
-	c := dns.Config{
-		Main: []dns.NameServer{
-			{
-				Net:  "udp",
-				Addr: "223.5.5.5:53",
-			},
-			{
-				Net:  "udp",
-				Addr: "8.8.8.8:53",
-			},
-		},
-	}
-	defaultResolver = dns.NewResolver(c)
+	defaultResolver = dns.DefaultResolver()
 	// defaultResolver = nil
 }

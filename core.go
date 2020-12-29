@@ -5,7 +5,9 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/xxf098/lite-proxy/component/resolver"
 	"github.com/xxf098/lite-proxy/config"
+	"github.com/xxf098/lite-proxy/dns"
 	"github.com/xxf098/lite-proxy/outbound"
 	"github.com/xxf098/lite-proxy/proxy"
 	"github.com/xxf098/lite-proxy/proxy/trojan"
@@ -37,6 +39,7 @@ func startInstance(c Config) (*proxy.Proxy, error) {
 	if err != nil {
 		return nil, err
 	}
+	setDefaultResolver()
 	p := proxy.NewProxy(ctx, cancel, sources, sink)
 	return p, nil
 }
@@ -66,4 +69,8 @@ func createSink(ctx context.Context, link string) (tunnel.Client, error) {
 		return trojan.NewClient(ctx, t), nil
 	}
 	return nil, errors.New("not supported link")
+}
+
+func setDefaultResolver() {
+	resolver.DefaultResolver = dns.DefaultResolver()
 }
