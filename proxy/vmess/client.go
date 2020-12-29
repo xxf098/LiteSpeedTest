@@ -16,8 +16,12 @@ type Client struct {
 }
 
 func (c Client) DialConn(addr *tunnel.Address, _ tunnel.Tunnel) (net.Conn, error) {
+	networkType := C.TCP
+	if addr.NetworkType == "udp" {
+		networkType = C.UDP
+	}
 	meta := &C.Metadata{
-		NetWork:  0,
+		NetWork:  networkType,
 		Type:     0,
 		SrcPort:  "",
 		AddrType: int(addr.AddressType),
