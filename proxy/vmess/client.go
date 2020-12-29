@@ -37,6 +37,14 @@ func (c Client) Close() error {
 	return nil
 }
 
+func (c *Client) Dial(network, address string) (net.Conn, error) {
+	addr, err := tunnel.NewAddressFromAddr(network, address)
+	if err != nil {
+		return nil, err
+	}
+	return c.DialConn(addr, nil)
+}
+
 func NewClient(ctx context.Context, vmess *outbound.Vmess) Client {
 	return Client{
 		ctx:   ctx,
