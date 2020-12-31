@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"net/url"
 	"strconv"
 	"strings"
@@ -16,6 +17,9 @@ func TrojanLinkToTrojanOption(link string) (*outbound.TrojanOption, error) {
 	u, err := url.Parse(link)
 	if err != nil {
 		return nil, err
+	}
+	if u.Scheme != "trojan" {
+		return nil, errors.New("not a trojan link")
 	}
 	pass := u.User.Username()
 	hostport := u.Host
