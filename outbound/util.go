@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/xxf098/lite-proxy/component/resolver"
 	"github.com/xxf098/lite-proxy/component/socks5"
 	C "github.com/xxf098/lite-proxy/constant"
 )
@@ -53,4 +54,17 @@ func serializesSocksAddr(metadata *C.Metadata) []byte {
 		buf = [][]byte{{aType}, host, port}
 	}
 	return bytes.Join(buf, nil)
+}
+
+func resolveUDPAddr(network, address string) (*net.UDPAddr, error) {
+	host, port, err := net.SplitHostPort(address)
+	if err != nil {
+		return nil, err
+	}
+
+	ip, err := resolver.ResolveIP(host)
+	if err != nil {
+		return nil, err
+	}
+	return net.ResolveUDPAddr(network, net.JoinHostPort(ip.String(), port))
 }
