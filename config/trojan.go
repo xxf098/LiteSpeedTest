@@ -2,9 +2,9 @@ package config
 
 import (
 	"errors"
+	"net"
 	"net/url"
 	"strconv"
-	"strings"
 
 	"github.com/xxf098/lite-proxy/outbound"
 )
@@ -23,8 +23,10 @@ func TrojanLinkToTrojanOption(link string) (*outbound.TrojanOption, error) {
 	}
 	pass := u.User.Username()
 	hostport := u.Host
-	splits := strings.SplitN(hostport, ":", 2)
-	host := splits[0]
+	host, _, err := net.SplitHostPort(hostport)
+	if err != nil {
+		return nil, err
+	}
 	port, err := strconv.Atoi(u.Port())
 	if err != nil {
 		return nil, err
