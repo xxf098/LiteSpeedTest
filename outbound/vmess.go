@@ -2,6 +2,7 @@ package outbound
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -191,6 +192,12 @@ func (v *Vmess) DialUDP(metadata *C.Metadata) (net.PacketConn, error) {
 		return nil, fmt.Errorf("new vmess client error: %v", err)
 	}
 	return &vmessPacketConn{Conn: c, rAddr: metadata.UDPAddr()}, nil
+}
+
+func (v *Vmess) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]string{
+		"type": "Trojan",
+	})
 }
 
 func NewVmess(option VmessOption) (*Vmess, error) {
