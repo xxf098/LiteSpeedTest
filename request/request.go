@@ -138,6 +138,28 @@ func PingTrojan(trojanOption *outbound.TrojanOption) (int64, error) {
 	return ping(remoteConn)
 }
 
+func PingSS(ssOption *outbound.ShadowSocksOption) (int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
+	defer cancel()
+	ss, err := outbound.NewShadowSocks(ssOption)
+	if err != nil {
+		return 0, err
+	}
+	meta := &C.Metadata{
+		NetWork:  0,
+		Type:     0,
+		SrcPort:  "",
+		DstPort:  "80",
+		AddrType: 3,
+		Host:     remoteHost,
+	}
+	remoteConn, err := ss.DialContext(ctx, meta)
+	if err != nil {
+		return 0, err
+	}
+	return ping(remoteConn)
+}
+
 func ping(remoteConn net.Conn) (int64, error) {
 	remoteConn.SetDeadline(time.Now().Add(tcpTimeout))
 	start := time.Now()
