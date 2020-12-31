@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"time"
 
 	"github.com/xxf098/lite-proxy/component/resolver"
@@ -43,40 +44,7 @@ func PingVmess(vmessOption *outbound.VmessOption) (int64, error) {
 		return 0, err
 	}
 	defer remoteConn.Close()
-	remoteConn.SetDeadline(time.Now().Add(tcpTimeout))
-	start := time.Now()
-	// httpRequest := "GET /generate_204 HTTP/1.1\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36\r\n\r\n"
-	errChan := make(chan error, 2)
-	go func() {
-		_, err := remoteConn.Write(httpRequest)
-		errChan <- err
-	}()
-
-	go func() {
-		buf := make([]byte, 25)
-		_, err = remoteConn.Read(buf)
-		if err != nil && err != io.EOF {
-			errChan <- err
-			return
-		}
-		_, err = parseFirstLine(buf)
-		if err != nil {
-			errChan <- err
-			return
-		}
-		errChan <- nil
-	}()
-	for i := 0; i <= 1; i++ {
-		if err := <-errChan; err != nil {
-			return 0, err
-		}
-
-	}
-	elapsed := time.Since(start).Milliseconds()
-	// fmt.Print(string(buf))
-	// fmt.Printf("server: %s port: %d elapsed: %d\n", vmessOption.Server, vmessOption.Port, elapsed)
-	// log.I(string(buf))
-	return elapsed, nil
+	return ping(remoteConn)
 }
 
 func parseFirstLine(buf []byte) (int, error) {
@@ -167,7 +135,10 @@ func PingTrojan(trojanOption *outbound.TrojanOption) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer remoteConn.Close()
+	return ping(remoteConn)
+}
+
+func ping(remoteConn net.Conn) (int64, error) {
 	remoteConn.SetDeadline(time.Now().Add(tcpTimeout))
 	start := time.Now()
 	// httpRequest := "GET /generate_204 HTTP/1.1\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36\r\n\r\n"
@@ -175,7 +146,7 @@ func PingTrojan(trojanOption *outbound.TrojanOption) (int64, error) {
 		return 0, err
 	}
 	buf := make([]byte, 25)
-	_, err = remoteConn.Read(buf)
+	_, err := remoteConn.Read(buf)
 	if err != nil && err != io.EOF {
 		return 0, err
 	}
@@ -184,24 +155,6 @@ func PingTrojan(trojanOption *outbound.TrojanOption) (int64, error) {
 	// fmt.Printf("server: %s port: %d elapsed: %d\n", vmessOption.Server, vmessOption.Port, elapsed)
 	return elapsed, nil
 }
-
-// func setDefaultResolver() {
-// 	servers := []dns.NameServer{
-// 		{
-// 			Net:  "udp",
-// 			Addr: "223.5.5.5:53",
-// 		},
-// 		{
-// 			Net:  "udp",
-// 			Addr: "8.8.8.8:53",
-// 		},
-// 	}
-// 	c := dns.Config{
-// 		Main:    servers,
-// 		Default: servers,
-// 	}
-// 	resolver.DefaultResolver = dns.NewResolver(c)
-// }
 
 func init() {
 	resolver.DefaultResolver = dns.DefaultResolver()
