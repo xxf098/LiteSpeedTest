@@ -8,11 +8,6 @@ import (
 	"github.com/xxf098/lite-proxy/component/resolver"
 )
 
-func Dialer() (*net.Dialer, error) {
-	dialer := &net.Dialer{}
-	return dialer, nil
-}
-
 func DialContext(ctx context.Context, network, address string) (net.Conn, error) {
 	switch network {
 	case "tcp4", "tcp6", "udp4", "udp6":
@@ -44,6 +39,11 @@ func DialContext(ctx context.Context, network, address string) (net.Conn, error)
 	default:
 		return nil, errors.New("network invalid")
 	}
+}
+
+func ListenPacket(network, address string) (net.PacketConn, error) {
+	cfg := &net.ListenConfig{}
+	return cfg.ListenPacket(context.Background(), network, address)
 }
 
 func dualStackDialContext(ctx context.Context, network, address string) (net.Conn, error) {
