@@ -165,7 +165,7 @@ func (v *Vmess) DialContext(ctx context.Context, metadata *C.Metadata) (net.Conn
 	}
 	tcpKeepAlive(c)
 
-	log.I("start StreamConn from %s to  %s:%s", v.addr, metadata.DstIP, metadata.DstPort)
+	log.I("start StreamConn from", v.addr, "to", metadata.RemoteAddress())
 	c, err = v.StreamConn(c, metadata)
 	return c, err
 }
