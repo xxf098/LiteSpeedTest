@@ -10,6 +10,7 @@ import (
 	"github.com/xxf098/lite-proxy/dns"
 	"github.com/xxf098/lite-proxy/outbound"
 	"github.com/xxf098/lite-proxy/proxy"
+	"github.com/xxf098/lite-proxy/proxy/shadowsocks"
 	"github.com/xxf098/lite-proxy/proxy/trojan"
 	"github.com/xxf098/lite-proxy/proxy/vmess"
 	"github.com/xxf098/lite-proxy/tunnel"
@@ -68,6 +69,19 @@ func createSink(ctx context.Context, link string) (tunnel.Client, error) {
 		}
 		return trojan.NewClient(ctx, t), nil
 	}
+
+	if strings.HasPrefix(link, "ss://") {
+		ssOption, err := config.SSLinkToSSOption(link)
+		if err != nil {
+			return nil, err
+		}
+		ss, err := outbound.NewShadowSocks(ssOption)
+		if err != nil {
+			return nil, err
+		}
+		return shadowsocks.NewClient(ctx, ss), nil
+	}
+
 	return nil, errors.New("not supported link")
 }
 
