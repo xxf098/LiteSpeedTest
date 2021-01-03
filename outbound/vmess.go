@@ -158,7 +158,7 @@ func (v *Vmess) StreamConn(c net.Conn, metadata *C.Metadata) (net.Conn, error) {
 }
 
 func (v *Vmess) DialContext(ctx context.Context, metadata *C.Metadata) (net.Conn, error) {
-	log.I("start dial from %s to %s:%s", v.addr, metadata.DstIP, metadata.DstPort)
+	log.I("start dial from", v.addr, "to", metadata.RemoteAddress())
 	c, err := dialer.DialContext(ctx, "tcp", v.addr)
 	if err != nil {
 		return nil, fmt.Errorf("%s connect error: %s", v.addr, err.Error())
