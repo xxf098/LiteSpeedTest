@@ -41,6 +41,7 @@ func (c Client) Close() error {
 	return nil
 }
 
+// for http transport
 func (c *Client) Dial(network, address string) (net.Conn, error) {
 	addr, err := tunnel.NewAddressFromAddr(network, address)
 	if err != nil {
