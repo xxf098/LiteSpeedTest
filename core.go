@@ -10,9 +10,6 @@ import (
 	"github.com/xxf098/lite-proxy/dns"
 	"github.com/xxf098/lite-proxy/outbound"
 	"github.com/xxf098/lite-proxy/proxy"
-	"github.com/xxf098/lite-proxy/proxy/shadowsocks"
-	"github.com/xxf098/lite-proxy/proxy/trojan"
-	"github.com/xxf098/lite-proxy/proxy/vmess"
 	"github.com/xxf098/lite-proxy/tunnel"
 	"github.com/xxf098/lite-proxy/tunnel/adapter"
 	"github.com/xxf098/lite-proxy/tunnel/http"
@@ -46,16 +43,16 @@ func startInstance(c Config) (*proxy.Proxy, error) {
 }
 
 func createSink(ctx context.Context, link string) (tunnel.Client, error) {
+	var d proxy.ContextDialer
 	if strings.HasPrefix(link, "vmess://") {
 		vmessOption, err := config.VmessLinkToVmessOption(link)
 		if err != nil {
 			return nil, err
 		}
-		v, err := outbound.NewVmess(*vmessOption)
+		d, err = outbound.NewVmess(*vmessOption)
 		if err != nil {
 			return nil, err
 		}
-		return vmess.NewClient(ctx, v), nil
 	}
 
 	if strings.HasPrefix(link, "trojan://") {
@@ -63,11 +60,10 @@ func createSink(ctx context.Context, link string) (tunnel.Client, error) {
 		if err != nil {
 			return nil, err
 		}
-		t, err := outbound.NewTrojan(trojanOption)
+		d, err = outbound.NewTrojan(trojanOption)
 		if err != nil {
 			return nil, err
 		}
-		return trojan.NewClient(ctx, t), nil
 	}
 
 	if strings.HasPrefix(link, "ss://") {
@@ -75,11 +71,13 @@ func createSink(ctx context.Context, link string) (tunnel.Client, error) {
 		if err != nil {
 			return nil, err
 		}
-		ss, err := outbound.NewShadowSocks(ssOption)
+		d, err = outbound.NewShadowSocks(ssOption)
 		if err != nil {
 			return nil, err
 		}
-		return shadowsocks.NewClient(ctx, ss), nil
+	}
+	if d != nil {
+		return proxy.NewClient(ctx, d), nil
 	}
 
 	return nil, errors.New("not supported link")
