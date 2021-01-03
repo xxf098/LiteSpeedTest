@@ -13,6 +13,7 @@ import (
 type ContextDialer interface {
 	// Dial connects to the given address via the proxy.
 	DialContext(ctx context.Context, m *C.Metadata) (c net.Conn, err error)
+	DialUDP(m *C.Metadata) (net.PacketConn, error)
 }
 
 type Creator func(link string) (ContextDialer, error)
