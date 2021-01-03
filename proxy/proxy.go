@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"github.com/xxf098/lite-proxy/common"
+	C "github.com/xxf098/lite-proxy/constant"
 	"github.com/xxf098/lite-proxy/log"
 	"github.com/xxf098/lite-proxy/tunnel"
 )
@@ -92,4 +93,16 @@ func NewProxy(ctx context.Context, cancel context.CancelFunc, sources []tunnel.S
 		ctx:     ctx,
 		cancel:  cancel,
 	}
+}
+
+// A Dialer is a means to establish a connection.
+// Custom dialers should also implement ContextDialer.
+type Dialer interface {
+	// Dial connects to the given address via the proxy.
+	Dial(network, addr string) (c net.Conn, err error)
+}
+
+type ContextDialer interface {
+	// Dial connects to the given address via the proxy.
+	DialContext(ctx context.Context, m *C.Metadata) (c net.Conn, err error)
 }
