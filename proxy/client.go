@@ -5,35 +5,14 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/xxf098/lite-proxy/common"
 	C "github.com/xxf098/lite-proxy/constant"
+	"github.com/xxf098/lite-proxy/outbound"
 	"github.com/xxf098/lite-proxy/tunnel"
 )
 
-type ContextDialer interface {
-	// Dial connects to the given address via the proxy.
-	DialContext(ctx context.Context, m *C.Metadata) (c net.Conn, err error)
-	DialUDP(m *C.Metadata) (net.PacketConn, error)
-}
-
-type Creator func(link string) (ContextDialer, error)
-
-var creators = make(map[string]Creator)
-
-func RegisterContextDialerCreator(name string, c Creator) {
-	creators[name] = c
-}
-
-func GetContextDialerCreator(name string) (Creator, error) {
-	if c, ok := creators[name]; ok {
-		return c, nil
-	}
-	return nil, common.NewError("unknown context dialer name " + string(name))
-}
-
 type Client struct {
 	ctx    context.Context
-	dialer ContextDialer
+	dialer outbound.Dialer
 }
 
 func (c Client) DialConn(addr *tunnel.Address, _ tunnel.Tunnel) (net.Conn, error) {
@@ -70,7 +49,7 @@ func (c *Client) Dial(network, address string) (net.Conn, error) {
 	return c.DialConn(addr, nil)
 }
 
-func NewClient(ctx context.Context, dialer ContextDialer) Client {
+func NewClient(ctx context.Context, dialer outbound.Dialer) Client {
 	return Client{
 		ctx:    ctx,
 		dialer: dialer,
