@@ -1,6 +1,7 @@
 package common
 
 import (
+	"bufio"
 	"io"
 	"net"
 
@@ -106,4 +107,13 @@ func NewRewindConn(conn net.Conn) *RewindConn {
 			rawReader: conn,
 		},
 	}
+}
+
+type BufferdConn struct {
+	net.Conn
+	Br *bufio.Reader
+}
+
+func (c *BufferdConn) Read(b []byte) (int, error) {
+	return c.Br.Read(b)
 }

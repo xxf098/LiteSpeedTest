@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"net"
@@ -23,6 +24,7 @@ type Server struct {
 	cancel      context.CancelFunc
 }
 
+// TODO: https socks4
 func (s *Server) acceptConnLoop() {
 	for {
 		conn, err := s.tcpListener.Accept()
@@ -35,25 +37,25 @@ func (s *Server) acceptConnLoop() {
 				continue
 			}
 		}
-		rewindConn := common.NewRewindConn(conn)
-		rewindConn.SetBufferSize(16)
-		buf := [3]byte{}
-		_, err = rewindConn.Read(buf[:])
-		rewindConn.Rewind()
-		rewindConn.StopBuffering()
+
+		br := bufio.NewReader(conn)
+		b, err := br.Peek(1)
 		if err != nil {
-			log.Error(common.NewError("failed to detect proxy protocol type").Base(err))
-			continue
+			conn.Close()
+			return
 		}
-		if buf[0] == 5 && s.nextSocks {
-			// log.D("socks5 connection")
+		cc := &common.BufferdConn{Conn: conn, Br: br}
+		switch b[0] {
+		case 4:
+			log.Error(common.NewError("not support proxy protocol type").Base(err))
+			return
+		case 5:
 			s.socksConn <- &freedom.Conn{
-				Conn: rewindConn,
+				Conn: cc,
 			}
-		} else {
-			// log.D("http connection")
+		default:
 			s.httpConn <- &freedom.Conn{
-				Conn: rewindConn,
+				Conn: cc,
 			}
 		}
 	}
