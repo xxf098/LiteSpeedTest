@@ -42,8 +42,9 @@ func DialContext(ctx context.Context, network, address string) (net.Conn, error)
 }
 
 func ListenPacket(network, address string) (net.PacketConn, error) {
-	cfg := &net.ListenConfig{}
-	return cfg.ListenPacket(context.Background(), network, address)
+	// cfg := &net.ListenConfig{}
+	// return cfg.ListenPacket(context.Background(), network, address)
+	return effectiveListener.ListenPacket(context.Background(), network, address)
 }
 
 func dualStackDialContext(ctx context.Context, network, address string) (net.Conn, error) {
