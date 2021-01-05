@@ -166,8 +166,7 @@ func (v *Vmess) DialContext(ctx context.Context, metadata *C.Metadata) (net.Conn
 	tcpKeepAlive(c)
 
 	log.I("start StreamConn from", v.addr, "to", metadata.RemoteAddress())
-	c, err = v.StreamConn(c, metadata)
-	return c, err
+	return v.StreamConn(c, metadata)
 }
 
 func (v *Vmess) DialUDP(metadata *C.Metadata) (net.PacketConn, error) {
@@ -200,7 +199,7 @@ func (v *Vmess) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func NewVmess(option VmessOption) (*Vmess, error) {
+func NewVmess(option *VmessOption) (*Vmess, error) {
 	security := strings.ToLower(option.Cipher)
 	client, err := vmess.NewClient(vmess.Config{
 		UUID:     option.UUID,
@@ -223,7 +222,7 @@ func NewVmess(option VmessOption) (*Vmess, error) {
 			udp:  option.UDP,
 		},
 		client: client,
-		option: &option,
+		option: option,
 	}, nil
 }
 

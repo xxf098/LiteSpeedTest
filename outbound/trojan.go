@@ -44,12 +44,7 @@ func (t *Trojan) DialContext(ctx context.Context, metadata *C.Metadata) (net.Con
 		return nil, fmt.Errorf("%s connect error: %w", t.addr, err)
 	}
 	tcpKeepAlive(c)
-	c, err = t.StreamConn(c, metadata)
-	if err != nil {
-		return nil, err
-	}
-
-	return c, err
+	return t.StreamConn(c, metadata)
 }
 
 func (t *Trojan) DialUDP(metadata *C.Metadata) (net.PacketConn, error) {

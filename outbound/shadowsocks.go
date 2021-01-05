@@ -14,6 +14,7 @@ import (
 	"github.com/Dreamacro/go-shadowsocks2/core"
 	"github.com/xxf098/lite-proxy/common/structure"
 	C "github.com/xxf098/lite-proxy/constant"
+	"github.com/xxf098/lite-proxy/log"
 )
 
 type ShadowSocks struct {
@@ -72,14 +73,14 @@ func (ss *ShadowSocks) StreamConn(c net.Conn, metadata *C.Metadata) (net.Conn, e
 }
 
 func (ss *ShadowSocks) DialContext(ctx context.Context, metadata *C.Metadata) (net.Conn, error) {
+	log.I("start dial from", ss.addr, "to", metadata.RemoteAddress())
 	c, err := dialer.DialContext(ctx, "tcp", ss.addr)
 	if err != nil {
 		return nil, fmt.Errorf("%s connect error: %w", ss.addr, err)
 	}
 	tcpKeepAlive(c)
-
-	c, err = ss.StreamConn(c, metadata)
-	return c, err
+	log.I("start StreamConn from", ss.addr, "to", metadata.RemoteAddress())
+	return ss.StreamConn(c, metadata)
 }
 
 // TODO: udp
