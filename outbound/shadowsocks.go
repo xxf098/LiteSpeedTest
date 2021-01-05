@@ -10,6 +10,7 @@ import (
 
 	"github.com/xxf098/lite-proxy/component/dialer"
 	"github.com/xxf098/lite-proxy/component/socks5"
+	"github.com/xxf098/lite-proxy/stats"
 
 	"github.com/Dreamacro/go-shadowsocks2/core"
 	"github.com/xxf098/lite-proxy/common/structure"
@@ -80,10 +81,10 @@ func (ss *ShadowSocks) DialContext(ctx context.Context, metadata *C.Metadata) (n
 	}
 	tcpKeepAlive(c)
 	log.I("start StreamConn from", ss.addr, "to", metadata.RemoteAddress())
-	return ss.StreamConn(c, metadata)
+	sc := stats.NewStatsConn(c)
+	return ss.StreamConn(sc, metadata)
 }
 
-// TODO: udp
 func (ss *ShadowSocks) DialUDP(metadata *C.Metadata) (net.PacketConn, error) {
 	pc, err := dialer.ListenPacket("udp", "")
 	if err != nil {
