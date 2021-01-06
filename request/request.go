@@ -43,7 +43,7 @@ func PingVmess(vmessOption *outbound.VmessOption) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return ping(remoteConn)
+	return pingInternal(remoteConn)
 }
 
 func parseFirstLine(buf []byte) (int, error) {
@@ -134,7 +134,7 @@ func PingTrojan(trojanOption *outbound.TrojanOption) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return ping(remoteConn)
+	return pingInternal(remoteConn)
 }
 
 func PingSS(ssOption *outbound.ShadowSocksOption) (int64, error) {
@@ -156,10 +156,51 @@ func PingSS(ssOption *outbound.ShadowSocksOption) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return ping(remoteConn)
+	return pingInternal(remoteConn)
 }
 
-func ping(remoteConn net.Conn) (int64, error) {
+func Ping(option interface{}) (int64, error) {
+	var d outbound.ContextDialer
+	var err error
+	if ssOption, ok := option.(*outbound.ShadowSocksOption); ok {
+		d, err = outbound.NewShadowSocks(ssOption)
+		if err != nil {
+			return 0, err
+		}
+	}
+	if vmessOption, ok := option.(*outbound.VmessOption); ok {
+		d, err = outbound.NewVmess(vmessOption)
+		if err != nil {
+			return 0, err
+		}
+	}
+	if trojanOption, ok := option.(*outbound.TrojanOption); ok {
+		d, err = outbound.NewTrojan(trojanOption)
+		if err != nil {
+			return 0, err
+		}
+	}
+	if d == nil {
+		return 0, errors.New("not support config")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
+	defer cancel()
+	meta := &C.Metadata{
+		NetWork:  0,
+		Type:     0,
+		SrcPort:  "",
+		DstPort:  "80",
+		AddrType: 3,
+		Host:     remoteHost,
+	}
+	remoteConn, err := d.DialContext(ctx, meta)
+	if err != nil {
+		return 0, err
+	}
+	return pingInternal(remoteConn)
+}
+
+func pingInternal(remoteConn net.Conn) (int64, error) {
 	defer remoteConn.Close()
 	remoteConn.SetDeadline(time.Now().Add(tcpTimeout))
 	start := time.Now()
