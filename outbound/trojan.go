@@ -10,6 +10,7 @@ import (
 	"github.com/xxf098/lite-proxy/component/dialer"
 	"github.com/xxf098/lite-proxy/component/trojan"
 	C "github.com/xxf098/lite-proxy/constant"
+	"github.com/xxf098/lite-proxy/stats"
 )
 
 type Trojan struct {
@@ -44,7 +45,8 @@ func (t *Trojan) DialContext(ctx context.Context, metadata *C.Metadata) (net.Con
 		return nil, fmt.Errorf("%s connect error: %w", t.addr, err)
 	}
 	tcpKeepAlive(c)
-	return t.StreamConn(c, metadata)
+	sc := stats.NewStatsConn(c)
+	return t.StreamConn(sc, metadata)
 }
 
 func (t *Trojan) DialUDP(metadata *C.Metadata) (net.PacketConn, error) {
