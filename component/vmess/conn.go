@@ -14,7 +14,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/xxf098/lite-proxy/stats"
 	"golang.org/x/crypto/chacha20poly1305"
 )
 
@@ -192,14 +191,6 @@ func newConn(conn net.Conn, id *ID, dst *DstAddr, security Security) (*Conn, err
 		reader = newAEADReader(conn, aead, respBodyIV[:])
 	}
 
-	sizeStatWriter := stats.SizeStatWriter{
-		Counter: stats.DefaultManager.GetCounter(stats.UpProxy),
-		Writer:  writer,
-	}
-	sizeStatReader := stats.SizeStatReader{
-		Counter: stats.DefaultManager.GetCounter(stats.DownProxy),
-		Reader:  reader,
-	}
 	c := &Conn{
 		Conn:        conn,
 		id:          id,
@@ -209,8 +200,8 @@ func newConn(conn net.Conn, id *ID, dst *DstAddr, security Security) (*Conn, err
 		respV:       respV,
 		respBodyIV:  respBodyIV[:],
 		respBodyKey: respBodyKey[:],
-		reader:      sizeStatReader,
-		writer:      sizeStatWriter,
+		reader:      reader,
+		writer:      writer,
 		security:    security,
 	}
 	if err := c.sendRequest(); err != nil {

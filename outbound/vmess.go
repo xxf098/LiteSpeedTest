@@ -15,6 +15,7 @@ import (
 	"github.com/xxf098/lite-proxy/component/vmess"
 	C "github.com/xxf098/lite-proxy/constant"
 	"github.com/xxf098/lite-proxy/log"
+	"github.com/xxf098/lite-proxy/stats"
 )
 
 type Vmess struct {
@@ -166,7 +167,8 @@ func (v *Vmess) DialContext(ctx context.Context, metadata *C.Metadata) (net.Conn
 	tcpKeepAlive(c)
 
 	log.I("start StreamConn from", v.addr, "to", metadata.RemoteAddress())
-	return v.StreamConn(c, metadata)
+	sc := stats.NewStatsConn(c)
+	return v.StreamConn(sc, metadata)
 }
 
 func (v *Vmess) DialUDP(metadata *C.Metadata) (net.PacketConn, error) {
