@@ -14,8 +14,12 @@ type Base struct {
 	udp  bool
 }
 
-type Dialer interface {
+type ContextDialer interface {
 	DialContext(ctx context.Context, m *C.Metadata) (c net.Conn, err error)
+}
+
+type Dialer interface {
+	ContextDialer
 	DialUDP(m *C.Metadata) (net.PacketConn, error)
 }
 
