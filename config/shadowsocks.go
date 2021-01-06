@@ -31,7 +31,10 @@ func SSLinkToSSOption(link string) (*outbound.ShadowSocksOption, error) {
 	}
 	data, err := base64.StdEncoding.DecodeString(pass)
 	if err != nil {
-		return nil, err
+		data, err = base64.RawStdEncoding.DecodeString(pass)
+		if err != nil {
+			return nil, err
+		}
 	}
 	userinfo := string(data)
 	splits := strings.SplitN(userinfo, ":", 2)
@@ -46,4 +49,14 @@ func SSLinkToSSOption(link string) (*outbound.ShadowSocksOption, error) {
 		Cipher:   method,
 	}
 	return shadwosocksOption, nil
+}
+
+func init() {
+	outbound.RegisterDialerCreator("ss", func(link string) (outbound.Dialer, error) {
+		ssOption, err := SSLinkToSSOption(link)
+		if err != nil {
+			return nil, err
+		}
+		return outbound.NewShadowSocks(ssOption)
+	})
 }
