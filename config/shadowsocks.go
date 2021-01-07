@@ -31,8 +31,7 @@ func SSLinkToSSOption(link string) (*outbound.ShadowSocksOption, error) {
 	}
 	data, err := base64.StdEncoding.DecodeString(pass)
 	if err != nil {
-		data, err = base64.RawStdEncoding.DecodeString(pass)
-		if err != nil {
+		if data, err = base64.RawStdEncoding.DecodeString(pass); err != nil {
 			return nil, err
 		}
 	}

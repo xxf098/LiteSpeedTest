@@ -45,3 +45,13 @@ func TrojanLinkToTrojanOption(link string) (*outbound.TrojanOption, error) {
 	}
 	return &trojanOption, nil
 }
+
+func init() {
+	outbound.RegisterDialerCreator("trojan", func(link string) (outbound.Dialer, error) {
+		trojanOption, err := TrojanLinkToTrojanOption(link)
+		if err != nil {
+			return nil, err
+		}
+		return outbound.NewTrojan(trojanOption)
+	})
+}

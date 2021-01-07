@@ -185,7 +185,9 @@ func VmessLinkToVmessOptionIP(link string, resolveip bool) (*outbound.VmessOptio
 	data, err := base64.StdEncoding.DecodeString(b64)
 	// fmt.Println(string(data))
 	if err != nil {
-		return nil, err
+		if data, err = base64.RawStdEncoding.DecodeString(b64); err != nil {
+			return nil, err
+		}
 	}
 	config := VmessConfig{}
 	err = json.Unmarshal(data, &config)
@@ -255,4 +257,14 @@ func ToVmessOption(path string) (*outbound.VmessOption, error) {
 		return nil, err
 	}
 	return VmessConfigToVmessOption(&config1)
+}
+
+func init() {
+	outbound.RegisterDialerCreator("vmess", func(link string) (outbound.Dialer, error) {
+		vmessOption, err := VmessLinkToVmessOption(link)
+		if err != nil {
+			return nil, err
+		}
+		return outbound.NewVmess(vmessOption)
+	})
 }
