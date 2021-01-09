@@ -96,7 +96,8 @@ func (ss *ShadowSocks) DialUDP(metadata *C.Metadata) (net.PacketConn, error) {
 		return nil, err
 	}
 
-	pc = ss.cipher.PacketConn(pc)
+	spc := stats.NewStatsPacketConn(pc)
+	pc = ss.cipher.PacketConn(spc)
 	return &ssPacketConn{PacketConn: pc, rAddr: addr}, nil
 }
 
