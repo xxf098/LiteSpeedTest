@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"errors"
-	"strings"
+	"regexp"
 
+	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/component/resolver"
-	"github.com/xxf098/lite-proxy/config"
+	_ "github.com/xxf098/lite-proxy/config"
 	"github.com/xxf098/lite-proxy/dns"
 	"github.com/xxf098/lite-proxy/outbound"
 	"github.com/xxf098/lite-proxy/proxy"
@@ -43,38 +44,19 @@ func startInstance(c Config) (*proxy.Proxy, error) {
 }
 
 func createSink(ctx context.Context, link string) (tunnel.Client, error) {
-	var d proxy.ContextDialer
-	if strings.HasPrefix(link, "vmess://") {
-		vmessOption, err := config.VmessLinkToVmessOption(link)
-		if err != nil {
-			return nil, err
-		}
-		d, err = outbound.NewVmess(*vmessOption)
-		if err != nil {
-			return nil, err
-		}
+	var d outbound.Dialer
+	r := regexp.MustCompile("^(vmess|trojan|ss)://.+")
+	matches := r.FindStringSubmatch(link)
+	if len(matches) < 2 {
+		return nil, common.NewError("Not Suported Link")
 	}
-
-	if strings.HasPrefix(link, "trojan://") {
-		trojanOption, err := config.TrojanLinkToTrojanOption(link)
-		if err != nil {
-			return nil, err
-		}
-		d, err = outbound.NewTrojan(trojanOption)
-		if err != nil {
-			return nil, err
-		}
+	creator, err := outbound.GetDialerCreator(matches[1])
+	if err != nil {
+		return nil, err
 	}
-
-	if strings.HasPrefix(link, "ss://") {
-		ssOption, err := config.SSLinkToSSOption(link)
-		if err != nil {
-			return nil, err
-		}
-		d, err = outbound.NewShadowSocks(ssOption)
-		if err != nil {
-			return nil, err
-		}
+	d, err = creator(link)
+	if err != nil {
+		return nil, err
 	}
 	if d != nil {
 		return proxy.NewClient(ctx, d), nil
