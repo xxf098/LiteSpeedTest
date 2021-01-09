@@ -188,7 +188,8 @@ func (v *Vmess) DialUDP(metadata *C.Metadata) (net.PacketConn, error) {
 		return nil, fmt.Errorf("%s connect error: %s", v.addr, err.Error())
 	}
 	tcpKeepAlive(c)
-	c, err = v.StreamConn(c, metadata)
+	sc := stats.NewStatsConn(c)
+	c, err = v.StreamConn(sc, metadata)
 	if err != nil {
 		return nil, fmt.Errorf("new vmess client error: %v", err)
 	}
