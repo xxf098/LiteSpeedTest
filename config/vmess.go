@@ -176,7 +176,7 @@ func VmessLinkToVmessOption(link string) (*outbound.VmessOption, error) {
 }
 
 func VmessLinkToVmessOptionIP(link string, resolveip bool) (*outbound.VmessOption, error) {
-	regex := regexp.MustCompile(`^vmess://([A-Za-z0-9+-=/]+)`)
+	regex := regexp.MustCompile(`^vmess://([A-Za-z0-9+-=/_]+)`)
 	res := regex.FindAllStringSubmatch(link, 1)
 	b64 := ""
 	if len(res) > 0 && len(res[0]) > 1 {
