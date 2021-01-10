@@ -159,6 +159,28 @@ func PingSS(ssOption *outbound.ShadowSocksOption) (int64, error) {
 	return pingInternal(remoteConn)
 }
 
+func PingSSR(ssrOption *outbound.ShadowSocksROption) (int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
+	defer cancel()
+	ssr, err := outbound.NewShadowSocksR(ssrOption)
+	if err != nil {
+		return 0, err
+	}
+	meta := &C.Metadata{
+		NetWork:  0,
+		Type:     0,
+		SrcPort:  "",
+		DstPort:  "80",
+		AddrType: 3,
+		Host:     remoteHost,
+	}
+	remoteConn, err := ssr.DialContext(ctx, meta)
+	if err != nil {
+		return 0, err
+	}
+	return pingInternal(remoteConn)
+}
+
 func Ping(option interface{}) (int64, error) {
 	var d outbound.ContextDialer
 	var err error
