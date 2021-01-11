@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/outbound"
 )
 
@@ -175,6 +176,7 @@ func VmessLinkToVmessOption(link string) (*outbound.VmessOption, error) {
 	return VmessLinkToVmessOptionIP(link, false)
 }
 
+// TODO: safe base64
 func VmessLinkToVmessOptionIP(link string, resolveip bool) (*outbound.VmessOption, error) {
 	regex := regexp.MustCompile(`^vmess://([A-Za-z0-9+-=/_]+)`)
 	res := regex.FindAllStringSubmatch(link, 1)
@@ -182,12 +184,15 @@ func VmessLinkToVmessOptionIP(link string, resolveip bool) (*outbound.VmessOptio
 	if len(res) > 0 && len(res[0]) > 1 {
 		b64 = res[0][1]
 	}
-	data, err := base64.StdEncoding.DecodeString(b64)
-	// fmt.Println(string(data))
+	// data, err := base64.StdEncoding.DecodeString(b64)
+	// if err != nil {
+	// 	if data, err = base64.RawStdEncoding.DecodeString(b64); err != nil {
+	// 		return nil, err
+	// 	}
+	// }
+	data, err := common.DecodeB64Bytes(b64)
 	if err != nil {
-		if data, err = base64.RawStdEncoding.DecodeString(b64); err != nil {
-			return nil, err
-		}
+		return nil, err
 	}
 	config := VmessConfig{}
 	err = json.Unmarshal(data, &config)
