@@ -2,8 +2,10 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -11,7 +13,35 @@ import (
 	"github.com/xxf098/lite-proxy/outbound"
 )
 
+var (
+	NotSSLink error = errors.New("not a shadowsocksR link")
+)
+
+func decodeB64SS(link string) (string, error) {
+	if strings.Contains(link, "@") {
+		return link, nil
+	}
+	regex := regexp.MustCompile(`^ss://([A-Za-z0-9+-=/_]+)`)
+	res := regex.FindAllStringSubmatch(link, 1)
+	b64 := ""
+	if len(res) > 0 && len(res[0]) > 1 {
+		b64 = res[0][1]
+	}
+	if b64 == "" {
+		return link, nil
+	}
+	uri, err := common.DecodeB64(b64)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("ss://%s", uri), nil
+}
+
 func SSLinkToSSOption(link string) (*outbound.ShadowSocksOption, error) {
+	link, err := decodeB64SS(link)
+	if err != nil {
+		return nil, err
+	}
 	u, err := url.Parse(link)
 	if err != nil {
 		return nil, err
@@ -29,16 +59,16 @@ func SSLinkToSSOption(link string) (*outbound.ShadowSocksOption, error) {
 	if err != nil {
 		return nil, err
 	}
-	// data, err := base64.StdEncoding.DecodeString(pass)
-	// if err != nil {
-	// 	if data, err = base64.RawStdEncoding.DecodeString(pass); err != nil {
-	// 		return nil, err
-	// 	}
-	// }
-	// userinfo := string(data)
 	userinfo, err := common.DecodeB64(pass)
-	if err != nil {
-		return nil, err
+	if err != nil || !strings.Contains(userinfo, ":") {
+		pw, _ := u.User.Password()
+		if pw == "" {
+			if err == nil {
+				err = NotSSLink
+			}
+			return nil, err
+		}
+		userinfo = fmt.Sprintf("%s:%s", u.User.Username(), pw)
 	}
 	splits := strings.SplitN(userinfo, ":", 2)
 	method := splits[0]
