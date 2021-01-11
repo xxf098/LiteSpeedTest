@@ -2,6 +2,7 @@ package stats
 
 import (
 	"net"
+	"runtime"
 )
 
 type StatsConn struct {
@@ -28,6 +29,13 @@ func NewStatsConn(c net.Conn) StatsConn {
 		CounterDown: DefaultManager.GetCounter(DownProxy),
 		CounterUp:   DefaultManager.GetCounter(UpProxy),
 	}
+}
+
+func NewConn(c net.Conn) net.Conn {
+	if runtime.GOOS != "android" {
+		return c
+	}
+	return NewStatsConn(c)
 }
 
 type StatsPacketConn struct {
