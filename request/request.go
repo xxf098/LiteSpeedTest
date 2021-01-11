@@ -190,6 +190,12 @@ func Ping(option interface{}) (int64, error) {
 			return 0, err
 		}
 	}
+	if ssrOption, ok := option.(*outbound.ShadowSocksROption); ok {
+		d, err = outbound.NewShadowSocksR(ssrOption)
+		if err != nil {
+			return 0, err
+		}
+	}
 	if vmessOption, ok := option.(*outbound.VmessOption); ok {
 		d, err = outbound.NewVmess(vmessOption)
 		if err != nil {
