@@ -6,13 +6,30 @@ import (
 )
 
 func DecodeB64(s string) (string, error) {
+	// s = strings.ReplaceAll(s, "-", "+")
+	// s = strings.ReplaceAll(s, "_", "/")
+	// data, err := base64.StdEncoding.DecodeString(s)
+	// if err != nil {
+	// 	if data, err = base64.RawStdEncoding.DecodeString(s); err != nil {
+	// 		return "", err
+	// 	}
+	// }
+	// return string(data), nil
+	data, err := DecodeB64Bytes(s)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
+func DecodeB64Bytes(s string) ([]byte, error) {
 	s = strings.ReplaceAll(s, "-", "+")
 	s = strings.ReplaceAll(s, "_", "/")
 	data, err := base64.StdEncoding.DecodeString(s)
 	if err != nil {
 		if data, err = base64.RawStdEncoding.DecodeString(s); err != nil {
-			return "", err
+			return nil, err
 		}
 	}
-	return string(data), nil
+	return data, nil
 }
