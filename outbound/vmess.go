@@ -167,7 +167,7 @@ func (v *Vmess) DialContext(ctx context.Context, metadata *C.Metadata) (net.Conn
 	tcpKeepAlive(c)
 
 	log.I("start StreamConn from", v.addr, "to", metadata.RemoteAddress())
-	sc := stats.NewStatsConn(c)
+	sc := stats.NewConn(c)
 	return v.StreamConn(sc, metadata)
 }
 
@@ -188,7 +188,7 @@ func (v *Vmess) DialUDP(metadata *C.Metadata) (net.PacketConn, error) {
 		return nil, fmt.Errorf("%s connect error: %s", v.addr, err.Error())
 	}
 	tcpKeepAlive(c)
-	sc := stats.NewStatsConn(c)
+	sc := stats.NewConn(c)
 	c, err = v.StreamConn(sc, metadata)
 	if err != nil {
 		return nil, fmt.Errorf("new vmess client error: %v", err)
