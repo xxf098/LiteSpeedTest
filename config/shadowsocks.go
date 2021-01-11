@@ -1,13 +1,13 @@
 package config
 
 import (
-	"encoding/base64"
 	"errors"
 	"net"
 	"net/url"
 	"strconv"
 	"strings"
 
+	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/outbound"
 )
 
@@ -29,13 +29,17 @@ func SSLinkToSSOption(link string) (*outbound.ShadowSocksOption, error) {
 	if err != nil {
 		return nil, err
 	}
-	data, err := base64.StdEncoding.DecodeString(pass)
+	// data, err := base64.StdEncoding.DecodeString(pass)
+	// if err != nil {
+	// 	if data, err = base64.RawStdEncoding.DecodeString(pass); err != nil {
+	// 		return nil, err
+	// 	}
+	// }
+	// userinfo := string(data)
+	userinfo, err := common.DecodeB64(pass)
 	if err != nil {
-		if data, err = base64.RawStdEncoding.DecodeString(pass); err != nil {
-			return nil, err
-		}
+		return nil, err
 	}
-	userinfo := string(data)
 	splits := strings.SplitN(userinfo, ":", 2)
 	method := splits[0]
 	pass = splits[1]
