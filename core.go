@@ -45,7 +45,7 @@ func startInstance(c Config) (*proxy.Proxy, error) {
 
 func createSink(ctx context.Context, link string) (tunnel.Client, error) {
 	var d outbound.Dialer
-	r := regexp.MustCompile("^(vmess|trojan|ss)://.+")
+	r := regexp.MustCompile("(?i)^(vmess|trojan|ss|ssr)://.+")
 	matches := r.FindStringSubmatch(link)
 	if len(matches) < 2 {
 		return nil, common.NewError("Not Suported Link")
