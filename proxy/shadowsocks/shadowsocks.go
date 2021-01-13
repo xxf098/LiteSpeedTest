@@ -33,6 +33,15 @@ func (c Client) DialConn(addr *tunnel.Address, _ tunnel.Tunnel) (net.Conn, error
 	return c.shadowsocks.DialContext(c.ctx, meta)
 }
 
+// for http transport
+func (c *Client) Dial(network, address string) (net.Conn, error) {
+	addr, err := tunnel.NewAddressFromAddr(network, address)
+	if err != nil {
+		return nil, err
+	}
+	return c.DialConn(addr, nil)
+}
+
 func (c Client) Close() error {
 	return nil
 }
