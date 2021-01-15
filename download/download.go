@@ -7,9 +7,18 @@ import (
 	"net/http"
 	"time"
 
+	"errors"
+	"regexp"
+
 	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/common/pool"
+	"github.com/xxf098/lite-proxy/outbound"
+	"github.com/xxf098/lite-proxy/proxy"
 	"github.com/xxf098/lite-proxy/stats"
+)
+
+const (
+	downloadLink = "https://download.microsoft.com/download/2/0/E/20E90413-712F-438C-988E-FDAA79A8AC3D/dotnetfx35.exe"
 )
 
 type Empty struct {
@@ -42,7 +51,38 @@ func byteCountIEC(b int64) string {
 		float64(b)/float64(div), "KMGTPE"[exp])
 }
 
-func downloadInternal(url string, dial func(network, addr string) (net.Conn, error)) (int64, error) {
+func createClient(ctx context.Context, link string) (*proxy.Client, error) {
+	var d outbound.Dialer
+	r := regexp.MustCompile("(?i)^(vmess|trojan|ss|ssr)://.+")
+	matches := r.FindStringSubmatch(link)
+	if len(matches) < 2 {
+		return nil, common.NewError("Not Suported Link")
+	}
+	creator, err := outbound.GetDialerCreator(matches[1])
+	if err != nil {
+		return nil, err
+	}
+	d, err = creator(link)
+	if err != nil {
+		return nil, err
+	}
+	if d != nil {
+		return proxy.NewClient(ctx, d), nil
+	}
+
+	return nil, errors.New("not supported link")
+}
+
+func Download(link string) (int64, error) {
+	ctx := context.Background()
+	client, err := createClient(ctx, link)
+	if err != nil {
+		return 0, err
+	}
+	return downloadInternal(ctx, downloadLink, client.Dial)
+}
+
+func downloadInternal(ctx context.Context, url string, dial func(network, addr string) (net.Conn, error)) (int64, error) {
 	var max int64 = 0
 	httpTransport := &http.Transport{}
 	httpClient := &http.Client{Transport: httpTransport}
@@ -58,7 +98,7 @@ func downloadInternal(url string, dial func(network, addr string) (net.Conn, err
 		return max, err
 	}
 	defer response.Body.Close()
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 	output := &Empty{
 		total: stats.Counter{},
