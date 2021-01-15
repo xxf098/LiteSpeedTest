@@ -42,8 +42,7 @@ func byteCountIEC(b int64) string {
 		float64(b)/float64(div), "KMGTPE"[exp])
 }
 
-func Download(url string, dial func(network, addr string) (net.Conn, error)) (int64, error) {
-
+func downloadInternal(url string, dial func(network, addr string) (net.Conn, error)) (int64, error) {
 	var max int64 = 0
 	httpTransport := &http.Transport{}
 	httpClient := &http.Client{Transport: httpTransport}
