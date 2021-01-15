@@ -49,8 +49,8 @@ func (c *Client) Dial(network, address string) (net.Conn, error) {
 	return c.DialConn(addr, nil)
 }
 
-func NewClient(ctx context.Context, dialer outbound.Dialer) Client {
-	return Client{
+func NewClient(ctx context.Context, dialer outbound.Dialer) *Client {
+	return &Client{
 		ctx:    ctx,
 		dialer: dialer,
 	}
