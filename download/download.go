@@ -73,16 +73,16 @@ func createClient(ctx context.Context, link string) (*proxy.Client, error) {
 	return nil, errors.New("not supported link")
 }
 
-func Download(link string) (int64, error) {
+func Download(link string, timeout time.Duration) (int64, error) {
 	ctx := context.Background()
 	client, err := createClient(ctx, link)
 	if err != nil {
 		return 0, err
 	}
-	return downloadInternal(ctx, downloadLink, client.Dial)
+	return downloadInternal(ctx, downloadLink, timeout, client.Dial)
 }
 
-func downloadInternal(ctx context.Context, url string, dial func(network, addr string) (net.Conn, error)) (int64, error) {
+func downloadInternal(ctx context.Context, url string, timeout time.Duration, dial func(network, addr string) (net.Conn, error)) (int64, error) {
 	var max int64 = 0
 	httpTransport := &http.Transport{}
 	httpClient := &http.Client{Transport: httpTransport}
@@ -98,7 +98,7 @@ func downloadInternal(ctx context.Context, url string, dial func(network, addr s
 		return max, err
 	}
 	defer response.Body.Close()
-	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	output := &Empty{
 		total: stats.Counter{},
