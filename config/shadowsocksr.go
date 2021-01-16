@@ -28,7 +28,7 @@ func SSRLinkToSSROption(link string) (*outbound.ShadowSocksROption, error) {
 	}
 	parts := strings.SplitN(uri, "/?", 2)
 	links := strings.Split(parts[0], ":")
-	if len(links) != 6 {
+	if len(links) != 6 || len(parts) != 2 {
 		return nil, NotSSRLink
 	}
 	port, err := strconv.Atoi(links[1])
@@ -49,11 +49,7 @@ func SSRLinkToSSROption(link string) (*outbound.ShadowSocksROption, error) {
 		Password: pass,
 		UDP:      false,
 	}
-	u, err := url.Parse(uri)
-	if err != nil {
-		return nil, err
-	}
-	if rawQuery, err := url.ParseQuery(u.RawQuery); err == nil {
+	if rawQuery, err := url.ParseQuery(parts[1]); err == nil {
 		obfsparam, err := common.DecodeB64(rawQuery.Get("obfsparam"))
 		if err != nil {
 			return nil, err
