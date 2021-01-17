@@ -37,7 +37,7 @@ func (e *Empty) Size() int64 {
 	return e.total.Set(0)
 }
 
-func byteCountIEC(b int64) string {
+func ByteCountIEC(b int64) string {
 	const unit = 1024
 	if b < unit {
 		return fmt.Sprintf("%d B/S", b)
@@ -127,9 +127,9 @@ func downloadInternal(ctx context.Context, url string, timeout time.Duration, re
 		}
 	}(response)
 
-	_, err = common.CopyBuffer(output, response.Body, pool.Get(32*1024))
-	if err != nil {
-		return max, err
-	}
+	_, err = common.CopyBuffer(output, response.Body, pool.Get(20*1024))
+	// if err != nil {
+	// 	return max, err
+	// }
 	return max, nil
 }
