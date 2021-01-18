@@ -21,11 +21,11 @@ const (
 	downloadLink = "https://download.microsoft.com/download/2/0/E/20E90413-712F-438C-988E-FDAA79A8AC3D/dotnetfx35.exe"
 )
 
-type Empty struct {
+type Discard struct {
 	total stats.Counter
 }
 
-func (e *Empty) Write(p []byte) (n int, err error) {
+func (e *Discard) Write(p []byte) (n int, err error) {
 	n = len(p)
 	pool.Put(p)
 	e.total.Add(int64(n))
@@ -33,7 +33,7 @@ func (e *Empty) Write(p []byte) (n int, err error) {
 	return n, nil
 }
 
-func (e *Empty) Size() int64 {
+func (e *Discard) Size() int64 {
 	return e.total.Set(0)
 }
 
@@ -100,7 +100,7 @@ func downloadInternal(ctx context.Context, url string, timeout time.Duration, re
 	defer response.Body.Close()
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	output := &Empty{
+	output := &Discard{
 		total: stats.Counter{},
 	}
 	go func(response *http.Response) {
