@@ -3,6 +3,7 @@ package download
 import (
 	"context"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"time"
@@ -29,7 +30,7 @@ func (e *Discard) Write(p []byte) (n int, err error) {
 	n = len(p)
 	pool.Put(p)
 	e.total.Add(int64(n))
-	// fmt.Printf("==%s\n", byteCountIEC(int64(n)))
+	// fmt.Printf("==%s\n", ByteCountIEC(int64(n)))
 	return n, nil
 }
 
@@ -100,15 +101,13 @@ func downloadInternal(ctx context.Context, url string, timeout time.Duration, re
 	defer response.Body.Close()
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	output := &Discard{
-		total: stats.Counter{},
-	}
+	total := stats.Counter{}
 	go func(response *http.Response) {
 		ticker := time.NewTicker(1 * time.Second)
 		for {
 			select {
 			case <-ticker.C:
-				size := output.Size()
+				size := total.Set(0)
 				if max < size {
 					max = size
 				}
@@ -127,9 +126,17 @@ func downloadInternal(ctx context.Context, url string, timeout time.Duration, re
 		}
 	}(response)
 
-	_, err = common.CopyBuffer(output, response.Body, pool.Get(20*1024))
-	// if err != nil {
-	// 	return max, err
-	// }
+	for {
+		buf := pool.Get(20 * 1024)
+		nr, er := response.Body.Read(buf)
+		total.Add(int64(nr))
+		pool.Put(buf)
+		if er != nil {
+			if er != io.EOF {
+				err = er
+			}
+			break
+		}
+	}
 	return max, nil
 }
