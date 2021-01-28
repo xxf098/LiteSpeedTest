@@ -9,13 +9,12 @@ import (
 	"time"
 
 	"errors"
-	"regexp"
 
-	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/common/pool"
 	"github.com/xxf098/lite-proxy/outbound"
 	"github.com/xxf098/lite-proxy/proxy"
 	"github.com/xxf098/lite-proxy/stats"
+	"github.com/xxf098/lite-proxy/utils"
 )
 
 const (
@@ -54,10 +53,9 @@ func ByteCountIEC(b int64) string {
 
 func createClient(ctx context.Context, link string) (*proxy.Client, error) {
 	var d outbound.Dialer
-	r := regexp.MustCompile("(?i)^(vmess|trojan|ss|ssr)://.+")
-	matches := r.FindStringSubmatch(link)
-	if len(matches) < 2 {
-		return nil, common.NewError("Not Suported Link")
+	matches, err := utils.CheckLink(link)
+	if err != nil {
+		return nil, err
 	}
 	creator, err := outbound.GetDialerCreator(matches[1])
 	if err != nil {

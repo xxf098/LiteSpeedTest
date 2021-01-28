@@ -3,9 +3,7 @@ package main
 import (
 	"context"
 	"errors"
-	"regexp"
 
-	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/component/resolver"
 	_ "github.com/xxf098/lite-proxy/config"
 	"github.com/xxf098/lite-proxy/dns"
@@ -15,6 +13,7 @@ import (
 	"github.com/xxf098/lite-proxy/tunnel/adapter"
 	"github.com/xxf098/lite-proxy/tunnel/http"
 	"github.com/xxf098/lite-proxy/tunnel/socks"
+	"github.com/xxf098/lite-proxy/utils"
 )
 
 func startInstance(c Config) (*proxy.Proxy, error) {
@@ -45,10 +44,9 @@ func startInstance(c Config) (*proxy.Proxy, error) {
 
 func createSink(ctx context.Context, link string) (tunnel.Client, error) {
 	var d outbound.Dialer
-	r := regexp.MustCompile("(?i)^(vmess|trojan|ss|ssr)://.+")
-	matches := r.FindStringSubmatch(link)
-	if len(matches) < 2 {
-		return nil, common.NewError("Not Suported Link")
+	matches, err := utils.CheckLink(link)
+	if err != nil {
+		return nil, err
 	}
 	creator, err := outbound.GetDialerCreator(matches[1])
 	if err != nil {
