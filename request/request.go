@@ -236,9 +236,13 @@ func pingInternal(remoteConn net.Conn) (int64, error) {
 	if _, err := remoteConn.Write(httpRequest); err != nil {
 		return 0, err
 	}
-	buf := make([]byte, 25)
+	buf := make([]byte, 128)
 	_, err := remoteConn.Read(buf)
 	if err != nil && err != io.EOF {
+		return 0, err
+	}
+	_, err = parseFirstLine(buf)
+	if err != nil {
 		return 0, err
 	}
 	elapsed := time.Since(start).Milliseconds()
