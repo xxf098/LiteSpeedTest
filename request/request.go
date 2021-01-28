@@ -7,12 +7,16 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strings"
 	"time"
 
+	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/component/resolver"
+	"github.com/xxf098/lite-proxy/config"
 	C "github.com/xxf098/lite-proxy/constant"
 	"github.com/xxf098/lite-proxy/dns"
 	"github.com/xxf098/lite-proxy/outbound"
+	"github.com/xxf098/lite-proxy/utils"
 )
 
 const (
@@ -179,6 +183,30 @@ func PingSSR(ssrOption *outbound.ShadowSocksROption) (int64, error) {
 		return 0, err
 	}
 	return pingInternal(remoteConn)
+}
+
+func PingLink(link string) (int64, error) {
+	matches, err := utils.CheckLink(link)
+	if err != nil {
+		return 0, err
+	}
+	var option interface{}
+	switch strings.ToLower(matches[1]) {
+	case "vmess":
+		option, err = config.VmessLinkToVmessOption(link)
+	case "trojan":
+		option, err = config.TrojanLinkToTrojanOption(link)
+	case "ss":
+		option, err = config.SSLinkToSSOption(link)
+	case "ssr":
+		option, err = config.SSRLinkToSSROption(link)
+	default:
+		return 0, common.NewError("Not Suported Link")
+	}
+	if err != nil {
+		return 0, err
+	}
+	return Ping(option)
 }
 
 func Ping(option interface{}) (int64, error) {
