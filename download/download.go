@@ -99,36 +99,61 @@ func downloadInternal(ctx context.Context, url string, timeout time.Duration, re
 	defer response.Body.Close()
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	total := stats.Counter{}
-	go func(response *http.Response) {
-		ticker := time.NewTicker(1 * time.Second)
-		for {
-			select {
-			case <-ticker.C:
-				size := total.Set(0)
-				if max < size {
-					max = size
-				}
-				if resultChan != nil {
-					resultChan <- size
-				}
-				// fmt.Printf("%s\n", byteCountIEC(size))
-			case <-ctx.Done():
-				if resultChan != nil {
-					resultChan <- -1
-				}
-				response.Body.Close()
-				// fmt.Println("Done")
-				return
-			}
-		}
-	}(response)
+	// total := stats.Counter{}
+	// go func(response *http.Response) {
+	// 	ticker := time.NewTicker(1 * time.Second)
+	// 	for {
+	// 		select {
+	// 		case <-ticker.C:
+	// 			size := total.Set(0)
+	// 			if max < size {
+	// 				max = size
+	// 			}
+	// 			if resultChan != nil {
+	// 				resultChan <- size
+	// 			}
+	// 		case <-ctx.Done():
+	// 			if resultChan != nil {
+	// 				resultChan <- -1
+	// 			}
+	// 			response.Body.Close()
+	// 			return
+	// 		}
+	// 	}
+	// }(response)
 
-	for {
+	// for {
+	// 	buf := pool.Get(20 * 1024)
+	// 	nr, er := response.Body.Read(buf)
+	// 	total.Add(int64(nr))
+	// 	pool.Put(buf)
+	// 	if er != nil {
+	// 		if er != io.EOF {
+	// 			err = er
+	// 		}
+	// 		break
+	// 	}
+	// }
+
+	start := time.Now()
+	prev := start
+	var total int64
+	for ctx.Err() == nil {
 		buf := pool.Get(20 * 1024)
 		nr, er := response.Body.Read(buf)
-		total.Add(int64(nr))
+		total += int64(nr)
 		pool.Put(buf)
+		now := time.Now()
+		if now.Sub(prev) > 1000*time.Millisecond || err != nil {
+			prev = now
+			if resultChan != nil {
+				resultChan <- total
+			}
+			if max < total {
+				max = total
+			}
+			total = 0
+		}
 		if er != nil {
 			if er != io.EOF {
 				err = er
