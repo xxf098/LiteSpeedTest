@@ -84,7 +84,7 @@ func Download(link string, timeout time.Duration, resultChan chan<- int64) (int6
 func downloadInternal(ctx context.Context, url string, timeout time.Duration, resultChan chan<- int64, dial func(network, addr string) (net.Conn, error)) (int64, error) {
 	var max int64 = 0
 	httpTransport := &http.Transport{}
-	httpClient := &http.Client{Transport: httpTransport}
+	httpClient := &http.Client{Transport: httpTransport, Timeout: timeout}
 	if dial != nil {
 		httpTransport.Dial = dial
 	}
