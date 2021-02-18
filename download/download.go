@@ -18,7 +18,8 @@ import (
 )
 
 const (
-	downloadLink = "https://download.microsoft.com/download/2/0/E/20E90413-712F-438C-988E-FDAA79A8AC3D/dotnetfx35.exe"
+	downloadLink      = "https://download.microsoft.com/download/2/0/E/20E90413-712F-438C-988E-FDAA79A8AC3D/dotnetfx35.exe"
+	cloudflareLink100 = "https://speed.cloudflare.com/__down?bytes=100000000"
 )
 
 type Discard struct {
@@ -78,7 +79,7 @@ func Download(link string, timeout time.Duration, handshakeTimeout time.Duration
 	if err != nil {
 		return 0, err
 	}
-	return downloadInternal(ctx, downloadLink, timeout, handshakeTimeout, resultChan, client.Dial)
+	return downloadInternal(ctx, cloudflareLink100, timeout, handshakeTimeout, resultChan, client.Dial)
 }
 
 func downloadInternal(ctx context.Context, url string, timeout time.Duration, handshakeTimeout time.Duration, resultChan chan<- int64, dial func(network, addr string) (net.Conn, error)) (int64, error) {
