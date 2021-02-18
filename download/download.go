@@ -72,19 +72,19 @@ func createClient(ctx context.Context, link string) (*proxy.Client, error) {
 	return nil, errors.New("not supported link")
 }
 
-func Download(link string, timeout time.Duration, resultChan chan<- int64) (int64, error) {
+func Download(link string, timeout time.Duration, handshakeTimeout time.Duration, resultChan chan<- int64) (int64, error) {
 	ctx := context.Background()
 	client, err := createClient(ctx, link)
 	if err != nil {
 		return 0, err
 	}
-	return downloadInternal(ctx, downloadLink, timeout, resultChan, client.Dial)
+	return downloadInternal(ctx, downloadLink, timeout, handshakeTimeout, resultChan, client.Dial)
 }
 
-func downloadInternal(ctx context.Context, url string, timeout time.Duration, resultChan chan<- int64, dial func(network, addr string) (net.Conn, error)) (int64, error) {
+func downloadInternal(ctx context.Context, url string, timeout time.Duration, handshakeTimeout time.Duration, resultChan chan<- int64, dial func(network, addr string) (net.Conn, error)) (int64, error) {
 	var max int64 = 0
 	httpTransport := &http.Transport{}
-	httpClient := &http.Client{Transport: httpTransport, Timeout: timeout}
+	httpClient := &http.Client{Transport: httpTransport, Timeout: handshakeTimeout}
 	if dial != nil {
 		httpTransport.Dial = dial
 	}
