@@ -24,6 +24,12 @@ const (
 	cachefly100       = "http://cachefly.cachefly.net/100mb.test"
 )
 
+type DownloadOption struct {
+	URL              string
+	DownloadTimeout  time.Duration
+	HandshakeTimeout time.Duration
+}
+
 type Discard struct {
 	total stats.Counter
 }
@@ -81,17 +87,22 @@ func Download(link string, timeout time.Duration, handshakeTimeout time.Duration
 	if err != nil {
 		return 0, err
 	}
-	return downloadInternal(ctx, cachefly100, timeout, handshakeTimeout, resultChan, client.Dial)
+	option := DownloadOption{
+		DownloadTimeout:  timeout,
+		HandshakeTimeout: handshakeTimeout,
+		URL:              cachefly100,
+	}
+	return downloadInternal(ctx, option, resultChan, client.Dial)
 }
 
-func downloadInternal(ctx context.Context, url string, timeout time.Duration, handshakeTimeout time.Duration, resultChan chan<- int64, dial func(network, addr string) (net.Conn, error)) (int64, error) {
+func downloadInternal(ctx context.Context, option DownloadOption, resultChan chan<- int64, dial func(network, addr string) (net.Conn, error)) (int64, error) {
 	var max int64 = 0
 	httpTransport := &http.Transport{}
-	httpClient := &http.Client{Transport: httpTransport, Timeout: handshakeTimeout}
+	httpClient := &http.Client{Transport: httpTransport, Timeout: option.HandshakeTimeout}
 	if dial != nil {
 		httpTransport.Dial = dial
 	}
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", option.URL, nil)
 	if err != nil {
 		return max, err
 	}
@@ -100,7 +111,7 @@ func downloadInternal(ctx context.Context, url string, timeout time.Duration, ha
 		return max, err
 	}
 	defer response.Body.Close()
-	ctx, cancel := context.WithTimeout(ctx, timeout)
+	ctx, cancel := context.WithTimeout(ctx, option.DownloadTimeout)
 	defer cancel()
 	// total := stats.Counter{}
 	// go func(response *http.Response) {
