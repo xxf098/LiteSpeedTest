@@ -81,7 +81,7 @@ func Download(link string, timeout time.Duration, handshakeTimeout time.Duration
 	if err != nil {
 		return 0, err
 	}
-	return downloadInternal(ctx, cloudflareLink100, timeout, handshakeTimeout, resultChan, client.Dial)
+	return downloadInternal(ctx, cachefly100, timeout, handshakeTimeout, resultChan, client.Dial)
 }
 
 func downloadInternal(ctx context.Context, url string, timeout time.Duration, handshakeTimeout time.Duration, resultChan chan<- int64, dial func(network, addr string) (net.Conn, error)) (int64, error) {
@@ -164,5 +164,51 @@ func downloadInternal(ctx context.Context, url string, timeout time.Duration, ha
 			break
 		}
 	}
-	return max, nil
+	return max, err
+}
+
+func DownloadComplete(link string, timeout time.Duration, handshakeTimeout time.Duration) (int64, error) {
+	ctx := context.Background()
+	client, err := createClient(ctx, link)
+	if err != nil {
+		return 0, err
+	}
+	return downloadCompleteInternal(ctx, cachefly10, timeout, handshakeTimeout, client.Dial)
+}
+
+func downloadCompleteInternal(ctx context.Context, url string, timeout time.Duration, handshakeTimeout time.Duration, dial func(network, addr string) (net.Conn, error)) (int64, error) {
+	var max int64 = 0
+	httpTransport := &http.Transport{}
+	httpClient := &http.Client{Transport: httpTransport, Timeout: handshakeTimeout}
+	if dial != nil {
+		httpTransport.Dial = dial
+	}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return max, err
+	}
+	response, err := httpClient.Do(req)
+	if err != nil {
+		return max, err
+	}
+	defer response.Body.Close()
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	start := time.Now()
+	var total int64
+	for ctx.Err() == nil {
+		buf := pool.Get(20 * 1024)
+		nr, er := response.Body.Read(buf)
+		total += int64(nr)
+		pool.Put(buf)
+		if er != nil {
+			if er != io.EOF {
+				err = er
+			}
+			break
+		}
+	}
+	now := time.Now()
+	max = total * 1000 / now.Sub(start).Milliseconds()
+	return max, err
 }
