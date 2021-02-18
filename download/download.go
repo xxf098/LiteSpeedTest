@@ -20,6 +20,8 @@ import (
 const (
 	downloadLink      = "https://download.microsoft.com/download/2/0/E/20E90413-712F-438C-988E-FDAA79A8AC3D/dotnetfx35.exe"
 	cloudflareLink100 = "https://speed.cloudflare.com/__down?bytes=100000000"
+	cachefly10        = "http://cachefly.cachefly.net/10mb.test"
+	cachefly100       = "http://cachefly.cachefly.net/100mb.test"
 )
 
 type Discard struct {
