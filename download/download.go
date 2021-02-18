@@ -147,7 +147,7 @@ func downloadInternal(ctx context.Context, url string, timeout time.Duration, ha
 		total += int64(nr)
 		pool.Put(buf)
 		now := time.Now()
-		if now.Sub(prev) > 1000*time.Millisecond || err != nil {
+		if now.Sub(prev) >= 1000*time.Millisecond || err != nil {
 			prev = now
 			if resultChan != nil {
 				resultChan <- total
