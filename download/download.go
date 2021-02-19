@@ -111,8 +111,6 @@ func downloadInternal(ctx context.Context, option DownloadOption, resultChan cha
 		return max, err
 	}
 	defer response.Body.Close()
-	ctx, cancel := context.WithTimeout(ctx, option.DownloadTimeout)
-	defer cancel()
 	// total := stats.Counter{}
 	// go func(response *http.Response) {
 	// 	ticker := time.NewTicker(1 * time.Second)
@@ -152,13 +150,13 @@ func downloadInternal(ctx context.Context, option DownloadOption, resultChan cha
 	start := time.Now()
 	prev := start
 	var total int64
-	for ctx.Err() == nil {
+	for {
 		buf := pool.Get(20 * 1024)
 		nr, er := response.Body.Read(buf)
 		total += int64(nr)
 		pool.Put(buf)
 		now := time.Now()
-		if now.Sub(prev) >= 1000*time.Millisecond || err != nil {
+		if now.Sub(prev) >= time.Second || err != nil {
 			prev = now
 			if resultChan != nil {
 				resultChan <- total
@@ -184,7 +182,7 @@ func DownloadComplete(link string, timeout time.Duration, handshakeTimeout time.
 	if err != nil {
 		return 0, err
 	}
-	return downloadCompleteInternal(ctx, cachefly10, timeout, handshakeTimeout, client.Dial)
+	return downloadCompleteInternal(ctx, cachefly100, timeout, handshakeTimeout, client.Dial)
 }
 
 func downloadCompleteInternal(ctx context.Context, url string, timeout time.Duration, handshakeTimeout time.Duration, dial func(network, addr string) (net.Conn, error)) (int64, error) {
