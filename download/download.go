@@ -175,7 +175,7 @@ func downloadInternal(ctx context.Context, option DownloadOption, resultChan cha
 			break
 		}
 	}
-	return max, err
+	return max, nil
 }
 
 func DownloadComplete(link string, timeout time.Duration, handshakeTimeout time.Duration) (int64, error) {
@@ -221,5 +221,9 @@ func downloadCompleteInternal(ctx context.Context, url string, timeout time.Dura
 	pool.Put(buf)
 	now := time.Now()
 	max = total * 1000 / now.Sub(start).Milliseconds()
-	return max, err
+	return max, nil
+}
+
+func WSDownload(link string, timeout time.Duration, handshakeTimeout time.Duration, resultChan chan<- int64) (int64, error) {
+	return 0, nil
 }
