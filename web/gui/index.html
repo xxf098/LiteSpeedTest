@@ -364,7 +364,7 @@
 					let self = this;
 					let groupstr = self.groupname == "" ? "?empty?" : self.groupname;
 					this.result = [];
-					this.connect("ws://" + window.location.host);
+					this.connect(`ws://${window.location.host}/test`);
 					if (ws) {
 					ws.addEventListener("open", function (ev) {
 						if(self.upload)
