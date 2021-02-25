@@ -7,7 +7,6 @@ import (
 
 	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/log"
-	"golang.org/x/sys/unix"
 )
 
 var (
@@ -34,12 +33,12 @@ func getControlFunc(ctx context.Context, controllers []controller) func(network,
 	}
 }
 
-func setReusePort(fd uintptr) error {
-	if err := syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, unix.SO_REUSEPORT, 1); err != nil {
-		return common.NewError("failed to set SO_REUSEPORT")
-	}
-	return nil
-}
+// func setReusePort(fd uintptr) error {
+// 	if err := syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, unix.SO_REUSEPORT, 1); err != nil {
+// 		return common.NewError("failed to set SO_REUSEPORT")
+// 	}
+// 	return nil
+// }
 
 func (dl *DefaultListener) ListenPacket(ctx context.Context, network, address string) (net.PacketConn, error) {
 	var lc net.ListenConfig
