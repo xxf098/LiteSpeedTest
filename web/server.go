@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"github.com/xxf098/lite-proxy/request"
 )
 
 var upgrader = websocket.Upgrader{}
@@ -34,7 +35,8 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 		log.Printf("recv: %s", message)
 		err = c.WriteMessage(mt, getMsgByte(0, "started"))
 		err = c.WriteMessage(mt, getMsgByte(0, "gotserver"))
-		err = c.WriteMessage(mt, getMsgByte(0, "gotping"))
+		elapse, err := request.PingLink(string(message))
+		err = c.WriteMessage(mt, getMsgByte(0, "gotping", elapse))
 		err = c.WriteMessage(mt, getMsgByte(0, "gotspeed"))
 		err = c.WriteMessage(mt, getMsgByte(0, "eof"))
 		if err != nil {
@@ -49,12 +51,12 @@ type Message struct {
 	Info     string `json:"info"`
 	Remarks  string `json:"remarks"`
 	Group    string `json:"group"`
-	Ping     string `json:"ping"`
+	Ping     int64  `json:"ping"`
 	Speed    string `json:"speed"`
 	MaxSpeed string `json:"maxspeed"`
 }
 
-func getMsgByte(id int, typ string) []byte {
+func getMsgByte(id int, typ string, option ...interface{}) []byte {
 	msg := Message{ID: id, Info: typ}
 	switch typ {
 	case "gotserver":
@@ -63,7 +65,13 @@ func getMsgByte(id int, typ string) []byte {
 	case "gotping":
 		msg.Remarks = "Server 1"
 		msg.Group = "Group 1"
-		msg.Ping = "100.00"
+		var ping int64
+		if len(option) > 0 {
+			if v, ok := option[0].(int64); ok {
+				ping = v
+			}
+		}
+		msg.Ping = ping
 	case "gotspeed":
 		msg.Remarks = "Server 1"
 		msg.Group = "Group 1"
