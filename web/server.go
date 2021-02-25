@@ -44,6 +44,7 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 		elapse, err := request.PingLink(link)
 		err = c.WriteMessage(mt, getMsgByte(0, "gotping", elapse))
 		if elapse > 0 {
+			err = c.WriteMessage(mt, getMsgByte(0, "startspeed"))
 			ch := make(chan int64, 1)
 			go func(ch <-chan int64) {
 				var max int64
