@@ -4,11 +4,12 @@ go 1.15
 
 require (
 	github.com/Dreamacro/go-shadowsocks2 v0.1.6
-	github.com/gofrs/uuid v3.3.0+incompatible
+	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/gorilla/websocket v1.4.2
-	github.com/miekg/dns v1.1.35
-	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9
-	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
-	golang.org/x/sync v0.0.0-20190423024810-112230192c58
-	golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f
+	github.com/miekg/dns v1.1.39
+	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
+	golang.org/x/net v0.0.0-20210224082022-3d97a244fca7
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	golang.org/x/sys v0.0.0-20210224231101-5640770f5e4e
+	golang.org/x/text v0.3.5 // indirect
 )
