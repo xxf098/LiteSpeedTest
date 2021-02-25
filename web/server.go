@@ -32,7 +32,8 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		log.Printf("recv: %s", message)
-		err = c.WriteMessage(mt, getMsgByte("started"))
+		err = c.WriteMessage(mt, getMsgByte(0, "started"))
+		err = c.WriteMessage(mt, getMsgByte(0, "gotserver"))
 		if err != nil {
 			log.Println("write:", err)
 			break
@@ -41,15 +42,21 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 }
 
 type Message struct {
-	ID   int    `json:"id"`
-	Info string `json:"info"`
+	ID      int    `json:"id"`
+	Info    string `json:"info"`
+	Remarks string `json:"remarks"`
+	Group   string `json:"group"`
 }
 
-func getMsgByte(typ string) []byte {
-	msg := Message{}
+func getMsgByte(id int, typ string) []byte {
+	msg := Message{ID: id}
 	switch typ {
 	case "started", "fetchingsub", "begintest":
 		msg.Info = typ
+	case "gotserver":
+		msg.Info = typ
+		msg.Remarks = "Server 1"
+		msg.Group = "Group 1"
 	}
 	b, _ := json.Marshal(msg)
 	return b
