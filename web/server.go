@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/xxf098/lite-proxy/download"
 	"github.com/xxf098/lite-proxy/request"
 )
 
@@ -35,9 +38,32 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 		log.Printf("recv: %s", message)
 		err = c.WriteMessage(mt, getMsgByte(0, "started"))
 		err = c.WriteMessage(mt, getMsgByte(0, "gotserver"))
-		elapse, err := request.PingLink(string(message))
+		err = c.WriteMessage(mt, getMsgByte(0, "startping"))
+		link := string(message)
+		link = strings.SplitN(link, "^", 2)[0]
+		elapse, err := request.PingLink(link)
 		err = c.WriteMessage(mt, getMsgByte(0, "gotping", elapse))
-		err = c.WriteMessage(mt, getMsgByte(0, "gotspeed"))
+		if elapse > 0 {
+			ch := make(chan int64, 1)
+			go func(ch <-chan int64) {
+				var max int64
+				for {
+					select {
+					case speed := <-ch:
+						if speed < 0 {
+							return
+						}
+						if max < speed {
+							max = speed
+						}
+						log.Printf("recv: %s", download.ByteCountIEC(speed))
+						err = c.WriteMessage(mt, getMsgByte(0, "gotspeed", speed, max))
+					}
+				}
+			}(ch)
+			download.Download(link, 15*time.Second, 15*time.Second, ch)
+		}
+		// err = c.WriteMessage(mt, getMsgByte(0, "gotspeed"))
 		err = c.WriteMessage(mt, getMsgByte(0, "eof"))
 		if err != nil {
 			log.Println("write:", err)
@@ -75,8 +101,18 @@ func getMsgByte(id int, typ string, option ...interface{}) []byte {
 	case "gotspeed":
 		msg.Remarks = "Server 1"
 		msg.Group = "Group 1"
-		msg.Speed = "100.00B"
-		msg.MaxSpeed = "100.00B"
+		var speed int64
+		var maxspeed int64
+		if len(option) > 1 {
+			if v, ok := option[0].(int64); ok {
+				speed = v
+			}
+			if v, ok := option[1].(int64); ok {
+				maxspeed = v
+			}
+		}
+		msg.Speed = download.ByteCountIEC(speed)
+		msg.MaxSpeed = download.ByteCountIEC(maxspeed)
 	}
 	b, _ := json.Marshal(msg)
 	return b
