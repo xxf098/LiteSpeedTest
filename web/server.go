@@ -36,6 +36,7 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 		err = c.WriteMessage(mt, getMsgByte(0, "gotserver"))
 		err = c.WriteMessage(mt, getMsgByte(0, "gotping"))
 		err = c.WriteMessage(mt, getMsgByte(0, "gotspeed"))
+		err = c.WriteMessage(mt, getMsgByte(0, "eof"))
 		if err != nil {
 			log.Println("write:", err)
 			break
