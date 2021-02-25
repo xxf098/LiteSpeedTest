@@ -47,17 +47,23 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 			ch := make(chan int64, 1)
 			go func(ch <-chan int64) {
 				var max int64
+				var speeds []int64
 				for {
 					select {
 					case speed := <-ch:
 						if speed < 0 {
 							return
 						}
+						speeds = append(speeds, speed)
+						var avg int64
+						for _, s := range speeds {
+							avg += s / int64(len(speeds))
+						}
 						if max < speed {
 							max = speed
 						}
 						log.Printf("recv: %s", download.ByteCountIEC(speed))
-						err = c.WriteMessage(mt, getMsgByte(0, "gotspeed", speed, max))
+						err = c.WriteMessage(mt, getMsgByte(0, "gotspeed", avg, max))
 					}
 				}
 			}(ch)
