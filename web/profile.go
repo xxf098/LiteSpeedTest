@@ -55,6 +55,10 @@ func (p *ProfileTest) testAll() error {
 		p.WriteString(SPEEDTEST_ERROR_NONODES)
 		return fmt.Errorf("No nodes found!")
 	}
+	p.WriteMessage(getMsgByte(-1, "started"))
+	for i, _ := range p.Links {
+		p.WriteMessage(getMsgByte(i, "gotserver"))
+	}
 	for i, _ := range p.Links {
 		p.wg.Add(1)
 		go p.testSingle(i)
@@ -67,8 +71,7 @@ func (p *ProfileTest) testAll() error {
 func (p *ProfileTest) testSingle(index int) error {
 	// panic
 	defer p.wg.Done()
-	p.WriteMessage(getMsgByte(index, "started"))
-	p.WriteMessage(getMsgByte(index, "gotserver"))
+
 	p.WriteMessage(getMsgByte(index, "startping"))
 	link := p.Links[index]
 	link = strings.SplitN(link, "^", 2)[0]
@@ -123,8 +126,6 @@ func getMsgByte(id int, typ string, option ...interface{}) []byte {
 		msg.Remarks = "Server 1"
 		msg.Group = "Group 1"
 	case "gotping":
-		msg.Remarks = "Server 1"
-		msg.Group = "Group 1"
 		msg.Lost = "0.00%"
 		var ping int64
 		if len(option) > 0 {
@@ -134,8 +135,6 @@ func getMsgByte(id int, typ string, option ...interface{}) []byte {
 		}
 		msg.Ping = ping
 	case "gotspeed":
-		msg.Remarks = "Server 1"
-		msg.Group = "Group 1"
 		var speed int64
 		var maxspeed int64
 		if len(option) > 1 {
