@@ -45,7 +45,16 @@ func (p *ProfileTest) WriteMessage(data []byte) error {
 	return err
 }
 
+func (p *ProfileTest) WriteString(data string) error {
+	b := []byte(data)
+	return p.WriteMessage(b)
+}
+
 func (p *ProfileTest) testAll() error {
+	if len(p.Links) < 1 {
+		p.WriteString(SPEEDTEST_ERROR_NONODES)
+		return fmt.Errorf("No nodes found!")
+	}
 	for i, _ := range p.Links {
 		p.wg.Add(1)
 		go p.testSingle(i)
