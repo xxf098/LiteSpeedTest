@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/xxf098/lite-proxy/config"
 	"github.com/xxf098/lite-proxy/download"
 	"github.com/xxf098/lite-proxy/request"
 )
@@ -24,7 +25,6 @@ func parseLinks(message []byte) ([]string, error) {
 	matches := reg.FindAllStringSubmatch(splits[0], -1)
 	links := make([]string, len(matches))
 	for index, match := range matches {
-		fmt.Println(match[0])
 		links[index] = match[0]
 	}
 	return links, nil
@@ -57,7 +57,7 @@ func (p *ProfileTest) testAll() error {
 	}
 	p.WriteMessage(getMsgByte(-1, "started"))
 	for i, _ := range p.Links {
-		p.WriteMessage(getMsgByte(i, "gotserver"))
+		p.WriteMessage(gotserverMsg(i, p.Links[i]))
 	}
 	guard := make(chan int, 10)
 	for i, _ := range p.Links {
@@ -121,6 +121,17 @@ type Message struct {
 	Lost     string `json:"lost"`
 	Speed    string `json:"speed"`
 	MaxSpeed string `json:"maxspeed"`
+}
+
+func gotserverMsg(id int, link string) []byte {
+	msg := Message{ID: id, Info: "gotserver"}
+	cfg, err := config.VmessLinkToVmessConfigIP(link, false)
+	if err == nil {
+		msg.Group = "Group 1"
+		msg.Remarks = cfg.Ps
+	}
+	b, _ := json.Marshal(msg)
+	return b
 }
 
 func getMsgByte(id int, typ string, option ...interface{}) []byte {
