@@ -35,6 +35,7 @@ type ProfileTest struct {
 	MessageType int
 	Links       []string
 	mu          sync.Mutex
+	wg          sync.WaitGroup
 }
 
 func (p *ProfileTest) WriteMessage(data []byte) error {
@@ -46,16 +47,20 @@ func (p *ProfileTest) WriteMessage(data []byte) error {
 
 func (p *ProfileTest) testAll() error {
 	for i, _ := range p.Links {
-		p.testSingle(i)
+		p.wg.Add(1)
+		go p.testSingle(i)
 	}
+	p.wg.Wait()
+	p.WriteMessage(getMsgByte(-1, "eof"))
 	return nil
 }
 
 func (p *ProfileTest) testSingle(index int) error {
+	// panic
+	defer p.wg.Done()
 	p.WriteMessage(getMsgByte(index, "started"))
 	p.WriteMessage(getMsgByte(index, "gotserver"))
 	p.WriteMessage(getMsgByte(index, "startping"))
-
 	link := p.Links[index]
 	link = strings.SplitN(link, "^", 2)[0]
 	elapse, err := request.PingLink(link)
@@ -97,6 +102,7 @@ type Message struct {
 	Remarks  string `json:"remarks"`
 	Group    string `json:"group"`
 	Ping     int64  `json:"ping"`
+	Lost     string `json:"lost"`
 	Speed    string `json:"speed"`
 	MaxSpeed string `json:"maxspeed"`
 }
@@ -110,6 +116,7 @@ func getMsgByte(id int, typ string, option ...interface{}) []byte {
 	case "gotping":
 		msg.Remarks = "Server 1"
 		msg.Group = "Group 1"
+		msg.Lost = "0.00%"
 		var ping int64
 		if len(option) > 0 {
 			if v, ok := option[0].(int64); ok {

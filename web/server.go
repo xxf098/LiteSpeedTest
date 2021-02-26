@@ -40,7 +40,6 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 			MessageType: mt,
 			Links:       links,
 		}
-		defer p.WriteMessage(getMsgByte(-1, "eof"))
 		p.testAll()
 		// err = c.WriteMessage(mt, getMsgByte(0, "gotspeed"))
 		if err != nil {
