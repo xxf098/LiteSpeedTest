@@ -160,8 +160,8 @@ func getMsgByte(id int, typ string, option ...interface{}) []byte {
 				maxspeed = v
 			}
 		}
-		msg.Speed = download.ByteCountIEC(speed)
-		msg.MaxSpeed = download.ByteCountIEC(maxspeed)
+		msg.Speed = strings.TrimRight(download.ByteCountIEC(speed), "/s")
+		msg.MaxSpeed = strings.TrimRight(download.ByteCountIEC(maxspeed), "/s")
 	}
 	b, _ := json.Marshal(msg)
 	return b
