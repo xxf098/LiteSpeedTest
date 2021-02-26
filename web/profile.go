@@ -59,9 +59,14 @@ func (p *ProfileTest) testAll() error {
 	for i, _ := range p.Links {
 		p.WriteMessage(getMsgByte(i, "gotserver"))
 	}
+	guard := make(chan int, 10)
 	for i, _ := range p.Links {
 		p.wg.Add(1)
-		go p.testSingle(i)
+		guard <- i
+		go func(index int, c <-chan int) {
+			p.testSingle(index)
+			<-c
+		}(i, guard)
 	}
 	p.wg.Wait()
 	p.WriteMessage(getMsgByte(-1, "eof"))
@@ -71,7 +76,6 @@ func (p *ProfileTest) testAll() error {
 func (p *ProfileTest) testSingle(index int) error {
 	// panic
 	defer p.wg.Done()
-
 	p.WriteMessage(getMsgByte(index, "startping"))
 	link := p.Links[index]
 	link = strings.SplitN(link, "^", 2)[0]
