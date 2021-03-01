@@ -21,6 +21,7 @@ import (
 )
 
 // support proxy
+// concurrency setting
 func getSubscriptionLinks(link string) ([]string, error) {
 	c := http.Client{
 		Timeout: 20 * time.Second,
@@ -100,7 +101,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		select {
 		case guard <- i:
 			go func(index int, c <-chan int) {
-				p.testSingle(ctx, index)
+				p.testOne(ctx, index)
 				<-c
 			}(i, guard)
 		case <-ctx.Done():
@@ -112,7 +113,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	return nil
 }
 
-func (p *ProfileTest) testSingle(ctx context.Context, index int) error {
+func (p *ProfileTest) testOne(ctx context.Context, index int) error {
 	// panic
 	defer p.wg.Done()
 	p.WriteMessage(getMsgByte(index, "startping"))
@@ -180,9 +181,6 @@ func gotserverMsg(id int, link string) []byte {
 func getMsgByte(id int, typ string, option ...interface{}) []byte {
 	msg := Message{ID: id, Info: typ}
 	switch typ {
-	case "gotserver":
-		msg.Remarks = "Server 1"
-		msg.Group = "Group 1"
 	case "gotping":
 		msg.Lost = "0.00%"
 		var ping int64
