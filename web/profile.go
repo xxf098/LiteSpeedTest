@@ -121,6 +121,7 @@ func (p *ProfileTest) testSingle(ctx context.Context, index int) error {
 	elapse, err := request.PingLink(link)
 	err = p.WriteMessage(getMsgByte(index, "gotping", elapse))
 	if elapse < 1 {
+		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1))
 		return err
 	}
 	err = p.WriteMessage(getMsgByte(index, "startspeed"))
@@ -204,6 +205,12 @@ func getMsgByte(id int, typ string, option ...interface{}) []byte {
 		}
 		msg.Speed = strings.TrimRight(download.ByteCountIEC(speed), "/s")
 		msg.MaxSpeed = strings.TrimRight(download.ByteCountIEC(maxspeed), "/s")
+		if speed < 1 {
+			msg.Speed = "N/A"
+		}
+		if maxspeed < 1 {
+			msg.MaxSpeed = "N/A"
+		}
 	}
 	b, _ := json.Marshal(msg)
 	return b
