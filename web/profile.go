@@ -1,6 +1,7 @@
 package web
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -50,7 +51,7 @@ func (p *ProfileTest) WriteString(data string) error {
 	return p.WriteMessage(b)
 }
 
-func (p *ProfileTest) testAll() error {
+func (p *ProfileTest) testAll(ctx context.Context) error {
 	if len(p.Links) < 1 {
 		p.WriteString(SPEEDTEST_ERROR_NONODES)
 		return fmt.Errorf("No nodes found!")
@@ -59,12 +60,12 @@ func (p *ProfileTest) testAll() error {
 	for i, _ := range p.Links {
 		p.WriteMessage(gotserverMsg(i, p.Links[i]))
 	}
-	guard := make(chan int, 10)
+	guard := make(chan int, 4)
 	for i, _ := range p.Links {
 		p.wg.Add(1)
 		guard <- i
 		go func(index int, c <-chan int) {
-			p.testSingle(index)
+			p.testSingle(ctx, index)
 			<-c
 		}(i, guard)
 	}
@@ -73,7 +74,7 @@ func (p *ProfileTest) testAll() error {
 	return nil
 }
 
-func (p *ProfileTest) testSingle(index int) error {
+func (p *ProfileTest) testSingle(ctx context.Context, index int) error {
 	// panic
 	defer p.wg.Done()
 	p.WriteMessage(getMsgByte(index, "startping"))
@@ -105,10 +106,13 @@ func (p *ProfileTest) testSingle(index int) error {
 				}
 				log.Printf("recv: %s", download.ByteCountIEC(speed))
 				err = p.WriteMessage(getMsgByte(index, "gotspeed", avg, max))
+			case <-ctx.Done():
+				log.Printf("index %d done!", index)
+				return
 			}
 		}
 	}(ch)
-	download.Download(link, 15*time.Second, 15*time.Second, ch)
+	download.Download(link, 20*time.Second, 20*time.Second, ch)
 	return err
 }
 

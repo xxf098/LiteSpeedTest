@@ -1,6 +1,7 @@
 package web
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -24,13 +25,15 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer c.Close()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	for {
 		mt, message, err := c.ReadMessage()
 		if err != nil {
 			log.Println("read:", err)
 			break
 		}
-		log.Printf("recv: %s", message)
+		// log.Printf("recv: %s", message)
 		links, err := parseLinks(message)
 		if err != nil {
 			break
@@ -40,7 +43,7 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 			MessageType: mt,
 			Links:       links,
 		}
-		p.testAll()
+		go p.testAll(ctx)
 		// err = c.WriteMessage(mt, getMsgByte(0, "gotspeed"))
 		if err != nil {
 			log.Println("write:", err)
