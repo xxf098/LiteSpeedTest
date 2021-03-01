@@ -5,22 +5,50 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/config"
 	"github.com/xxf098/lite-proxy/download"
 	"github.com/xxf098/lite-proxy/request"
 )
 
+// support proxy
+func getSubscriptionLinks(link string) ([]string, error) {
+	c := http.Client{
+		Timeout: 20 * time.Second,
+	}
+	resp, err := c.Get(link)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	msg, err := common.DecodeB64Bytes(string(data))
+	if err != nil {
+		return nil, err
+	}
+	return parseLinks(msg)
+}
+
 func parseLinks(message []byte) ([]string, error) {
 	splits := strings.SplitN(string(message), "^", 2)
 	if len(splits) < 1 {
 		return nil, errors.New("Invalid Data")
+	}
+	matched, err := regexp.MatchString(`^(?:https?:\/\/)(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)`, splits[0])
+	if matched && err == nil {
+		return getSubscriptionLinks(splits[0])
 	}
 	reg := regexp.MustCompile("(?i)(vmess|ssr|ss|trojan)://[a-zA-Z0-9+_/=-]+")
 	matches := reg.FindAllStringSubmatch(splits[0], -1)
