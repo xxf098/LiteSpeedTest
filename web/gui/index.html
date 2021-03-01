@@ -259,17 +259,18 @@
 					let style = "color: black; font-weight: 600;";
 					let speed = 0;
 					switch (columnIndex) {
-					case 4:
-						speed = row.speed;
+					case 3:
+						speed = this.getSpeed(row.speed);
 						break;
-					case 5:
-						speed = row.maxspeed;
+					case 4:
+						speed = this.getSpeed(row.maxspeed);
 						break;
 					default:
 						return style;
 					}
 					if (isNaN(parseFloat(speed))) return style;
-					let color = this.getSpeedColor(this.getSpeed(speed));
+					let color = this.getSpeedColor(speed);
+					// console.log(`speed: ${speed}, row.speed: ${row.speed}, row.maxspeed: ${row.maxspeed}  color: ${color}`);
 					return style + "background: " + color;
 				},
 				useNewPalette() {
