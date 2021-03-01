@@ -36,7 +36,7 @@ type ProfileTest struct {
 	MessageType int
 	Links       []string
 	mu          sync.Mutex
-	wg          sync.WaitGroup
+	wg          sync.WaitGroup // wait for all to finish
 }
 
 func (p *ProfileTest) WriteMessage(data []byte) error {
@@ -63,11 +63,15 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	guard := make(chan int, 4)
 	for i, _ := range p.Links {
 		p.wg.Add(1)
-		guard <- i
-		go func(index int, c <-chan int) {
-			p.testSingle(ctx, index)
-			<-c
-		}(i, guard)
+		select {
+		case guard <- i:
+			go func(index int, c <-chan int) {
+				p.testSingle(ctx, index)
+				<-c
+			}(i, guard)
+		case <-ctx.Done():
+			break
+		}
 	}
 	p.wg.Wait()
 	p.WriteMessage(getMsgByte(-1, "eof"))
