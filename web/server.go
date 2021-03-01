@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -42,6 +43,10 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 			Conn:        c,
 			MessageType: mt,
 			Links:       links,
+			Options: ProfileTestOptions{
+				Concurrency: 5,
+				Timeout:     20 * time.Second,
+			},
 		}
 		go p.testAll(ctx)
 		// err = c.WriteMessage(mt, getMsgByte(0, "gotspeed"))

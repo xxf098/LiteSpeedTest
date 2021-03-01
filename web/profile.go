@@ -31,8 +31,14 @@ func parseLinks(message []byte) ([]string, error) {
 	return links, nil
 }
 
+type ProfileTestOptions struct {
+	Concurrency int
+	Timeout     time.Duration
+}
+
 type ProfileTest struct {
 	Conn        *websocket.Conn
+	Options     ProfileTestOptions
 	MessageType int
 	Links       []string
 	mu          sync.Mutex
@@ -60,7 +66,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	for i, _ := range p.Links {
 		p.WriteMessage(gotserverMsg(i, p.Links[i]))
 	}
-	guard := make(chan int, 4)
+	guard := make(chan int, p.Options.Concurrency)
 	for i, _ := range p.Links {
 		p.wg.Add(1)
 		select {
@@ -116,7 +122,7 @@ func (p *ProfileTest) testSingle(ctx context.Context, index int) error {
 			}
 		}
 	}(ch)
-	download.Download(link, 20*time.Second, 20*time.Second, ch)
+	download.Download(link, p.Options.Timeout, p.Options.Timeout, ch)
 	return err
 }
 
