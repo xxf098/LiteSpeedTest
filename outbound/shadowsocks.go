@@ -37,6 +37,7 @@ type ShadowSocksOption struct {
 	UDP        bool                   `proxy:"udp,omitempty"`
 	Plugin     string                 `proxy:"plugin,omitempty"`
 	PluginOpts map[string]interface{} `proxy:"plugin-opts,omitempty"`
+	Remarks    string                 `proxy:"remarks,omitempty"`
 }
 
 type simpleObfsOption struct {

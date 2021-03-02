@@ -80,6 +80,7 @@ func SSLinkToSSOption(link string) (*outbound.ShadowSocksOption, error) {
 		Port:     port,
 		Password: pass,
 		Cipher:   method,
+		Remarks:  u.Fragment,
 	}
 	return shadwosocksOption, nil
 }

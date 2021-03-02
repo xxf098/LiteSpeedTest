@@ -180,6 +180,10 @@ func getRemarks(link string) (string, error) {
 	if err == nil {
 		return cfgTrojan.Remarks, nil
 	}
+	cfgSS, err := config.SSLinkToSSOption(link)
+	if err == nil {
+		return cfgSS.Remarks, nil
+	}
 	return "", nil
 }
 
