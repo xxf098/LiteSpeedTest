@@ -51,7 +51,7 @@ func parseLinks(message []byte) ([]string, error) {
 	if matched && err == nil {
 		return getSubscriptionLinks(splits[0])
 	}
-	reg := regexp.MustCompile("(?i)(vmess|ssr|ss|trojan)://[a-zA-Z0-9+_/=-]+")
+	reg := regexp.MustCompile(`((?i)(vmess|ssr)://[a-zA-Z0-9+_/=-]+)|((?i)(ss|trojan)://(.+?)@(.+?):([0-9]{2,5})([?#][^\s]+))`)
 	matches := reg.FindAllStringSubmatch(splits[0], -1)
 	links := make([]string, len(matches))
 	for index, match := range matches {
@@ -175,6 +175,10 @@ func getRemarks(link string) (string, error) {
 	cfgSSR, err := config.SSRLinkToSSROption(link)
 	if err == nil {
 		return cfgSSR.Remarks, nil
+	}
+	cfgTrojan, err := config.TrojanLinkToTrojanOption(link)
+	if err == nil {
+		return cfgTrojan.Remarks, nil
 	}
 	return "", nil
 }

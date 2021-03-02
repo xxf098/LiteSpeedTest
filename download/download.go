@@ -90,7 +90,7 @@ func Download(link string, timeout time.Duration, handshakeTimeout time.Duration
 	option := DownloadOption{
 		DownloadTimeout:  timeout,
 		HandshakeTimeout: handshakeTimeout,
-		URL:              cachefly100,
+		URL:              downloadLink,
 	}
 	return downloadInternal(ctx, option, resultChan, client.Dial)
 }

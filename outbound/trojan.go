@@ -27,6 +27,7 @@ type TrojanOption struct {
 	SNI            string   `proxy:"sni,omitempty"`
 	SkipCertVerify bool     `proxy:"skip-cert-verify,omitempty"`
 	UDP            bool     `proxy:"udp,omitempty"`
+	Remarks        string   `proxy:"remarks,omitempty"`
 }
 
 func (t *Trojan) StreamConn(c net.Conn, metadata *C.Metadata) (net.Conn, error) {

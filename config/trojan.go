@@ -38,6 +38,7 @@ func TrojanLinkToTrojanOption(link string) (*outbound.TrojanOption, error) {
 		Password: pass,
 		Port:     port,
 		Server:   host,
+		Remarks:  u.Fragment,
 		ALPN:     []string{"h2", "http/1.1"},
 	}
 	if rawQuery, err := url.ParseQuery(u.RawQuery); err == nil {
