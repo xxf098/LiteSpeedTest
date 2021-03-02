@@ -167,12 +167,24 @@ type Message struct {
 	MaxSpeed string `json:"maxspeed"`
 }
 
+func getRemarks(link string) (string, error) {
+	cfgVmess, err := config.VmessLinkToVmessConfigIP(link, false)
+	if err == nil {
+		return cfgVmess.Ps, nil
+	}
+	cfgSSR, err := config.SSRLinkToSSROption(link)
+	if err == nil {
+		return cfgSSR.Remarks, nil
+	}
+	return "", nil
+}
+
 func gotserverMsg(id int, link string) []byte {
 	msg := Message{ID: id, Info: "gotserver"}
-	cfg, err := config.VmessLinkToVmessConfigIP(link, false)
+	remarks, err := getRemarks(link)
 	if err == nil {
 		msg.Group = "Group 1"
-		msg.Remarks = cfg.Ps
+		msg.Remarks = remarks
 	}
 	b, _ := json.Marshal(msg)
 	return b

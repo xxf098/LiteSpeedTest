@@ -60,6 +60,10 @@ func SSRLinkToSSROption(link string) (*outbound.ShadowSocksROption, error) {
 			return nil, err
 		}
 		ssrOption.ProtocolParam = protoparam
+		remarks, err := common.DecodeB64(rawQuery.Get("remarks"))
+		if err == nil {
+			ssrOption.Remarks = remarks
+		}
 	}
 	return ssrOption, nil
 }

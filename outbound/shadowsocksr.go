@@ -33,6 +33,7 @@ type ShadowSocksROption struct {
 	Protocol      string `proxy:"protocol"`
 	ProtocolParam string `proxy:"protocol-param,omitempty"`
 	UDP           bool   `proxy:"udp,omitempty"`
+	Remarks       string `proxy:"remarks,omitempty"`
 }
 
 func (ssr *ShadowSocksR) StreamConn(c net.Conn, metadata *C.Metadata) (net.Conn, error) {
