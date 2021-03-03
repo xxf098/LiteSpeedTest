@@ -372,14 +372,15 @@
 					this.connect(`ws://${window.location.host}/test`);
 					if (ws) {
 					ws.addEventListener("open", function (ev) {
+						const options = `^${groupstr}^${self.speedtestMode}^${self.pingMethod}^${self.sortMethod}^${self.exportMaxSpeed}^${self.concurrency}`
 						if(self.upload)
 						{
-							this.send("data:upload^"+ groupstr + "^" + self.speedtestMode + '^' + self.pingMethod	+ '^' + self.sortMethod + '^' + self.exportMaxSpeed);
+							this.send("data:upload"+ options);
 							this.send(self.filecontent);
 						}
 						else
 						{
-							this.send(self.subscription + "^" + groupstr + '^' + self.speedtestMode + '^' + self.pingMethod	+ '^' + self.sortMethod + '^' + self.exportMaxSpeed);
+							this.send(self.subscription + options);
 						}
 					});
 						ws.addEventListener("message", this.MessageEvent);
