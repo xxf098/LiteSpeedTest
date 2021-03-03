@@ -81,6 +81,22 @@ func parseOptions(message string) (*ProfileTestOptions, error) {
 	return testOpt, nil
 }
 
+func parseMessage(message []byte) ([]string, *ProfileTestOptions, error) {
+	splits := strings.SplitN(string(message), "^", 2)
+	if len(splits) < 2 {
+		return nil, nil, errors.New("Invalid Data")
+	}
+	links, err := parseLinks(splits[0])
+	if err != nil {
+		return nil, nil, err
+	}
+	options, err := parseOptions(splits[1])
+	if err != nil {
+		return nil, nil, err
+	}
+	return links, options, nil
+}
+
 type ProfileTestOptions struct {
 	SpeedtestMode string
 	PingMethod    string

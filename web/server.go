@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/websocket"
 )
@@ -35,18 +34,7 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		// log.Printf("recv: %s", message)
-		splits := strings.SplitN(string(message), "^", 2)
-		if len(splits) < 2 {
-			break
-		}
-		links, err := parseLinks(splits[0])
-		if err != nil {
-			break
-		}
-		options, err := parseOptions(splits[1])
-		if err != nil {
-			break
-		}
+		links, options, err := parseMessage(message)
 		p := ProfileTest{
 			Conn:        c,
 			MessageType: mt,
