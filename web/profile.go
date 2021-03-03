@@ -56,6 +56,9 @@ func parseLinks(message string) ([]string, error) {
 	for index, match := range matches {
 		links[index] = match[0]
 	}
+	if len(links) < 1 {
+		return nil, errors.New("Invalid Data")
+	}
 	return links, nil
 }
 
