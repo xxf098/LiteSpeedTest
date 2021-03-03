@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -33,24 +34,24 @@ func getSubscriptionLinks(link string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	msg, err := common.DecodeB64Bytes(string(data))
+	msg, err := common.DecodeB64(string(data))
 	if err != nil {
 		return nil, err
 	}
 	return parseLinks(msg)
 }
 
-func parseLinks(message []byte) ([]string, error) {
-	splits := strings.SplitN(string(message), "^", 2)
-	if len(splits) < 1 {
-		return nil, errors.New("Invalid Data")
-	}
-	matched, err := regexp.MatchString(`^(?:https?:\/\/)(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)`, splits[0])
+func parseLinks(message string) ([]string, error) {
+	// splits := strings.SplitN(string(message), "^", 2)
+	// if len(splits) < 1 {
+	// 	return nil, errors.New("Invalid Data")
+	// }
+	matched, err := regexp.MatchString(`^(?:https?:\/\/)(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)`, message)
 	if matched && err == nil {
-		return getSubscriptionLinks(splits[0])
+		return getSubscriptionLinks(message)
 	}
 	reg := regexp.MustCompile(`((?i)(vmess|ssr)://[a-zA-Z0-9+_/=-]+)|((?i)(ss|trojan)://(.+?)@(.+?):([0-9]{2,5})([?#][^\s]+))`)
-	matches := reg.FindAllStringSubmatch(splits[0], -1)
+	matches := reg.FindAllStringSubmatch(message, -1)
 	links := make([]string, len(matches))
 	for index, match := range matches {
 		links[index] = match[0]
@@ -58,14 +59,36 @@ func parseLinks(message []byte) ([]string, error) {
 	return links, nil
 }
 
+func parseOptions(message string) (*ProfileTestOptions, error) {
+	opts := strings.Split(message, "^")
+	if len(opts) < 6 {
+		return nil, errors.New("Invalid Data")
+	}
+	concurrency, err := strconv.Atoi(opts[5])
+	if err != nil {
+		return nil, err
+	}
+	testOpt := &ProfileTestOptions{
+		SpeedtestMode: opts[1],
+		PingMethod:    opts[2],
+		SortMethod:    opts[3],
+		Concurrency:   concurrency,
+		Timeout:       20 * time.Second,
+	}
+	return testOpt, nil
+}
+
 type ProfileTestOptions struct {
-	Concurrency int
-	Timeout     time.Duration
+	SpeedtestMode string
+	PingMethod    string
+	SortMethod    string
+	Concurrency   int
+	Timeout       time.Duration
 }
 
 type ProfileTest struct {
 	Conn        *websocket.Conn
-	Options     ProfileTestOptions
+	Options     *ProfileTestOptions
 	MessageType int
 	Links       []string
 	mu          sync.Mutex
