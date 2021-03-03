@@ -29,7 +29,7 @@
 								</el-form-item>
 
 								<el-form-item label="订阅链接：">
-									<el-input v-model="subscription" style="width: 800px" size="small" @keyup.enter.native="submit" placeholder="支持 SSR/SSD/V2Ray 订阅链接及节点链接单独测速" :disabled="loading||upload"></el-input>
+									<el-input v-model="subscription" style="width: 800px" size="small" @keyup.enter.native="submit" placeholder="支持 SSR/V2Ray/Trojan 订阅链接及多个节点链接批量测速" :disabled="loading||upload"></el-input>
 									<el-upload :drag="checkUploadStatus('drag')" :v-if="checkUploadStatus('if')" action="" :show-file-list="false" ref="upload" :http-request="handleFileChange" :auto-upload="true" :before-upload="beforeUpload">
 										<i class="el-icon-upload" v-if="!subscription.length"></i>
 										<!--<el-button slot="trigger" type="primary" icon="el-icon-files" :disabled="loading" v-if="!upload">选择配置文件</el-button>-->
