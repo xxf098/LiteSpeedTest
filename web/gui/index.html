@@ -126,7 +126,7 @@
 										<el-dropdown-menu slot="dropdown" >
 											<el-dropdown-item @click.native="handleCopy(scope.$index, result)">复制链接</el-dropdown-item>
 											<el-dropdown-item @click.native="handleRetest(scope.$index, result)">重新测试</el-dropdown-item>
-											<el-dropdown-item @click.native="handleCopy(scope.$index, result)">QRCode</el-dropdown-item>
+											<el-dropdown-item @click.native="handleQRCode(scope.$index, result)">QRCode</el-dropdown-item>
 										</el-dropdown-menu>
 									</el-dropdown>
 								</template>
@@ -273,6 +273,9 @@
 					this.disconnect();
 				},
 				handleCopy: function (index, rows) {
+					
+				},
+				handleQRCode: function (index, rows) {
 					
 				},
 				handleRetest: function (index, rows) {
