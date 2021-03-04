@@ -17,6 +17,7 @@ import (
 	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/download"
 	"github.com/xxf098/lite-proxy/request"
+	"github.com/xxf098/lite-proxy/utils"
 )
 
 // support proxy
@@ -169,7 +170,15 @@ func (p *ProfileTest) testOne(ctx context.Context, index int) error {
 	p.WriteMessage(getMsgByte(index, "startping"))
 	link := p.Links[index]
 	link = strings.SplitN(link, "^", 2)[0]
-	elapse, err := request.PingLink(link)
+	var elapse int64
+	err := utils.ExponentialBackoff(2, 120).On(func() error {
+		elp, err := request.PingLink(link)
+		if err != nil {
+			return err
+		}
+		elapse = elp
+		return nil
+	})
 	err = p.WriteMessage(getMsgByte(index, "gotping", elapse))
 	if elapse < 1 {
 		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1))
