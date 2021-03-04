@@ -185,7 +185,7 @@ func PingSSR(ssrOption *outbound.ShadowSocksROption) (int64, error) {
 	return pingInternal(remoteConn)
 }
 
-func PingLink(link string) (int64, error) {
+func PingLink(link string, attempts int) (int64, error) {
 	matches, err := utils.CheckLink(link)
 	if err != nil {
 		return 0, err
@@ -206,7 +206,16 @@ func PingLink(link string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return Ping(option)
+	var elapse int64
+	err = utils.ExponentialBackoff(attempts, 120).On(func() error {
+		elp, err := Ping(option)
+		if err != nil {
+			return err
+		}
+		elapse = elp
+		return nil
+	})
+	return elapse, err
 }
 
 func Ping(option interface{}) (int64, error) {
