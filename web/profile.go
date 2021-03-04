@@ -64,19 +64,29 @@ func parseLinks(message string) ([]string, error) {
 
 func parseOptions(message string) (*ProfileTestOptions, error) {
 	opts := strings.Split(message, "^")
-	if len(opts) < 6 {
+	if len(opts) < 7 {
 		return nil, errors.New("Invalid Data")
 	}
 	concurrency, err := strconv.Atoi(opts[5])
 	if err != nil {
 		return nil, err
 	}
+	if concurrency < 1 {
+		concurrency = 1
+	}
+	timeout, err := strconv.Atoi(opts[6])
+	if err != nil {
+		return nil, err
+	}
+	if timeout < 20 {
+		timeout = 20
+	}
 	testOpt := &ProfileTestOptions{
 		SpeedtestMode: opts[1],
 		PingMethod:    opts[2],
 		SortMethod:    opts[3],
 		Concurrency:   concurrency,
-		Timeout:       20 * time.Second,
+		Timeout:       time.Duration(timeout) * time.Second,
 	}
 	return testOpt, nil
 }
