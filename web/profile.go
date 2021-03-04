@@ -202,6 +202,9 @@ func (p *ProfileTest) testOne(ctx context.Context, index int) error {
 			}
 		}
 	}(ch)
-	download.Download(link, p.Options.Timeout, p.Options.Timeout, ch)
+	speed, err := download.Download(link, p.Options.Timeout, p.Options.Timeout, ch)
+	if speed < 1 {
+		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1))
+	}
 	return err
 }
