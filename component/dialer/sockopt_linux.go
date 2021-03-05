@@ -1,6 +1,9 @@
 package dialer
 
-import "golang.org/x/sys/unix"
+import (
+	"syscall"
+	"golang.org/x/sys/unix"
+	)
 
 func setReusePort(fd uintptr) error {
 	if err := syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, unix.SO_REUSEPORT, 1); err != nil {
