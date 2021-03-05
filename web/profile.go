@@ -173,13 +173,10 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 func (p *ProfileTest) testOne(ctx context.Context, index int) error {
 	// panic
 	defer p.wg.Done()
-	p.WriteMessage(getMsgByte(index, "startping"))
 	link := p.Links[index]
 	link = strings.SplitN(link, "^", 2)[0]
-	elapse, err := request.PingLink(link, 2)
-	err = p.WriteMessage(getMsgByte(index, "gotping", elapse))
-	if elapse < 1 || p.Options.SpeedTestMode == PingOnly {
-		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1))
+	err := p.pingLink(index, link)
+	if err != nil {
 		return err
 	}
 	err = p.WriteMessage(getMsgByte(index, "startspeed"))
@@ -212,6 +209,24 @@ func (p *ProfileTest) testOne(ctx context.Context, index int) error {
 	speed, err := download.Download(link, p.Options.Timeout, p.Options.Timeout, ch)
 	if speed < 1 {
 		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1))
+	}
+	return err
+}
+
+func (p *ProfileTest) pingLink(index int, link string) error {
+	if p.Options.SpeedTestMode == SpeedOnly {
+		return nil
+	}
+	p.WriteMessage(getMsgByte(index, "startping"))
+	elapse, err := request.PingLink(link, 2)
+	p.WriteMessage(getMsgByte(index, "gotping", elapse))
+	if elapse < 1 {
+		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1))
+		return err
+	}
+	if p.Options.SpeedTestMode == PingOnly {
+		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1))
+		return errors.New(PingOnly)
 	}
 	return err
 }
