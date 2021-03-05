@@ -21,6 +21,8 @@ import (
 
 // support proxy
 // concurrency setting
+// as subscription server
+// profiles filter
 func getSubscriptionLinks(link string) ([]string, error) {
 	c := http.Client{
 		Timeout: 20 * time.Second,
@@ -82,7 +84,7 @@ func parseOptions(message string) (*ProfileTestOptions, error) {
 		timeout = 20
 	}
 	testOpt := &ProfileTestOptions{
-		SpeedtestMode: opts[1],
+		SpeedTestMode: opts[1],
 		PingMethod:    opts[2],
 		SortMethod:    opts[3],
 		Concurrency:   concurrency,
@@ -107,8 +109,13 @@ func parseMessage(message []byte) ([]string, *ProfileTestOptions, error) {
 	return links, options, nil
 }
 
+const (
+	SpeedOnly = "speedonly"
+	PingOnly  = "pingonly"
+)
+
 type ProfileTestOptions struct {
-	SpeedtestMode string
+	SpeedTestMode string
 	PingMethod    string
 	SortMethod    string
 	Concurrency   int
@@ -171,7 +178,7 @@ func (p *ProfileTest) testOne(ctx context.Context, index int) error {
 	link = strings.SplitN(link, "^", 2)[0]
 	elapse, err := request.PingLink(link, 2)
 	err = p.WriteMessage(getMsgByte(index, "gotping", elapse))
-	if elapse < 1 {
+	if elapse < 1 || p.Options.SpeedTestMode == PingOnly {
 		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1))
 		return err
 	}
