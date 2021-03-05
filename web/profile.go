@@ -155,11 +155,11 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		return fmt.Errorf("no profile found")
 	}
 	p.WriteMessage(getMsgByte(-1, "started"))
-	for i, _ := range p.Links {
+	for i := range p.Links {
 		p.WriteMessage(gotserverMsg(i, p.Links[i], p.Options.GroupName))
 	}
 	guard := make(chan int, p.Options.Concurrency)
-	for i, _ := range p.Links {
+	for i := range p.Links {
 		p.wg.Add(1)
 		select {
 		case guard <- i:
