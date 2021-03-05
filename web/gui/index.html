@@ -272,8 +272,14 @@
 					this.result = {};
 					this.disconnect();
 				},
-				handleCopy: function (index, rows) {
-					
+				handleCopy: async function (index, rows) {
+					const link = (rows[index] || {}).link
+					try {
+						await navigator.clipboard.writeText(link)
+						this.$message.success("Copy link succeed!");
+					} catch (err) {
+						this.$message.error("Copy link failed!");
+					}
 				},
 				handleQRCode: function (index, rows) {
 					
@@ -451,6 +457,7 @@
 						item = {
 						group: this.groupname == "" ? json.group : this.groupname,
 						remark: json.remarks,
+						link: json.link,
 						loss: "0.00%",
 						ping: "0.00",
 						speed: "0.00B",

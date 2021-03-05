@@ -25,6 +25,7 @@ type Message struct {
 	Lost     string `json:"lost"`
 	Speed    string `json:"speed"`
 	MaxSpeed string `json:"maxspeed"`
+	Link     string `json:"link"`
 }
 
 func getRemarks(link string) (string, error) {
@@ -53,6 +54,7 @@ func gotserverMsg(id int, link string) []byte {
 	if err == nil {
 		msg.Group = "Group 1"
 		msg.Remarks = remarks
+		msg.Link = link
 	}
 	b, _ := json.Marshal(msg)
 	return b
