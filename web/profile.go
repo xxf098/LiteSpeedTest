@@ -69,6 +69,10 @@ func parseOptions(message string) (*ProfileTestOptions, error) {
 	if len(opts) < 7 {
 		return nil, errors.New("Invalid Data")
 	}
+	groupName := opts[0]
+	if groupName == "?empty?" || groupName == "" {
+		groupName = "Default Group"
+	}
 	concurrency, err := strconv.Atoi(opts[5])
 	if err != nil {
 		return nil, err
@@ -84,6 +88,7 @@ func parseOptions(message string) (*ProfileTestOptions, error) {
 		timeout = 20
 	}
 	testOpt := &ProfileTestOptions{
+		GroupName:     groupName,
 		SpeedTestMode: opts[1],
 		PingMethod:    opts[2],
 		SortMethod:    opts[3],
@@ -91,6 +96,20 @@ func parseOptions(message string) (*ProfileTestOptions, error) {
 		Timeout:       time.Duration(timeout) * time.Second,
 	}
 	return testOpt, nil
+}
+
+const (
+	SpeedOnly = "speedonly"
+	PingOnly  = "pingonly"
+)
+
+type ProfileTestOptions struct {
+	GroupName     string
+	SpeedTestMode string
+	PingMethod    string
+	SortMethod    string
+	Concurrency   int
+	Timeout       time.Duration
 }
 
 func parseMessage(message []byte) ([]string, *ProfileTestOptions, error) {
@@ -107,19 +126,6 @@ func parseMessage(message []byte) ([]string, *ProfileTestOptions, error) {
 		return nil, nil, err
 	}
 	return links, options, nil
-}
-
-const (
-	SpeedOnly = "speedonly"
-	PingOnly  = "pingonly"
-)
-
-type ProfileTestOptions struct {
-	SpeedTestMode string
-	PingMethod    string
-	SortMethod    string
-	Concurrency   int
-	Timeout       time.Duration
 }
 
 type ProfileTest struct {
@@ -146,11 +152,11 @@ func (p *ProfileTest) WriteString(data string) error {
 func (p *ProfileTest) testAll(ctx context.Context) error {
 	if len(p.Links) < 1 {
 		p.WriteString(SPEEDTEST_ERROR_NONODES)
-		return fmt.Errorf("No nodes found!")
+		return fmt.Errorf("no profile found")
 	}
 	p.WriteMessage(getMsgByte(-1, "started"))
 	for i, _ := range p.Links {
-		p.WriteMessage(gotserverMsg(i, p.Links[i]))
+		p.WriteMessage(gotserverMsg(i, p.Links[i], p.Options.GroupName))
 	}
 	guard := make(chan int, p.Options.Concurrency)
 	for i, _ := range p.Links {

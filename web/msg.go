@@ -48,11 +48,11 @@ func getRemarks(link string) (string, error) {
 	return "", nil
 }
 
-func gotserverMsg(id int, link string) []byte {
+func gotserverMsg(id int, link string, groupName string) []byte {
 	msg := Message{ID: id, Info: "gotserver"}
 	remarks, err := getRemarks(link)
 	if err == nil {
-		msg.Group = "Group 1"
+		msg.Group = groupName
 		msg.Remarks = remarks
 		msg.Link = link
 	}
