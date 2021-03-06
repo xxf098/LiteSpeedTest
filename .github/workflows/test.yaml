@@ -39,3 +39,9 @@ jobs:
     # Run testing on the code
     - name: Run testing
       run: ls -thla lite
+
+    - name: Upload Lite
+      uses: actions/upload-artifact@v1
+      with:
+        name: lite
+        path: lite
