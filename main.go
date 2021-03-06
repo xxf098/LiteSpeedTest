@@ -9,12 +9,12 @@ import (
 var (
 	link = flag.String("link", "", "proxy link")
 	port = flag.Int("port", 8090, "local port")
-	web  = flag.Bool("web", false, "start web")
+	test = flag.Bool("test", false, "start test")
 )
 
 func main() {
 	flag.Parse()
-	if *web {
+	if *test {
 		webServer.ServeFile()
 		return
 	}
