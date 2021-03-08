@@ -124,7 +124,7 @@
 											Actions<i class="el-icon-arrow-down el-icon--right"></i>
 										  </span>
 										<el-dropdown-menu slot="dropdown" >
-											<el-dropdown-item @click.native="handleCopy(scope.$index, result)">复制链接</el-dropdown-item>
+											<el-dropdown-item @click.native="handleCopy(scope.row.link)">复制链接</el-dropdown-item>
 											<el-dropdown-item @click.native="handleRetest(scope.$index, result)">重新测试</el-dropdown-item>
 											<el-dropdown-item @click.native="handleQRCode(scope.$index, result)">QRCode</el-dropdown-item>
 										</el-dropdown-menu>
@@ -272,8 +272,7 @@
 					this.result = {};
 					this.disconnect();
 				},
-				handleCopy: async function (index, rows) {
-					const link = (rows[index] || {}).link
+				handleCopy: async function (link) {
 					try {
 						await navigator.clipboard.writeText(link)
 						this.$message.success("Copy link succeed!");
