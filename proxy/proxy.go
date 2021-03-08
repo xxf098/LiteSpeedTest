@@ -80,7 +80,7 @@ func (p *Proxy) relayConnLoop() {
 					select {
 					case err = <-errChan:
 						if err != nil {
-							log.E(err.Error())
+							log.E("copyConn: ", err.Error())
 							return
 						}
 					case <-p.ctx.Done():
