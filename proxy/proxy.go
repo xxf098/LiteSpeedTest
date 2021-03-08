@@ -4,8 +4,11 @@ import (
 	"context"
 	"io"
 	"net"
+	"time"
 
 	"github.com/xxf098/lite-proxy/common"
+	N "github.com/xxf098/lite-proxy/common/net"
+	"github.com/xxf098/lite-proxy/common/pool"
 	"github.com/xxf098/lite-proxy/log"
 	"github.com/xxf098/lite-proxy/tunnel"
 )
@@ -61,29 +64,56 @@ func (p *Proxy) relayConnLoop() {
 					}
 					log.D("connect to:", inbound.Metadata().Address)
 					defer outbound.Close()
-					errChan := make(chan error, 2)
-					copyConn := func(a, b net.Conn) {
-						_, err := io.Copy(a, b)
-						errChan <- err
-						return
-					}
-					go copyConn(inbound, outbound)
-					go copyConn(outbound, inbound)
-					select {
-					case err = <-errChan:
-						if err != nil {
-							log.E(err.Error())
-							return
-						}
-					case <-p.ctx.Done():
-						log.D("shutting down conn relay")
-						return
-					}
-					// log.D("conn relay ends")
+					// relay
+					relay(inbound, outbound)
+					// errChan := make(chan error, 2)
+					// copyConn := func(a, b net.Conn) {
+					// 	_, err := io.Copy(a, b)
+					// 	errChan <- err
+					// 	return
+					// }
+					// go copyConn(inbound, outbound)
+					// go copyConn(outbound, inbound)
+					// select {
+					// case err = <-errChan:
+					// 	if err != nil {
+					// 		log.E(err.Error())
+					// 		return
+					// 	}
+					// case <-p.ctx.Done():
+					// 	log.D("shutting down conn relay")
+					// 	return
+					// }
 				}(inbound)
 			}
 		}(source)
 	}
+}
+
+func relay(leftConn, rightConn net.Conn) {
+	ch := make(chan error)
+
+	go func() {
+		buf := pool.Get(pool.RelayBufferSize)
+		// Wrapping to avoid using *net.TCPConn.(ReadFrom)
+		// See also https://github.com/Dreamacro/clash/pull/1209
+		_, err := io.CopyBuffer(N.WriteOnlyWriter{Writer: leftConn}, N.ReadOnlyReader{Reader: rightConn}, buf)
+		if err != nil {
+			log.E(err.Error())
+		}
+		pool.Put(buf)
+		leftConn.SetReadDeadline(time.Now())
+		ch <- err
+	}()
+
+	buf := pool.Get(pool.RelayBufferSize)
+	_, err := io.CopyBuffer(N.WriteOnlyWriter{Writer: rightConn}, N.ReadOnlyReader{Reader: leftConn}, buf)
+	if err != nil {
+		log.E(err.Error())
+	}
+	pool.Put(buf)
+	rightConn.SetReadDeadline(time.Now())
+	<-ch
 }
 
 func NewProxy(ctx context.Context, cancel context.CancelFunc, sources []tunnel.Server, sink tunnel.Client) *Proxy {
