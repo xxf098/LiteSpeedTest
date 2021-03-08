@@ -73,6 +73,7 @@ func (p *Proxy) relayConnLoop() {
 					case err = <-errChan:
 						if err != nil {
 							log.E(err.Error())
+							return
 						}
 					case <-p.ctx.Done():
 						log.D("shutting down conn relay")
