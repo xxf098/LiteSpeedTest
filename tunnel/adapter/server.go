@@ -42,13 +42,14 @@ func (s *Server) acceptConnLoop() {
 		b, err := br.Peek(1)
 		if err != nil {
 			conn.Close()
-			return
+			continue
 		}
 		cc := &common.BufferdConn{Conn: conn, Br: br}
 		switch b[0] {
 		case 4:
 			log.Error(common.NewError("not support proxy protocol type").Base(err))
-			return
+			conn.Close()
+			continue
 		case 5:
 			s.socksConn <- &freedom.Conn{
 				Conn: cc,
