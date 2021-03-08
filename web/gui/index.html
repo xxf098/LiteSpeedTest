@@ -125,7 +125,7 @@
 										  </span>
 										<el-dropdown-menu slot="dropdown" >
 											<el-dropdown-item @click.native="handleCopy(scope.row.link)">复制链接</el-dropdown-item>
-											<el-dropdown-item @click.native="handleRetest(scope.$index, result)">重新测试</el-dropdown-item>
+											<el-dropdown-item @click.native="handleRetest(scope.row.id)">重新测试</el-dropdown-item>
 											<el-dropdown-item @click.native="handleQRCode(scope.$index, result)">QRCode</el-dropdown-item>
 										</el-dropdown-menu>
 									</el-dropdown>
@@ -283,8 +283,8 @@
 				handleQRCode: function (index, rows) {
 					
 				},
-				handleRetest: function (index, rows) {
-					
+				handleRetest: function (id) {
+					this.send("id:"+ id);
 				},
 				colorCell: function ({
 					row,
@@ -454,13 +454,14 @@
 						break;
 					case "gotserver":
 						item = {
-						group: this.groupname == "" ? json.group : this.groupname,
-						remark: json.remarks,
-						link: json.link,
-						loss: "0.00%",
-						ping: "0.00",
-						speed: "0.00B",
-						maxspeed: "0.00B"
+							id: id,
+							group: this.groupname == "" ? json.group : this.groupname,
+							remark: json.remarks,
+							link: json.link,
+							loss: "0.00%",
+							ping: "0.00",
+							speed: "0.00B",
+							maxspeed: "0.00B"
 						};
 						this.$set(this.result, id, item);
 						break;
