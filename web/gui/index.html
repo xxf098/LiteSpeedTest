@@ -397,6 +397,12 @@
 						this.$alert("后端连接错误！请检查后端运行情况！", "错误");
 					}
 				},
+				getOptions() {
+					let self = this;
+					let groupstr = self.groupname == "" ? "?empty?" : self.groupname;
+					const options = `^${groupstr}^${self.speedtestMode}^${self.pingMethod}^${self.sortMethod}^${self.exportMaxSpeed}^${self.concurrency}^${self.timeout}`
+					return options
+				},
 				starttest() {
 					let self = this;
 					let groupstr = self.groupname == "" ? "?empty?" : self.groupname;
@@ -404,7 +410,7 @@
 					this.connect(`ws://${window.location.host}/test`);
 					if (ws) {
 					ws.addEventListener("open", function (ev) {
-						const options = `^${groupstr}^${self.speedtestMode}^${self.pingMethod}^${self.sortMethod}^${self.exportMaxSpeed}^${self.concurrency}^${self.timeout}`
+						const options = self.getOptions()
 						if(self.upload)
 						{
 							this.send("data:upload"+ options);
