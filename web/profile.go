@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -18,6 +19,8 @@ import (
 	"github.com/xxf098/lite-proxy/download"
 	"github.com/xxf098/lite-proxy/request"
 )
+
+var InvalidData = errors.New("Invalid Data")
 
 // support proxy
 // concurrency setting
@@ -59,7 +62,7 @@ func parseLinks(message string) ([]string, error) {
 		links[index] = match[0]
 	}
 	if len(links) < 1 {
-		return nil, errors.New("Invalid Data")
+		return nil, InvalidData
 	}
 	return links, nil
 }
@@ -67,7 +70,7 @@ func parseLinks(message string) ([]string, error) {
 func parseOptions(message string) (*ProfileTestOptions, error) {
 	opts := strings.Split(message, "^")
 	if len(opts) < 7 {
-		return nil, errors.New("Invalid Data")
+		return nil, InvalidData
 	}
 	groupName := opts[0]
 	if groupName == "?empty?" || groupName == "" {
@@ -93,6 +96,7 @@ func parseOptions(message string) (*ProfileTestOptions, error) {
 		PingMethod:    opts[2],
 		SortMethod:    opts[3],
 		Concurrency:   concurrency,
+		TestMode:      ALLTEST,
 		Timeout:       time.Duration(timeout) * time.Second,
 	}
 	return testOpt, nil
@@ -101,31 +105,60 @@ func parseOptions(message string) (*ProfileTestOptions, error) {
 const (
 	SpeedOnly = "speedonly"
 	PingOnly  = "pingonly"
+	ALLTEST   = iota
+	RETEST
 )
 
 type ProfileTestOptions struct {
-	GroupName     string
-	SpeedTestMode string
-	PingMethod    string
-	SortMethod    string
-	Concurrency   int
-	Timeout       time.Duration
+	GroupName     string        `json:"group"`
+	SpeedTestMode string        `json:"speedtestMode"`
+	PingMethod    string        `json:"pingMethod"`
+	SortMethod    string        `json:"sortMethod"`
+	Concurrency   int           `json:"concurrency"`
+	TestMode      int           `json:"testMode"`
+	TestID        int           `json:"testid"`
+	Timeout       time.Duration `json:"timeout"`
+	Links         []string      `json:"links"`
 }
 
 func parseMessage(message []byte) ([]string, *ProfileTestOptions, error) {
+	links, options, err := parseRetestMessage(message)
+	if err == nil {
+		return links, options, err
+	}
 	splits := strings.SplitN(string(message), "^", 2)
 	if len(splits) < 2 {
-		return nil, nil, errors.New("Invalid Data")
+		return nil, nil, InvalidData
 	}
-	links, err := parseLinks(splits[0])
+	links, err = parseLinks(splits[0])
 	if err != nil {
 		return nil, nil, err
 	}
-	options, err := parseOptions(splits[1])
+	options, err = parseOptions(splits[1])
 	if err != nil {
 		return nil, nil, err
 	}
 	return links, options, nil
+}
+
+func parseRetestMessage(message []byte) ([]string, *ProfileTestOptions, error) {
+	options := &ProfileTestOptions{}
+	err := json.Unmarshal(message, options)
+	if err != nil {
+		return nil, nil, err
+	}
+	options.TestMode = RETEST
+	options.Timeout = time.Duration(int(options.Timeout)) * time.Second
+	if options.GroupName == "?empty?" || options.GroupName == "" {
+		options.GroupName = "Default Group"
+	}
+	if options.Timeout < 20 {
+		options.Timeout = 20
+	}
+	if options.Concurrency < 1 {
+		options.Concurrency = 1
+	}
+	return options.Links, options, nil
 }
 
 type ProfileTest struct {
@@ -164,7 +197,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		select {
 		case guard <- i:
 			go func(index int, c <-chan int) {
-				p.testOne(ctx, index)
+				p.testOne(ctx, index, "")
 				<-c
 			}(i, guard)
 		case <-ctx.Done():
@@ -176,11 +209,13 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	return nil
 }
 
-func (p *ProfileTest) testOne(ctx context.Context, index int) error {
+func (p *ProfileTest) testOne(ctx context.Context, index int, link string) error {
 	// panic
-	defer p.wg.Done()
-	link := p.Links[index]
-	link = strings.SplitN(link, "^", 2)[0]
+	if link == "" {
+		defer p.wg.Done()
+		link = p.Links[index]
+		link = strings.SplitN(link, "^", 2)[0]
+	}
 	err := p.pingLink(index, link)
 	if err != nil {
 		return err
@@ -222,6 +257,9 @@ func (p *ProfileTest) testOne(ctx context.Context, index int) error {
 func (p *ProfileTest) pingLink(index int, link string) error {
 	if p.Options.SpeedTestMode == SpeedOnly {
 		return nil
+	}
+	if link == "" {
+		link = p.Links[index]
 	}
 	p.WriteMessage(getMsgByte(index, "startping"))
 	elapse, err := request.PingLink(link, 2)

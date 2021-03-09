@@ -35,13 +35,21 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 		}
 		// log.Printf("recv: %s", message)
 		links, options, err := parseMessage(message)
+		if err != nil {
+			log.Println("parseMessage:", err)
+			continue
+		}
 		p := ProfileTest{
 			Conn:        c,
 			MessageType: mt,
 			Links:       links,
 			Options:     options,
 		}
-		go p.testAll(ctx)
+		if options.TestMode == RETEST {
+			go p.testOne(ctx, options.TestID, links[0])
+		} else {
+			go p.testAll(ctx)
+		}
 		// err = c.WriteMessage(mt, getMsgByte(0, "gotspeed"))
 		if err != nil {
 			log.Println("write:", err)
