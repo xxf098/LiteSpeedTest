@@ -125,7 +125,7 @@
 										  </span>
 										<el-dropdown-menu slot="dropdown" >
 											<el-dropdown-item @click.native="handleCopy(scope.row.link)">复制链接</el-dropdown-item>
-											<el-dropdown-item @click.native="handleRetest(scope.row.id)">重新测试</el-dropdown-item>
+											<el-dropdown-item @click.native="handleRetest(scope.row.id, scope.row.link)">重新测试</el-dropdown-item>
 											<el-dropdown-item @click.native="handleQRCode(scope.$index, result)">QRCode</el-dropdown-item>
 										</el-dropdown-menu>
 									</el-dropdown>
@@ -283,8 +283,10 @@
 				handleQRCode: function (index, rows) {
 					
 				},
-				handleRetest: function (id) {
-					this.send("id:"+ id);
+				handleRetest: function (id, link) {
+					const data = { testid: id, testMode: 3, links: [link], ...this.getJSONOptions() }
+					console.log(JSON.stringify(data))
+					this.send(JSON.stringify(data));
 				},
 				colorCell: function ({
 					row,
@@ -395,6 +397,19 @@
 						this.loading = false;
 						//this.$message.error('Cannot send: Not connected')
 						this.$alert("后端连接错误！请检查后端运行情况！", "错误");
+					}
+				},
+				getJSONOptions() {
+					let self = this;
+					let groupstr = self.groupname == "" ? "?empty?" : self.groupname;
+					const options = `^${groupstr}^${self.speedtestMode}^${self.pingMethod}^${self.sortMethod}^${self.exportMaxSpeed}^${self.concurrency}^${self.timeout}`
+					return {
+						group: groupstr,
+						speedtestMode: self.speedtestMode,
+						pingMethod: self.pingMethod,
+						sortMethod: self.sortMethod,
+						concurrency: self.concurrency,
+						timeout: self.timeout
 					}
 				},
 				getOptions() {
