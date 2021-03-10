@@ -47,6 +47,10 @@ func W(format string, v ...interface{}) {
 	print(format, v...)
 }
 
+func Warnln(format string, v ...interface{}) {
+	W(format, v)
+}
+
 func E(format string, v ...interface{}) {
 	printErr(format, v...)
 }
