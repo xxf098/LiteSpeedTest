@@ -41,6 +41,7 @@ func (s *Server) acceptConnLoop() {
 		br := bufio.NewReader(conn)
 		b, err := br.Peek(1)
 		if err != nil {
+			log.Error(common.NewError("failed to detect proxy protocol type").Base(err))
 			conn.Close()
 			continue
 		}

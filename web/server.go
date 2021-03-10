@@ -46,6 +46,7 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 			Options:     options,
 		}
 		if options.TestMode == RETEST {
+			p.WriteMessage(gotserverMsg(options.TestID, links[0], p.Options.GroupName))
 			go p.testOne(ctx, options.TestID, links[0])
 		} else {
 			go p.testAll(ctx)
