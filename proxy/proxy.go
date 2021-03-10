@@ -65,28 +65,28 @@ func (p *Proxy) relayConnLoop() {
 					log.D("connect to:", inbound.Metadata().Address)
 					defer outbound.Close()
 					// relay
-					// relay(inbound, outbound)
-					errChan := make(chan error, 2)
-					copyConn := func(a, b net.Conn) {
-						buf := pool.Get(pool.RelayBufferSize)
-						_, err := io.CopyBuffer(a, b, buf)
-						pool.Put(buf)
-						a.SetReadDeadline(time.Now())
-						errChan <- err
-						return
-					}
-					go copyConn(inbound, outbound)
-					go copyConn(outbound, inbound)
-					select {
-					case err = <-errChan:
-						if err != nil {
-							log.E("copyConn: ", err.Error())
-							return
-						}
-					case <-p.ctx.Done():
-						log.D("shutting down conn relay")
-						return
-					}
+					relay(outbound, inbound)
+					// errChan := make(chan error, 2)
+					// copyConn := func(a, b net.Conn) {
+					// 	buf := pool.Get(pool.RelayBufferSize)
+					// 	_, err := io.CopyBuffer(a, b, buf)
+					// 	pool.Put(buf)
+					// 	a.SetReadDeadline(time.Now())
+					// 	errChan <- err
+					// 	return
+					// }
+					// go copyConn(inbound, outbound)
+					// go copyConn(outbound, inbound)
+					// select {
+					// case err = <-errChan:
+					// 	if err != nil {
+					// 		log.E("copyConn: ", err.Error())
+					// 		return
+					// 	}
+					// case <-p.ctx.Done():
+					// 	log.D("shutting down conn relay")
+					// 	return
+					// }
 				}(inbound)
 			}
 		}(source)
