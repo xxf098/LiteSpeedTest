@@ -14,8 +14,8 @@ var upgrader = websocket.Upgrader{}
 func ServeFile() {
 	http.Handle("/", http.FileServer(http.Dir("web/gui/")))
 	http.HandleFunc("/test", updateTest)
-	fmt.Println("Start server at http://127.0.0.1:10871")
-	http.ListenAndServe(":10871", nil)
+	fmt.Println("Start server at http://127.0.0.1:10888")
+	http.ListenAndServe(":10888", nil)
 }
 
 func updateTest(w http.ResponseWriter, r *http.Request) {
