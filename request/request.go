@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/http"
 	"strings"
 	"time"
 
@@ -20,8 +21,9 @@ import (
 )
 
 const (
-	tcpTimeout = 2400 * time.Millisecond
-	remoteHost = "clients3.google.com"
+	tcpTimeout   = 2400 * time.Millisecond
+	remoteHost   = "clients3.google.com"
+	generate_204 = "http://clients3.google.com/generate_204"
 )
 
 var (
@@ -221,6 +223,16 @@ func PingLink(link string, attempts int) (int64, error) {
 func Ping(option interface{}) (int64, error) {
 	var d outbound.ContextDialer
 	var err error
+	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
+	defer cancel()
+	meta := &C.Metadata{
+		NetWork:  0,
+		Type:     0,
+		SrcPort:  "",
+		DstPort:  "80",
+		AddrType: 3,
+		Host:     remoteHost,
+	}
 	if ssOption, ok := option.(*outbound.ShadowSocksOption); ok {
 		d, err = outbound.NewShadowSocks(ssOption)
 		if err != nil {
@@ -232,6 +244,10 @@ func Ping(option interface{}) (int64, error) {
 		if err != nil {
 			return 0, err
 		}
+		dialerCtx := func(ctx context.Context, network, addr string) (net.Conn, error) {
+			return d.DialContext(ctx, meta)
+		}
+		return pingHTTPClient(ctx, generate_204, tcpTimeout, dialerCtx)
 	}
 	if vmessOption, ok := option.(*outbound.VmessOption); ok {
 		d, err = outbound.NewVmess(vmessOption)
@@ -248,21 +264,35 @@ func Ping(option interface{}) (int64, error) {
 	if d == nil {
 		return 0, errors.New("not support config")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
-	defer cancel()
-	meta := &C.Metadata{
-		NetWork:  0,
-		Type:     0,
-		SrcPort:  "",
-		DstPort:  "80",
-		AddrType: 3,
-		Host:     remoteHost,
-	}
 	remoteConn, err := d.DialContext(ctx, meta)
 	if err != nil {
 		return 0, err
 	}
 	return pingInternal(remoteConn)
+}
+
+func pingHTTPClient(ctx context.Context, url string, timeout time.Duration, dialCtx func(ctx context.Context, network, addr string) (net.Conn, error)) (int64, error) {
+	httpTransport := &http.Transport{}
+	httpClient := &http.Client{Transport: httpTransport, Timeout: timeout}
+	if dialCtx != nil {
+		httpTransport.DialContext = dialCtx
+	}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return 0, err
+	}
+	start := time.Now()
+	response, err := httpClient.Do(req)
+	now := time.Now()
+	if err != nil {
+		return 0, err
+	}
+	elapse := now.Sub(start).Milliseconds()
+	defer response.Body.Close()
+	if response.StatusCode != 204 && response.StatusCode != 200 {
+		return 0, fmt.Errorf("wrong status code %d", response.StatusCode)
+	}
+	return elapse, nil
 }
 
 func pingInternal(remoteConn net.Conn) (int64, error) {
