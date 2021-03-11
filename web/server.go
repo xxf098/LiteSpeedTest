@@ -11,11 +11,12 @@ import (
 
 var upgrader = websocket.Upgrader{}
 
-func ServeFile() {
+func ServeFile() error {
 	http.Handle("/", http.FileServer(http.Dir("web/gui/")))
 	http.HandleFunc("/test", updateTest)
 	fmt.Println("Start server at http://127.0.0.1:10888")
-	http.ListenAndServe(":10888", nil)
+	err := http.ListenAndServe(":10888", nil)
+	return err
 }
 
 func updateTest(w http.ResponseWriter, r *http.Request) {

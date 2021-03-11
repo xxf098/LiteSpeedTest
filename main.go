@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"os"
 
 	webServer "github.com/xxf098/lite-proxy/web"
 )
@@ -14,8 +16,11 @@ var (
 
 func main() {
 	flag.Parse()
-	if *test || len(flag.Args()) == 0 {
-		webServer.ServeFile()
+	if *test || len(os.Args) < 2 {
+		err := webServer.ServeFile()
+		if err != nil {
+			fmt.Println(err)
+		}
 		return
 	}
 	if *link == "" {
