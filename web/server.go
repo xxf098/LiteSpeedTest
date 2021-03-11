@@ -45,12 +45,7 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 			Links:       links,
 			Options:     options,
 		}
-		if options.TestMode == RETEST {
-			p.WriteMessage(gotserverMsg(options.TestID, links[0], p.Options.GroupName))
-			go p.testOne(ctx, options.TestID, links[0])
-		} else {
-			go p.testAll(ctx)
-		}
+		go p.testAll(ctx)
 		// err = c.WriteMessage(mt, getMsgByte(0, "gotspeed"))
 		if err != nil {
 			log.Println("write:", err)

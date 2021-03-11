@@ -307,9 +307,12 @@
 				handleQRCode: function (index, rows) {
 					
 				},
-				handleRetest: function (id, link) {
-					const data = { testid: id, testMode: 3, links: [link], ...this.getJSONOptions() }
-					console.log(JSON.stringify(data))
+				handleRetest: function () {
+					// const data = { testid: id, testMode: 3, links: [link], ...this.getJSONOptions() }
+					// console.log(JSON.stringify(data))
+					const testids = this.multipleSelection.map(elem => elem.id)
+					const links = this.multipleSelection.map(elem => elem.link)
+					const data = { testMode: 3, ...this.getJSONOptions(), testids, links }
 					this.send(JSON.stringify(data));
 				},
 				colorCell: function ({

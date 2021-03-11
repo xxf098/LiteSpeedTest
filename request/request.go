@@ -209,7 +209,7 @@ func PingLink(link string, attempts int) (int64, error) {
 		return 0, err
 	}
 	var elapse int64
-	err = utils.ExponentialBackoff(attempts, 120).On(func() error {
+	err = utils.ExponentialBackoff(attempts, 100).On(func() error {
 		elp, err := Ping(option)
 		if err != nil {
 			return err

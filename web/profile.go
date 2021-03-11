@@ -116,7 +116,7 @@ type ProfileTestOptions struct {
 	SortMethod    string        `json:"sortMethod"`
 	Concurrency   int           `json:"concurrency"`
 	TestMode      int           `json:"testMode"`
-	TestID        int           `json:"testid"`
+	TestIDs       []int         `json:"testids"`
 	Timeout       time.Duration `json:"timeout"`
 	Links         []string      `json:"links"`
 }
@@ -146,6 +146,9 @@ func parseRetestMessage(message []byte) ([]string, *ProfileTestOptions, error) {
 	err := json.Unmarshal(message, options)
 	if err != nil {
 		return nil, nil, err
+	}
+	if options.TestMode != RETEST {
+		return nil, nil, errors.New("Not Retest")
 	}
 	options.TestMode = RETEST
 	options.Timeout = time.Duration(int(options.Timeout)) * time.Second
@@ -194,12 +197,18 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	guard := make(chan int, p.Options.Concurrency)
 	for i := range p.Links {
 		p.wg.Add(1)
+		id := i
+		link := ""
+		if len(p.Options.TestIDs) > 0 && len(p.Options.Links) > 0 {
+			id = p.Options.TestIDs[i]
+			link = p.Options.Links[i]
+		}
 		select {
 		case guard <- i:
-			go func(index int, c <-chan int) {
-				p.testOne(ctx, index, "")
+			go func(id int, link string, c <-chan int) {
+				p.testOne(ctx, id, link)
 				<-c
-			}(i, guard)
+			}(id, link, guard)
 		case <-ctx.Done():
 			break
 		}
