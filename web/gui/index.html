@@ -168,21 +168,15 @@
 			</el-col>
 		</el-row>
 		<!-- el-col -->
-		<el-dialog title="Share Links with QRcode" center :visible.sync="qrCodeDialogVisible" width="40%" @opened="handleQRCodeCreate" :before-close="qrCodeHandleClose">
-			<el-table :data="multipleSelection" style="width: 100%" show-header="false">
-				<el-table-column  width="300">
-					<template slot-scope="scope">
-						<div :id="'qrcode_' + (scope.row.id * 2)"></div>
+		<el-dialog title="Share Links with QRcode" center :visible.sync="qrCodeDialogVisible" width="50%" @opened="handleQRCodeCreate" :before-close="qrCodeHandleClose">
+			<el-row>
+				<el-col v-for="(item, index) of multipleSelection" :key="index" :span="8">
+					<el-card :body-style="{ padding: '0px', height:'360px'}" shadow="hover" style="width: 260px;height: 320px;">
+						<div :id="'qrcode_' + index"></div>
 						<div></div>
-					</template>
-				</el-table-column>
-				<el-table-column  width="300">
-					<template slot-scope="scope">
-						<div :id="'qrcode_' + (scope.row.id * 2 + 1)"></div>
-						<div></div>
-					</template>
-				</el-table-column>				
-			</el-table>			
+					</el-card>
+				</el-col>
+			</el-row>
 		</el-dialog>
 	</div>
 	<script>
@@ -345,7 +339,10 @@
 								height: 240
         					})
 							setTimeout(() => {
-								document.getElementById(gid).nextElementSibling.innerHTML = item.remark;
+								const sibling = document.getElementById(gid).nextElementSibling
+								if (sibling) {
+									sibling.innerHTML = item.remark;
+								}
 							});
 						})
         			})
