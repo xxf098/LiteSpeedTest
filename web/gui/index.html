@@ -100,11 +100,29 @@
 				<br>
 				-->
 				<el-card>
-					<div slot="header">结果</div>
+					<el-row style="display: flex;">
+						<el-col style="display: flex;align-items: center;" :span="1">
+							<div>结果</div>
+						</el-col>
+						<el-col v-if="multipleSelection.length" :span="8">
+							<el-dropdown trigger="click">
+								  <el-button size="medium" type="primary">
+									Actions<i class="el-icon-arrow-down el-icon--right"></i>
+								  </el-button>
+								<el-dropdown-menu slot="dropdown" >
+									<el-dropdown-item @click.native="handleCopy()">复制链接</el-dropdown-item>
+									<el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item>
+									<el-dropdown-item @click.native="handleQRCode()">QRCode</el-dropdown-item>
+								</el-dropdown-menu>
+							</el-dropdown>
+						</el-col>
+					</el-row>
 					<el-container>
-						<el-table :data="result" :cell-style="colorCell" size="small" ref="result">
-							<el-table-column label="Group" align="center" prop="group" width="300" sortable>
-							</el-table-column>
+						<el-table :data="result" :cell-style="colorCell" size="small" ref="result" @selection-change="handleSelectionChange">
+							<el-table-column type="selection" width="55">
+						  	</el-table-column>
+							<!-- <el-table-column label="Group" align="center" prop="group" width="300" sortable>
+							</el-table-column> -->
 							<el-table-column label="Remark" align="center" prop="remark" width="300" sortable>
 							</el-table-column>
 							<!-- <el-table-column label="Loss" align="center" prop="loss" width="100" sortable>
@@ -117,7 +135,7 @@
 							<el-table-column label="MaxSpeed" align="center" prop="maxspeed" width="150" sortable
 							:sort-method="speedSort">
 							</el-table-column>
-							<el-table-column label="Actions" align="center" prop="actions" width="180" >
+							<!-- <el-table-column label="Actions" align="center" prop="actions" width="180" >
 								<template slot-scope="scope">
 									<el-dropdown trigger="click">
 										<span style="cursor: pointer; color: #409EFF;">
@@ -130,7 +148,7 @@
 										</el-dropdown-menu>
 									</el-dropdown>
 								</template>
-							</el-table-column>
+							</el-table-column> -->
 						</el-table>
 					</el-container>
 				</el-card>
@@ -180,6 +198,7 @@
 				method: "SOCKET",
 				picdata: "",
 				option: 0,
+				multipleSelection: [],
 
 				init: {
 					speedtestModes: {
@@ -272,8 +291,13 @@
 					this.result = {};
 					this.disconnect();
 				},
-				handleCopy: async function (link) {
+				handleSelectionChange(val) {
+					// console.log(`select: ${JSON.stringify(val)}`)
+        			this.multipleSelection = val;
+      			},
+				handleCopy: async function () {
 					try {
+						link = this.multipleSelection.map(elem => elem.link).join("\n")
 						await navigator.clipboard.writeText(link)
 						this.$message.success("Copy link succeed!");
 					} catch (err) {
