@@ -14,7 +14,7 @@ var (
 
 func main() {
 	flag.Parse()
-	if *test {
+	if *test || len(flag.Args()) == 0 {
 		webServer.ServeFile()
 		return
 	}
