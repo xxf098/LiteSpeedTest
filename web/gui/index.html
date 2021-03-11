@@ -11,6 +11,10 @@
 <!-- 引入组件库 -->
 <!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
 <script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/index.js"></script>
+<!-- qrcode -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/qrcodejs2@0.0.2/qrcode.js"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs2@0.0.2/qrcode.min.js"></script>
+
 
 <body>
 	<div id="app">
@@ -163,6 +167,23 @@
 				</el-card>
 			</el-col>
 		</el-row>
+		<!-- el-col -->
+		<el-dialog title="Share Links with QRcode" center :visible.sync="qrCodeDialogVisible" width="40%" @opened="handleQRCodeCreate" :before-close="qrCodeHandleClose">
+			<el-table :data="multipleSelection" style="width: 100%" show-header="false">
+				<el-table-column  width="300">
+					<template slot-scope="scope">
+						<div :id="'qrcode_' + (scope.row.id * 2)"></div>
+						<div></div>
+					</template>
+				</el-table-column>
+				<el-table-column  width="300">
+					<template slot-scope="scope">
+						<div :id="'qrcode_' + (scope.row.id * 2 + 1)"></div>
+						<div></div>
+					</template>
+				</el-table-column>				
+			</el-table>			
+		</el-dialog>
 	</div>
 	<script>
 		let colorgroup = [
@@ -199,6 +220,7 @@
 				picdata: "",
 				option: 0,
 				multipleSelection: [],
+				qrCodeDialogVisible: false,
 
 				init: {
 					speedtestModes: {
@@ -297,15 +319,36 @@
       			},
 				handleCopy: async function () {
 					try {
-						link = this.multipleSelection.map(elem => elem.link).join("\n")
-						await navigator.clipboard.writeText(link)
+						links = this.multipleSelection.map(elem => elem.link).join("\n")
+						await navigator.clipboard.writeText(links)
 						this.$message.success("Copy link succeed!");
 					} catch (err) {
 						this.$message.error("Copy link failed!");
 					}
 				},
-				handleQRCode: function (index, rows) {
-					
+				qrCodeHandleClose() {
+					this.qrCodeDialogVisible = false;
+					this.multipleSelection.forEach(item => {
+						document.getElementById('qrcode_' + item.id).innerHTML = '';
+					});
+     			},
+				handleQRCode() {
+					this.qrCodeDialogVisible = true
+				},
+				handleQRCodeCreate: function () {
+					this.$nextTick(() => {
+						this.multipleSelection.forEach(item => {
+							const gid = 'qrcode_' + item.id;
+							new QRCode(gid, {
+								text: item.link,
+								width: 240,
+								height: 240
+        					})
+							setTimeout(() => {
+								document.getElementById(gid).nextElementSibling.innerHTML = item.remark;
+							});
+						})
+        			})
 				},
 				handleRetest: function () {
 					// const data = { testid: id, testMode: 3, links: [link], ...this.getJSONOptions() }
