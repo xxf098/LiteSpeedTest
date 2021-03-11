@@ -172,7 +172,7 @@
 			<el-row>
 				<el-col v-for="(item, index) of multipleSelection" :key="index" :span="8">
 					<el-card :body-style="{ padding: '0px', height:'360px'}" shadow="hover" style="width: 260px;height: 320px;">
-						<div :id="'qrcode_' + index"></div>
+						<div :id="'qrcode_' + item.id"></div>
 						<div></div>
 					</el-card>
 				</el-col>
