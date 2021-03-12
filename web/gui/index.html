@@ -1,5 +1,8 @@
 <!DOCTYPE html>
 <html>
+<head>
+	<link rel="stylesheet" href="style.css">
+</head>
 <meta charset="utf-8" />
 <!-- 引入 vue -->
 <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.11/vue.min.js"></script>
@@ -155,14 +158,16 @@
 		</el-row>
 		<!-- el-col -->
 		<el-dialog title="Share Links with QRcode" center :visible.sync="qrCodeDialogVisible" width="50%" @opened="handleQRCodeCreate" :before-close="qrCodeHandleClose">
-			<el-row>
-				<el-col v-for="(item, index) of multipleSelection" :key="index" :span="8">
-					<el-card :body-style="{ padding: '0px', height:'360px'}" shadow="hover" style="width: 260px;height: 260px;">
-						<div :id="'qrcode_' + item.id"></div>
-						<div></div>
-					</el-card>
-				</el-col>
-			</el-row>
+			<el-scrollbar style="height:360px;">
+				<el-row>
+					<el-col v-for="(item, index) of multipleSelection" :key="index" :span="8">
+						<el-card :body-style="{ padding: '0px', height:'360px'}" shadow="hover" style="width: 260px;height: 260px;">
+							<div :id="'qrcode_' + item.id"></div>
+							<div></div>
+						</el-card>
+					</el-col>
+				</el-row>
+			</el-scrollbar>
 		</el-dialog>
 	</div>
 	<script>
