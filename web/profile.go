@@ -207,6 +207,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		case guard <- i:
 			go func(id int, link string, c <-chan int) {
 				p.testOne(ctx, id, link)
+				_ = p.WriteMessage(getMsgByte(id, "endone"))
 				<-c
 			}(id, link, guard)
 		case <-ctx.Done():

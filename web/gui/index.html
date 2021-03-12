@@ -123,7 +123,7 @@
 					</el-row>
 					<el-container>
 						<el-table :data="result" :cell-style="colorCell" size="small" ref="result" @selection-change="handleSelectionChange">
-							<el-table-column type="selection" width="55">
+							<el-table-column type="selection"  width="55" :selectable="checkSelectable">
 						  	</el-table-column>
 							<!-- <el-table-column label="Group" align="center" prop="group" width="300" sortable>
 							</el-table-column> -->
@@ -139,20 +139,6 @@
 							<el-table-column label="MaxSpeed" align="center" prop="maxspeed" width="150" sortable
 							:sort-method="speedSort">
 							</el-table-column>
-							<!-- <el-table-column label="Actions" align="center" prop="actions" width="180" >
-								<template slot-scope="scope">
-									<el-dropdown trigger="click">
-										<span style="cursor: pointer; color: #409EFF;">
-											Actions<i class="el-icon-arrow-down el-icon--right"></i>
-										  </span>
-										<el-dropdown-menu slot="dropdown" >
-											<el-dropdown-item @click.native="handleCopy(scope.row.link)">复制链接</el-dropdown-item>
-											<el-dropdown-item @click.native="handleRetest(scope.row.id, scope.row.link)">重新测试</el-dropdown-item>
-											<el-dropdown-item @click.native="handleQRCode(scope.$index, result)">QRCode</el-dropdown-item>
-										</el-dropdown-menu>
-									</el-dropdown>
-								</template>
-							</el-table-column> -->
 						</el-table>
 					</el-container>
 				</el-card>
@@ -171,7 +157,7 @@
 		<el-dialog title="Share Links with QRcode" center :visible.sync="qrCodeDialogVisible" width="50%" @opened="handleQRCodeCreate" :before-close="qrCodeHandleClose">
 			<el-row>
 				<el-col v-for="(item, index) of multipleSelection" :key="index" :span="8">
-					<el-card :body-style="{ padding: '0px', height:'360px'}" shadow="hover" style="width: 260px;height: 320px;">
+					<el-card :body-style="{ padding: '0px', height:'360px'}" shadow="hover" style="width: 260px;height: 260px;">
 						<div :id="'qrcode_' + item.id"></div>
 						<div></div>
 					</el-card>
@@ -202,7 +188,7 @@
 				filecontent: "",
 				loading: false,
 				subscription: "",
-				concurrency: 3,
+				concurrency: 2,
 				timeout: 20,
 				groupname: "",
 				loadingContent: "",
@@ -515,11 +501,13 @@
 					case "ping":
 						item.ping = "测试中...";
 						item.loss = "测试中...";
+						item.testing = true
 						this.$set(this.result, id, item);
 						break;
 					case "speed":
 						item.speed = "测试中...";
 						item.maxspeed = "测试中...";
+						item.testing = true
 						this.$set(this.result, id, item);
 						break;
 					}
@@ -551,6 +539,11 @@
 							speed: "0.00B",
 							maxspeed: "0.00B"
 						};
+						this.$set(this.result, id, item);
+						break;
+					case "endone":
+						item = this.result[id];
+						item.testing = false
 						this.$set(this.result, id, item);
 						break;
 					case "startping":
@@ -663,7 +656,10 @@
 				},
 				speedSort: function (obj1, obj2) {
 					return this.getSpeed(obj1.speed) - this.getSpeed(obj2.speed);
-				}
+				},
+				checkSelectable: function (row, index) {
+					return !!row.link && row.hasOwnProperty("id") && row.testing !== true
+				},
 			}
 		});
 	</script>
