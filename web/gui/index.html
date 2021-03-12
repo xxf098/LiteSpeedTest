@@ -183,7 +183,7 @@
 			el: "#app",
 			data() {
 			return {
-				title: "Stair Speedtest Web GUI",
+				title: "Lite Speedtest Web GUI",
 				upload: false,
 				filecontent: "",
 				loading: false,
@@ -339,6 +339,7 @@
 					const testids = this.multipleSelection.map(elem => elem.id)
 					const links = this.multipleSelection.map(elem => elem.link)
 					const data = { testMode: 3, ...this.getJSONOptions(), testids, links }
+					this.$refs.result.clearSelection()
 					this.send(JSON.stringify(data));
 				},
 				colorCell: function ({
@@ -455,13 +456,13 @@
 				getJSONOptions() {
 					let self = this;
 					let groupstr = self.groupname == "" ? "?empty?" : self.groupname;
-					const options = `^${groupstr}^${self.speedtestMode}^${self.pingMethod}^${self.sortMethod}^${self.exportMaxSpeed}^${self.concurrency}^${self.timeout}`
+					// const options = `^${groupstr}^${self.speedtestMode}^${self.pingMethod}^${self.sortMethod}^${self.exportMaxSpeed}^${self.concurrency}^${self.timeout}`
 					return {
 						group: groupstr,
 						speedtestMode: self.speedtestMode,
 						pingMethod: self.pingMethod,
 						sortMethod: self.sortMethod,
-						concurrency: self.concurrency,
+						concurrency: parseInt(self.concurrency),
 						timeout: self.timeout
 					}
 				},
