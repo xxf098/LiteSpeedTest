@@ -161,8 +161,8 @@
 			<el-scrollbar style="height:360px;">
 				<el-row>
 					<el-col v-for="(item, index) of multipleSelection" :key="index" :span="8">
-						<el-card :body-style="{ padding: '0px', height:'360px'}" shadow="hover" style="width: 260px;height: 260px;">
-							<div :id="'qrcode_' + item.id"></div>
+						<el-card :body-style="{ padding: '0px', height:'360px'}" shadow="hover" style="width: 260px;height: 260px;text-align: center;">
+							<div :id="'qrcode_' + item.id" style="margin-left: 10px;"></div>
 							<div></div>
 						</el-card>
 					</el-col>
