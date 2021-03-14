@@ -661,7 +661,9 @@
 					return parseFloat(obj1.ping) - parseFloat(obj2.ping);
 				},
 				speedSort: function (obj1, obj2) {
-					return this.getSpeed(obj1.speed) - this.getSpeed(obj2.speed);
+					const speed1 = isNaN(this.getSpeed(obj1.speed)) ? -1 : this.getSpeed(obj1.speed);
+					const speed2 = isNaN(this.getSpeed(obj2.speed)) ? -1 : this.getSpeed(obj2.speed);
+					return speed1 - speed2;
 				},
 				checkSelectable: function (row, index) {
 					return !!row.link && row.hasOwnProperty("id") && row.testing !== true
