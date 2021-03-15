@@ -250,7 +250,7 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string) error
 					max = speed
 				}
 				log.Printf("recv: %s", download.ByteCountIEC(speed))
-				err = p.WriteMessage(getMsgByte(index, "gotspeed", avg, max))
+				err = p.WriteMessage(getMsgByte(index, "gotspeed", avg, max, speed))
 			case <-ctx.Done():
 				log.Printf("index %d done!", index)
 				return
@@ -259,7 +259,7 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string) error
 	}(ch)
 	speed, err := download.Download(link, p.Options.Timeout, p.Options.Timeout, ch)
 	if speed < 1 {
-		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1))
+		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1, 0))
 	}
 	return err
 }
@@ -275,11 +275,11 @@ func (p *ProfileTest) pingLink(index int, link string) error {
 	elapse, err := request.PingLink(link, 2)
 	p.WriteMessage(getMsgByte(index, "gotping", elapse))
 	if elapse < 1 {
-		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1))
+		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1, 0))
 		return err
 	}
 	if p.Options.SpeedTestMode == PingOnly {
-		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1))
+		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1, 0))
 		return errors.New(PingOnly)
 	}
 	return err

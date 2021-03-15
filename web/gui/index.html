@@ -145,6 +145,8 @@
 						</el-table>
 					</el-container>
 				</el-card>
+
+				<div>Total Traffic: {{ bytesToSize(totalTraffic) }}</div>
 				
 				<br>
 				
@@ -206,6 +208,7 @@
 				option: 0,
 				multipleSelection: [],
 				qrCodeDialogVisible: false,
+				totalTraffic: 0,
 
 				init: {
 					speedtestModes: {
@@ -234,6 +237,13 @@
 				document.title = this.title;
 			},
 			methods: {
+				bytesToSize: function (bytes) {
+					const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+					if (bytes === 0) return '0';
+					const i = parseInt(Math.floor(Math.log(Math.abs(bytes)) / Math.log(1024)), 10);
+					if (i === 0) return `${bytes} ${sizes[i]})`;
+					return `${(bytes / (1024 ** i)).toFixed(2)} ${sizes[i]}`;
+				},
 				cancelFileUpload: function () {
 					let self = this;
 					this.file = null;
@@ -581,15 +591,8 @@
 						item = this.result[id];
 						item.speed = json.speed;
 						item.maxspeed = json.maxspeed;
-						/*
-									item = {
-										"group": json.group,
-										"remark": json.remarks,
-										"loss": json.loss,
-										"ping": json.ping,
-										"speed": json.speed
-									}
-									*/
+						this.totalTraffic += json.traffic
+						console.log(`totalTraffic: ${this.totalTraffic}`)
 						this.$set(this.result, id, item);
 						break;
 					case "picsaving":

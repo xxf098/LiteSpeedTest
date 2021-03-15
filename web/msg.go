@@ -25,6 +25,7 @@ type Message struct {
 	Lost     string `json:"lost"`
 	Speed    string `json:"speed"`
 	MaxSpeed string `json:"maxspeed"`
+	Traffic  int64  `json:"traffic"`
 	Link     string `json:"link"`
 }
 
@@ -75,6 +76,7 @@ func getMsgByte(id int, typ string, option ...interface{}) []byte {
 	case "gotspeed":
 		var speed int64
 		var maxspeed int64
+		var traffic int64
 		if len(option) > 1 {
 			if v, ok := option[0].(int64); ok {
 				speed = v
@@ -82,9 +84,15 @@ func getMsgByte(id int, typ string, option ...interface{}) []byte {
 			if v, ok := option[1].(int64); ok {
 				maxspeed = v
 			}
+			if len(option) > 2 {
+				if v, ok := option[2].(int64); ok {
+					traffic = v
+				}
+			}
 		}
 		msg.Speed = strings.TrimRight(download.ByteCountIEC(speed), "/s")
 		msg.MaxSpeed = strings.TrimRight(download.ByteCountIEC(maxspeed), "/s")
+		msg.Traffic = traffic
 		if speed < 1 {
 			msg.Speed = "N/A"
 		}
