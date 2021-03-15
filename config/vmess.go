@@ -35,7 +35,7 @@ type WSSettings struct {
 type StreamSettings struct {
 	Network    string     `json:"network"`
 	Security   string     `json:"security"`
-	WSSettings WSSettings `json:wsSettings,omitempty`
+	WSSettings WSSettings `json:"wsSettings,omitempty"`
 }
 
 type Outbound struct {
@@ -46,7 +46,7 @@ type Outbound struct {
 }
 
 type RawConfig struct {
-	Outbounds []Outbound `json:outbounds`
+	Outbounds []Outbound `json:"outbounds"`
 }
 
 type VmessConfig struct {
