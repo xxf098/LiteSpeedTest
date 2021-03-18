@@ -164,8 +164,9 @@
 				<el-row>
 					<el-col v-for="(item, index) of multipleSelection" :key="index" :span="8">
 						<el-card :body-style="{ padding: '0px', height:'360px'}" shadow="hover" style="width: 260px;height: 260px;text-align: center;">
-							<div :id="'qrcode_' + item.id" style="margin-left: 10px;"></div>
-							<div></div>
+							<div :id="'qrcode_' + item.id" style="margin-left: 20px;"></div>
+							<div>{{ item.remark }}</div>
+							<div>{{ `${item.ping}ms ${item.speed} ${item.maxspeed}` }}</div>
 						</el-card>
 					</el-col>
 				</el-row>
@@ -348,15 +349,15 @@
 							const gid = 'qrcode_' + item.id;
 							new QRCode(gid, {
 								text: item.link,
-								width: 240,
-								height: 240
+								width: 220,
+								height: 220
         					})
-							setTimeout(() => {
-								const sibling = document.getElementById(gid).nextElementSibling
-								if (sibling) {
-									sibling.innerHTML = item.remark;
-								}
-							});
+							// setTimeout(() => {
+							// 	const sibling = document.getElementById(gid).nextElementSibling
+							// 	if (sibling) {
+							// 		sibling.innerHTML = `${item.remark} ${item.ping}ms`;
+							// 	}
+							// });
 						})
         			})
 				},
