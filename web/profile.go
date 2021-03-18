@@ -20,7 +20,7 @@ import (
 	"github.com/xxf098/lite-proxy/request"
 )
 
-var InvalidData = errors.New("Invalid Data")
+var ErrInvalidData = errors.New("invalid data")
 
 // support proxy
 // concurrency setting
@@ -62,7 +62,7 @@ func parseLinks(message string) ([]string, error) {
 		links[index] = match[0]
 	}
 	if len(links) < 1 {
-		return nil, InvalidData
+		return nil, ErrInvalidData
 	}
 	return links, nil
 }
@@ -70,7 +70,7 @@ func parseLinks(message string) ([]string, error) {
 func parseOptions(message string) (*ProfileTestOptions, error) {
 	opts := strings.Split(message, "^")
 	if len(opts) < 7 {
-		return nil, InvalidData
+		return nil, ErrInvalidData
 	}
 	groupName := opts[0]
 	if groupName == "?empty?" || groupName == "" {
@@ -128,7 +128,7 @@ func parseMessage(message []byte) ([]string, *ProfileTestOptions, error) {
 	}
 	splits := strings.SplitN(string(message), "^", 2)
 	if len(splits) < 2 {
-		return nil, nil, InvalidData
+		return nil, nil, ErrInvalidData
 	}
 	links, err = parseLinks(splits[0])
 	if err != nil {
@@ -148,7 +148,7 @@ func parseRetestMessage(message []byte) ([]string, *ProfileTestOptions, error) {
 		return nil, nil, err
 	}
 	if options.TestMode != RETEST {
-		return nil, nil, errors.New("Not Retest")
+		return nil, nil, errors.New("not retest mode")
 	}
 	options.TestMode = RETEST
 	options.Timeout = time.Duration(int(options.Timeout)) * time.Second
@@ -211,7 +211,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 				<-c
 			}(id, link, guard)
 		case <-ctx.Done():
-			break
+			return nil
 		}
 	}
 	p.wg.Wait()
