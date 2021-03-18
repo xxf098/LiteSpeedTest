@@ -232,13 +232,14 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string) error
 	}
 	err = p.WriteMessage(getMsgByte(index, "startspeed"))
 	ch := make(chan int64, 1)
+	defer close(ch)
 	go func(ch <-chan int64) {
 		var max int64
 		var speeds []int64
 		for {
 			select {
-			case speed := <-ch:
-				if speed < 0 {
+			case speed, ok := <-ch:
+				if !ok || speed < 0 {
 					return
 				}
 				speeds = append(speeds, speed)
