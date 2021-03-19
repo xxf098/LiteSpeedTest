@@ -120,6 +120,7 @@
 									<el-dropdown-item @click.native="handleCopy()">复制链接</el-dropdown-item>
 									<el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item>
 									<el-dropdown-item @click.native="handleQRCode()">QRCode</el-dropdown-item>
+									<el-dropdown-item @click.native="handleSave()">Save</el-dropdown-item>
 								</el-dropdown-menu>
 							</el-dropdown>
 						</el-col>
@@ -369,6 +370,27 @@
 					const data = { testMode: 3, ...this.getJSONOptions(), testids, links }
 					this.$refs.result.clearSelection()
 					this.send(JSON.stringify(data));
+				},
+				handleSave: function () {
+					const links = this.multipleSelection.map(elem => elem.link).join("\n")
+					const blob = new Blob([links], { type: 'text/plain;charset=utf-8;' })
+					const link = document.createElement('a')
+					if (!link.download) {
+						return
+					}
+					var event = new Date();
+					event.setMinutes(event.getMinutes() - event.getTimezoneOffset());
+					let jsonDate = event.toJSON().slice(0, 19);
+					jsonDate = jsonDate.replaceAll("-", "")
+					jsonDate = jsonDate.replaceAll("T", "")
+					jsonDate = jsonDate.replaceAll(":", "")
+					let url = URL.createObjectURL(blob)
+					link.setAttribute('href', url)
+					link.setAttribute('download', `profiles_${jsonDate}`)
+					link.style.visibility = 'hidden'
+					document.body.appendChild(link)
+					link.click()
+					document.body.removeChild(link)
 				},
 				colorCell: function ({
 					row,
