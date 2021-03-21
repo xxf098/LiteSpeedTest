@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" type="text/css" href="style.css" media="screen">
 </head>
 <meta charset="utf-8" />
 <!-- 引入 vue -->
@@ -145,7 +145,8 @@
 							</el-table-column>
 						</el-table>
 					</el-container>
-					<div style="margin-top: 16px;">Total Traffic: {{ bytesToSize(totalTraffic) }}&nbsp;&nbsp;Total Time: {{totalTime>0 ? totalTime : 0}} s</div>
+					<br>
+					<div>Total Traffic: {{ bytesToSize(totalTraffic) }}&nbsp;&nbsp;Total Time: {{totalTime>0 ? totalTime : 0}} s</div>
 				</el-card>
 
 				
@@ -166,7 +167,7 @@
 					<el-col v-for="(item, index) of multipleSelection" :key="index" :span="8">
 						<el-card :body-style="{ padding: '0px', height:'360px'}" shadow="hover" style="width: 260px;height: 260px;text-align: center;">
 							<div :id="'qrcode_' + item.id" style="margin-left: 20px;"></div>
-							<div>{{ item.remark }}</div>
+							<div class="truncate_remark">{{ item.remark }}</div>
 							<div>{{ `${item.ping}ms ${item.speed} ${item.maxspeed}` }}</div>
 						</el-card>
 					</el-col>
@@ -375,7 +376,7 @@
 					const links = this.multipleSelection.map(elem => elem.link).join("\n")
 					const blob = new Blob([links], { type: 'text/plain;charset=utf-8;' })
 					const link = document.createElement('a')
-					if (!link.download) {
+					if (link == null || link.download == null || link.download == undefined) {
 						return
 					}
 					var event = new Date();
