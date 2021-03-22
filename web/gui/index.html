@@ -135,7 +135,8 @@
 							</el-table-column>
 							<!-- <el-table-column label="Loss" align="center" prop="loss" width="100" sortable>
 							</el-table-column> -->
-							<el-table-column label="Ping" align="center" prop="ping" width="100" sortable :sort-method="floatSort">
+							<el-table-column label="Ping" align="center" prop="ping" width="100" sortable :sort-method="floatSort"
+							:filters="[{ text: 'Available ', value: 'available' }, { text: 'Unavailable', value: 'unavailable' }]"  :filter-method="filterPing">
 							</el-table-column>
 							<el-table-column label="AvgSpeed" align="center" prop="speed" width="150" sortable
 							:sort-method="speedSort">
@@ -365,11 +366,11 @@
 				},
 				handleRetest: function () {
 					// const data = { testid: id, testMode: 3, links: [link], ...this.getJSONOptions() }
-					// console.log(JSON.stringify(data))
 					const testids = this.multipleSelection.map(elem => elem.id)
 					const links = this.multipleSelection.map(elem => elem.link)
 					const data = { testMode: 3, ...this.getJSONOptions(), testids, links }
 					this.$refs.result.clearSelection()
+					console.log(`handleRetest: ${JSON.stringify(data)}`)
 					this.send(JSON.stringify(data));
 				},
 				handleSave: function () {
@@ -703,6 +704,9 @@
 					const speed2 = isNaN(this.getSpeed(obj2.speed)) ? -1 : this.getSpeed(obj2.speed);
 					return speed1 - speed2;
 				},
+				filterPing: function(value, row) {
+					return value === "available" ? row.ping > 0 : row.ping <= 0;
+      			},
 				checkSelectable: function (row, index) {
 					return !!row.link && row.hasOwnProperty("id") && row.testing !== true
 				},
