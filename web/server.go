@@ -12,7 +12,7 @@ import (
 var upgrader = websocket.Upgrader{}
 
 func ServeFile() error {
-	http.Handle("/", http.FileServer(http.Dir("web/gui/")))
+	http.Handle("/", http.FileServer(AssetFile()))
 	http.HandleFunc("/test", updateTest)
 	fmt.Println("Start server at http://127.0.0.1:10888")
 	err := http.ListenAndServe(":10888", nil)
