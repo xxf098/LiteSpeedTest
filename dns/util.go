@@ -6,7 +6,26 @@ import (
 	"time"
 
 	D "github.com/miekg/dns"
+	"github.com/xxf098/lite-proxy/common/cache"
+	"github.com/xxf098/lite-proxy/log"
 )
+
+func putMsgToCache(c *cache.LruCache, key string, msg *D.Msg) {
+	var ttl uint32
+	switch {
+	case len(msg.Answer) != 0:
+		ttl = msg.Answer[0].Header().Ttl
+	case len(msg.Ns) != 0:
+		ttl = msg.Ns[0].Header().Ttl
+	case len(msg.Extra) != 0:
+		ttl = msg.Extra[0].Header().Ttl
+	default:
+		log.D("[DNS] response msg empty: %#v", msg)
+		return
+	}
+
+	c.SetWithExpire(key, msg.Copy(), time.Now().Add(time.Second*time.Duration(ttl)))
+}
 
 func setMsgTTL(msg *D.Msg, ttl uint32) {
 	for _, answer := range msg.Answer {

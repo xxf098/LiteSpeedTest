@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/xxf098/lite-proxy/common/cache"
 	"github.com/xxf098/lite-proxy/common/picker"
 	"github.com/xxf098/lite-proxy/component/resolver"
 	"golang.org/x/sync/singleflight"
@@ -38,7 +39,7 @@ type Resolver struct {
 	main     []dnsClient
 	fallback []dnsClient
 	group    singleflight.Group
-	// lruCache *cache.LruCache
+	lruCache *cache.LruCache
 }
 
 // ResolveIP request with TypeA and TypeAAAA, priority return TypeA
@@ -86,6 +87,19 @@ func (r *Resolver) Exchange(m *D.Msg) (msg *D.Msg, err error) {
 		return nil, errors.New("should have one question at least")
 	}
 
+	q := m.Question[0]
+	cache, expireTime, hit := r.lruCache.GetWithExpire(q.String())
+	if hit {
+		now := time.Now()
+		msg = cache.(*D.Msg).Copy()
+		if expireTime.Before(now) {
+			setMsgTTL(msg, uint32(1)) // Continue fetch
+			go r.exchangeWithoutCache(m)
+		} else {
+			setMsgTTL(msg, uint32(time.Until(expireTime).Seconds()))
+		}
+		return
+	}
 	return r.exchangeWithoutCache(m)
 }
 
@@ -94,6 +108,15 @@ func (r *Resolver) exchangeWithoutCache(m *D.Msg) (msg *D.Msg, err error) {
 	q := m.Question[0]
 
 	ret, err, shared := r.group.Do(q.String(), func() (result interface{}, err error) {
+		defer func() {
+			if err != nil {
+				return
+			}
+
+			msg := result.(*D.Msg)
+
+			putMsgToCache(r.lruCache, q.String(), msg)
+		}()
 
 		isIPReq := isIPRequest(q)
 		if isIPReq {
@@ -274,12 +297,14 @@ type Config struct {
 
 func NewResolver(config Config) *Resolver {
 	defaultResolver := &Resolver{
-		main: transform(config.Default, nil),
+		main:     transform(config.Default, nil),
+		lruCache: cache.NewLRUCache(cache.WithSize(4096), cache.WithStale(true)),
 	}
 
 	r := &Resolver{
-		ipv6: config.IPv6,
-		main: transform(config.Main, defaultResolver),
+		ipv6:     config.IPv6,
+		lruCache: cache.NewLRUCache(cache.WithSize(4096), cache.WithStale(true)),
+		main:     transform(config.Main, defaultResolver),
 	}
 
 	if len(config.Fallback) != 0 {
