@@ -15,9 +15,13 @@ As test tool:
 ### Build
 ```bash
     go get -u ./...
+    # go-bindata
+    go get -u github.com/go-bindata/go-bindata/...
+    go-bindata -fs -pkg web -prefix "web/gui"  -o ./web/asset.go web/gui/
     go build -o lite
 ```
 
 ## Developer
 ```golang
+// release
 ```
