@@ -12,6 +12,7 @@ import (
 	"github.com/xxf098/lite-proxy/tunnel/freedom"
 	"github.com/xxf098/lite-proxy/tunnel/http"
 	"github.com/xxf098/lite-proxy/tunnel/socks"
+	"github.com/xxf098/lite-proxy/utils"
 )
 
 type Server struct {
@@ -25,9 +26,9 @@ type Server struct {
 }
 
 // TODO: https socks4
-func (s *Server) acceptConnLoop() {
+func (s *Server) acceptConnLoop(tcpListener net.Listener) {
 	for {
-		conn, err := s.tcpListener.Accept()
+		conn, err := tcpListener.Accept()
 		if err != nil {
 			select {
 			case <-s.ctx.Done():
@@ -102,8 +103,12 @@ func NewServer(ctx context.Context, _ tunnel.Server) (*Server, error) {
 	localHost := ctx.Value("LocalHost").(string)
 	localPort := ctx.Value("LocalPort").(int)
 	addr := tunnel.NewAddressFromHostPort("tcp", localHost, localPort)
-	tcpListener, err := net.Listen("tcp", addr.String())
-	if err != nil {
+	// tcpListener, err := utils.Listen(ctx, "tcp", addr.String())
+	// if err != nil {
+	// 	return nil, common.NewError("adapter failed to create tcp listener").Base(err)
+	// }
+	tcpListeners, err := utils.GetListens(ctx, "tcp", addr.String())
+	if err != nil || len(tcpListeners) < 1 {
 		return nil, common.NewError("adapter failed to create tcp listener").Base(err)
 	}
 	udpListener, err := net.ListenPacket("udp", addr.String())
@@ -111,13 +116,15 @@ func NewServer(ctx context.Context, _ tunnel.Server) (*Server, error) {
 		return nil, common.NewError("adapter failed to create tcp listener").Base(err)
 	}
 	server := &Server{
-		tcpListener: tcpListener,
+		tcpListener: tcpListeners[0],
 		udpListener: udpListener,
 		socksConn:   make(chan tunnel.Conn, 32),
 		httpConn:    make(chan tunnel.Conn, 32),
 		ctx:         ctx,
 		cancel:      cancel,
 	}
-	go server.acceptConnLoop()
+	for _, v := range tcpListeners {
+		go server.acceptConnLoop(v)
+	}
 	return server, nil
 }

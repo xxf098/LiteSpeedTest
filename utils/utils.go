@@ -1,9 +1,14 @@
 package utils
 
 import (
+	"context"
+	"net"
+	"os"
 	"regexp"
+	"runtime"
 
 	"github.com/xxf098/lite-proxy/common"
+	"github.com/xxf098/lite-proxy/log"
 )
 
 func CheckLink(link string) ([]string, error) {
@@ -13,4 +18,28 @@ func CheckLink(link string) ([]string, error) {
 		return nil, common.NewError("Not Suported Link")
 	}
 	return matches, nil
+}
+
+func getMaxProcs() int {
+	if runtime.GOOS != "linux" {
+		return 1
+	}
+	return runtime.NumCPU()
+}
+
+func GetListens(ctx context.Context, network, address string) ([]net.Listener, error) {
+	maxProcs := getMaxProcs() / 2
+	if maxProcs < 1 {
+		maxProcs = 1
+	}
+	listens := make([]net.Listener, maxProcs)
+	for i := 0; i < maxProcs; i++ {
+		listen, err := Listen(ctx, network, address)
+		if err != nil {
+			return nil, err
+		}
+		log.D("server", i, "pid", os.Getpid(), "serving dns on", listen.Addr())
+		listens[i] = listen
+	}
+	return listens, nil
 }
