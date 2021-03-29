@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 
 	webServer "github.com/xxf098/lite-proxy/web"
@@ -33,7 +34,7 @@ func main() {
 	}
 	p, err := startInstance(c)
 	if err != nil {
-		return
+		log.Fatalln(err)
 	}
 	p.Run()
 }
