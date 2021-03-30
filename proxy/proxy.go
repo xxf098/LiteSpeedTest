@@ -12,6 +12,7 @@ import (
 	"github.com/xxf098/lite-proxy/common/pool"
 	"github.com/xxf098/lite-proxy/log"
 	"github.com/xxf098/lite-proxy/tunnel"
+	"github.com/xxf098/lite-proxy/utils"
 )
 
 // proxy http/scocks to vmess
@@ -43,6 +44,36 @@ func (p *Proxy) Close() error {
 // forward from socks/http connection to vmess/trojan
 // TODO: bypass cn
 func (p *Proxy) relayConnLoop() {
+	pool := utils.WorkerPool{
+		WorkerFunc: func(inbound tunnel.Conn) error {
+			defer inbound.Close()
+			addr := inbound.Metadata().Address
+			var outbound net.Conn
+			var err error
+			if addr.IP != nil && N.IsPrivateAddress(addr.IP) {
+				networkType := addr.NetworkType
+				if networkType == "" {
+					networkType = "tcp"
+				}
+				add := fmt.Sprintf("%s:%d", addr.IP.String(), addr.Port)
+				outbound, err = net.Dial(networkType, add)
+			} else {
+				outbound, err = p.sink.DialConn(addr, nil)
+			}
+			if err != nil {
+				log.Error(common.NewError("proxy failed to dial connection").Base(err))
+				return err
+			}
+			log.D("connect to:", addr)
+			defer outbound.Close()
+			// relay
+			return relay(outbound, inbound)
+		},
+		MaxWorkersCount:       2000,
+		LogAllErrors:          false,
+		MaxIdleWorkerDuration: 2 * time.Minute,
+	}
+	pool.Start()
 	for _, source := range p.sources {
 		go func(source tunnel.Server) {
 			for {
@@ -57,57 +88,37 @@ func (p *Proxy) relayConnLoop() {
 					log.Error(common.NewError("failed to accept connection").Base(err))
 					continue
 				}
-				go func(inbound tunnel.Conn) {
-					defer inbound.Close()
-					addr := inbound.Metadata().Address
-					var outbound net.Conn
-					var err error
-					if addr.IP != nil && N.IsPrivateAddress(addr.IP) {
-						networkType := addr.NetworkType
-						if networkType == "" {
-							networkType = "tcp"
-						}
-						add := fmt.Sprintf("%s:%d", addr.IP.String(), addr.Port)
-						outbound, err = net.Dial(networkType, add)
-					} else {
-						outbound, err = p.sink.DialConn(addr, nil)
-					}
-					if err != nil {
-						log.Error(common.NewError("proxy failed to dial connection").Base(err))
-						return
-					}
-					log.D("connect to:", addr)
-					defer outbound.Close()
-					// relay
-					relay(outbound, inbound)
-					// errChan := make(chan error, 2)
-					// copyConn := func(a, b net.Conn) {
-					// 	buf := pool.Get(pool.RelayBufferSize)
-					// 	_, err := io.CopyBuffer(a, b, buf)
-					// 	pool.Put(buf)
-					// 	a.SetReadDeadline(time.Now())
-					// 	errChan <- err
-					// 	return
-					// }
-					// go copyConn(inbound, outbound)
-					// go copyConn(outbound, inbound)
-					// select {
-					// case err = <-errChan:
-					// 	if err != nil {
-					// 		log.E("copyConn: ", err.Error())
-					// 		return
-					// 	}
-					// case <-p.ctx.Done():
-					// 	log.D("shutting down conn relay")
-					// 	return
-					// }
-				}(inbound)
+				pool.Serve(inbound)
+				// go func(inbound tunnel.Conn) {
+				// 	defer inbound.Close()
+				// 	addr := inbound.Metadata().Address
+				// 	var outbound net.Conn
+				// 	var err error
+				// 	if addr.IP != nil && N.IsPrivateAddress(addr.IP) {
+				// 		networkType := addr.NetworkType
+				// 		if networkType == "" {
+				// 			networkType = "tcp"
+				// 		}
+				// 		add := fmt.Sprintf("%s:%d", addr.IP.String(), addr.Port)
+				// 		outbound, err = net.Dial(networkType, add)
+				// 	} else {
+				// 		outbound, err = p.sink.DialConn(addr, nil)
+				// 	}
+				// 	if err != nil {
+				// 		log.Error(common.NewError("proxy failed to dial connection").Base(err))
+				// 		return
+				// 	}
+				// 	log.D("connect to:", addr)
+				// 	defer outbound.Close()
+				// 	// relay
+				// 	relay(outbound, inbound)
+				// }(inbound)
 			}
 		}(source)
 	}
 }
 
-func relay(leftConn, rightConn net.Conn) {
+func relay(leftConn, rightConn net.Conn) error {
 	ch := make(chan error)
 
 	go func() {
@@ -130,7 +141,8 @@ func relay(leftConn, rightConn net.Conn) {
 	}
 	pool.Put(buf)
 	rightConn.SetReadDeadline(time.Now())
-	<-ch
+	err = <-ch
+	return err
 }
 
 func NewProxy(ctx context.Context, cancel context.CancelFunc, sources []tunnel.Server, sink tunnel.Client) *Proxy {
