@@ -1,7 +1,10 @@
 package utils
 
-import "net"
+import (
+	"context"
+	"net"
+)
 
-func Listen(network, address string) (net.Listener, error) {
+func Listen(ctx context.Context, network, address string) (net.Listener, error) {
 	return net.Listen(network, address)
 }
