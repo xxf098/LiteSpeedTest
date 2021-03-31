@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/xxf098/lite-proxy/utils"
 	webServer "github.com/xxf098/lite-proxy/web"
 )
 
@@ -25,7 +26,15 @@ func main() {
 		return
 	}
 	if *link == "" {
-		return
+		if len(os.Args) > 1 {
+			arg := os.Args[1]
+			if _, err := utils.CheckLink(os.Args[1]); err == nil {
+				link = &arg
+			}
+		}
+		if *link == "" {
+			return
+		}
 	}
 	c := Config{
 		LocalHost: "127.0.0.1",
