@@ -136,7 +136,7 @@
 							<!-- <el-table-column label="Loss" align="center" prop="loss" width="100" sortable>
 							</el-table-column> -->
 							<el-table-column label="Ping" align="center" prop="ping" width="100" sortable :sort-method="floatSort"
-							:filters="[{ text: 'Available ', value: 'available' }, { text: 'Unavailable', value: 'unavailable' }]"  :filter-method="filterPing">
+							:filters="[{ text: 'Available ', value: 'available' }]"  :filter-method="filterPing">
 							</el-table-column>
 							<el-table-column label="AvgSpeed" align="center" prop="speed" width="150" sortable
 							:sort-method="speedSort">
@@ -705,7 +705,7 @@
 					return speed1 - speed2;
 				},
 				filterPing: function(value, row) {
-					return value === "available" ? row.ping > 0 : row.ping <= 0;
+					return value === "available" ? row.ping > 0 : true;
       			},
 				checkSelectable: function (row, index) {
 					return !!row.link && row.hasOwnProperty("id") && row.testing !== true
