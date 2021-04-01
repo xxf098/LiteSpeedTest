@@ -162,11 +162,11 @@
 			</el-col>
 		</el-row>
 		<!-- el-col -->
-		<el-dialog title="Share Links with QRcode" center :visible.sync="qrCodeDialogVisible" width="50%" @opened="handleQRCodeCreate" :before-close="qrCodeHandleClose">
+		<el-dialog title="Share Links with QRcode" center :visible.sync="qrCodeDialogVisible" width="40%" @opened="handleQRCodeCreate" :before-close="qrCodeHandleClose">
 			<el-scrollbar style="height:360px;">
 				<el-row>
-					<el-col v-for="(item, index) of multipleSelection" :key="index" :span="8">
-						<el-card :body-style="{ padding: '0px', height:'360px'}" shadow="hover" style="width: 260px;height: 260px;text-align: center;">
+					<el-col v-for="(item, index) of multipleSelection" :key="index" :span="12">
+						<el-card :body-style="{ padding: '0px', height:'400px'}" shadow="hover" style="width: 3000px;height: 300px;text-align: center;">
 							<div :id="'qrcode_' + item.id" style="margin-left: 20px;"></div>
 							<div class="truncate_remark">{{ item.remark }}</div>
 							<div>{{ `${item.ping}ms ${item.speed} ${item.maxspeed}` }}</div>
@@ -352,8 +352,8 @@
 							const gid = 'qrcode_' + item.id;
 							new QRCode(gid, {
 								text: item.link,
-								width: 220,
-								height: 220
+								width: 260,
+								height: 260
         					})
 							// setTimeout(() => {
 							// 	const sibling = document.getElementById(gid).nextElementSibling
