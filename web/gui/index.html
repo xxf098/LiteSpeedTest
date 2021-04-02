@@ -133,6 +133,8 @@
 							</el-table-column> -->
 							<el-table-column label="Remark" align="center" prop="remark" width="300" sortable>
 							</el-table-column>
+							<el-table-column label="Protocol" align="center" prop="protocol" width="100" sortable>
+							</el-table-column>
 							<!-- <el-table-column label="Loss" align="center" prop="loss" width="100" sortable>
 							</el-table-column> -->
 							<el-table-column label="Ping" align="center" prop="ping" width="100" sortable :sort-method="floatSort"
@@ -586,6 +588,7 @@
 							id: id,
 							group: this.groupname == "" ? json.group : this.groupname,
 							remark: json.remarks,
+							protocol: json.protocol,
 							link: json.link,
 							loss: "0.00%",
 							ping: "0.00",

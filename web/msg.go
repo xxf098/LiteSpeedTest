@@ -27,34 +27,36 @@ type Message struct {
 	MaxSpeed string `json:"maxspeed"`
 	Traffic  int64  `json:"traffic"`
 	Link     string `json:"link"`
+	Protocol string `json:"protocol"`
 }
 
-func getRemarks(link string) (string, error) {
+func getRemarks(link string) (string, string, error) {
 	cfgVmess, err := config.VmessLinkToVmessConfigIP(link, false)
 	if err == nil {
-		return cfgVmess.Ps, nil
+		return "vmess", cfgVmess.Ps, nil
 	}
 	cfgSSR, err := config.SSRLinkToSSROption(link)
 	if err == nil {
-		return cfgSSR.Remarks, nil
+		return "ssr", cfgSSR.Remarks, nil
 	}
 	cfgTrojan, err := config.TrojanLinkToTrojanOption(link)
 	if err == nil {
-		return cfgTrojan.Remarks, nil
+		return "trojan", cfgTrojan.Remarks, nil
 	}
 	cfgSS, err := config.SSLinkToSSOption(link)
 	if err == nil {
-		return cfgSS.Remarks, nil
+		return "ss", cfgSS.Remarks, nil
 	}
-	return "", nil
+	return "unknown", "", nil
 }
 
 func gotserverMsg(id int, link string, groupName string) []byte {
 	msg := Message{ID: id, Info: "gotserver"}
-	remarks, err := getRemarks(link)
+	protocol, remarks, err := getRemarks(link)
 	if err == nil {
 		msg.Group = groupName
 		msg.Remarks = remarks
+		msg.Protocol = protocol
 		msg.Link = link
 	}
 	b, _ := json.Marshal(msg)
