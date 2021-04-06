@@ -3,9 +3,8 @@
 }
 
 .truncate_remark {
-    width: 260px;
+    width: 330px;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
-    margin-left: 10px;
+    text-overflow: ellipsis;   
 }

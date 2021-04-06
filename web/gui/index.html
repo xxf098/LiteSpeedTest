@@ -168,7 +168,7 @@
 			<el-scrollbar style="height:360px;">
 				<el-row>
 					<el-col v-for="(item, index) of multipleSelection" :key="index" :span="12">
-						<el-card :body-style="{ padding: '0px', height:'400px'}" shadow="hover" style="width: 3000px;height: 300px;text-align: center;">
+						<el-card :body-style="{ padding: '0px', height:'400px'}" shadow="hover" style="width: 320px;height: 330px;text-align: center;">
 							<div :id="'qrcode_' + item.id" style="margin-left: 20px;"></div>
 							<div class="truncate_remark">{{ item.remark }}</div>
 							<div>{{ `${item.ping}ms ${item.speed} ${item.maxspeed}` }}</div>
