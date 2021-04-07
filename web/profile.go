@@ -18,6 +18,7 @@ import (
 	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/download"
 	"github.com/xxf098/lite-proxy/request"
+	"github.com/xxf098/lite-proxy/utils/status"
 )
 
 var ErrInvalidData = errors.New("invalid data")
@@ -195,6 +196,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		p.WriteMessage(gotserverMsg(i, p.Links[i], p.Options.GroupName))
 	}
 	guard := make(chan int, p.Options.Concurrency)
+	status.Start()
 	for i := range p.Links {
 		p.wg.Add(1)
 		id := i
@@ -203,13 +205,14 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 			id = p.Options.TestIDs[i]
 			link = p.Options.Links[i]
 		}
+		bar := status.AddBar(15).AppendSpeed().PrependElapsed()
 		select {
 		case guard <- i:
-			go func(id int, link string, c <-chan int) {
-				p.testOne(ctx, id, link)
+			go func(id int, link string, c <-chan int, bar *status.Bar) {
+				p.testOne(ctx, id, link, bar)
 				_ = p.WriteMessage(getMsgByte(id, "endone"))
 				<-c
-			}(id, link, guard)
+			}(id, link, guard, bar)
 		case <-ctx.Done():
 			return nil
 		}
@@ -219,7 +222,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	return nil
 }
 
-func (p *ProfileTest) testOne(ctx context.Context, index int, link string) error {
+func (p *ProfileTest) testOne(ctx context.Context, index int, link string, bar *status.Bar) error {
 	// panic
 	if link == "" {
 		defer p.wg.Done()
@@ -250,12 +253,12 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string) error
 				if max < speed {
 					max = speed
 				}
-				_, remarks, err := getRemarks(link)
-				if err != nil {
-					remarks = fmt.Sprintf("Profile %d", index)
-				}
-				log.Printf("%s recv: %s", remarks, download.ByteCountIEC(speed))
-
+				// _, remarks, err := getRemarks(link)
+				// if err != nil {
+				// 	remarks = fmt.Sprintf("Profile %d", index)
+				// }
+				// log.Printf("%s recv: %s", remarks, download.ByteCountIEC(speed))
+				bar.Incr(download.ByteCountIEC(speed))
 				err = p.WriteMessage(getMsgByte(index, "gotspeed", avg, max, speed))
 			case <-ctx.Done():
 				log.Printf("index %d done!", index)

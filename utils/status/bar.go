@@ -61,6 +61,8 @@ type Bar struct {
 	timeElapsed time.Duration
 	current     int
 
+	speed string
+
 	mtx *sync.RWMutex
 
 	appendFuncs  []DecoratorFunc
@@ -98,7 +100,7 @@ func (b *Bar) Set(n int) error {
 }
 
 // Incr increments the current value by 1, time elapsed to current time and returns true. It returns false if the cursor has reached or exceeds total value.
-func (b *Bar) Incr() bool {
+func (b *Bar) Incr(speed string) bool {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
 
@@ -112,6 +114,7 @@ func (b *Bar) Incr() bool {
 	}
 	b.timeElapsed = time.Since(b.TimeStarted)
 	b.current = n
+	b.speed = speed
 	return true
 }
 
@@ -134,6 +137,13 @@ func (b *Bar) AppendFunc(f DecoratorFunc) *Bar {
 func (b *Bar) AppendCompleted() *Bar {
 	b.AppendFunc(func(b *Bar) string {
 		return b.CompletedPercentString()
+	})
+	return b
+}
+
+func (b *Bar) AppendSpeed() *Bar {
+	b.AppendFunc(func(b *Bar) string {
+		return b.speed
 	})
 	return b
 }
