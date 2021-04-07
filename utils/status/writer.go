@@ -13,7 +13,7 @@ import (
 const ESC = 27
 
 // RefreshInterval is the default refresh interval to update the ui
-var RefreshInterval = time.Millisecond
+var RefreshInterval = time.Millisecond * 10
 
 var overFlowHandled bool
 
