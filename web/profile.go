@@ -250,7 +250,12 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string) error
 				if max < speed {
 					max = speed
 				}
-				log.Printf("recv: %s", download.ByteCountIEC(speed))
+				_, remarks, err := getRemarks(link)
+				if err != nil {
+					remarks = fmt.Sprintf("Profile %d", index)
+				}
+				log.Printf("%s recv: %s", remarks, download.ByteCountIEC(speed))
+
 				err = p.WriteMessage(getMsgByte(index, "gotspeed", avg, max, speed))
 			case <-ctx.Done():
 				log.Printf("index %d done!", index)
