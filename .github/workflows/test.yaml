@@ -12,19 +12,82 @@ on:
 jobs:
   # The "build" workflow
   build:
+    strategy:
+      matrix:
+        # Include amd64 on all platforms.
+        goos: [windows, freebsd, openbsd, linux, dragonfly, darwin]
+        goarch: [amd64, 386]
+        exclude:
+          # Exclude i386 on darwin and dragonfly.
+          - goarch: 386
+            goos: dragonfly
+          - goarch: 386
+            goos: darwin
+        include:
+          # BEGIN Linux ARM 5 6 7
+          - goos: linux
+            goarch: arm
+            goarm: 7
+          - goos: linux
+            goarch: arm
+            goarm: 6
+          - goos: linux
+            goarch: arm
+            goarm: 5
+          # END Linux ARM 5 6 7
+          # Windows ARM 7
+          - goos: windows
+            goarch: arm
+            goarm: 7
+          # BEGIN Other architectures
+          - goos: darwin
+            goarch: arm64
+          - goos: linux
+            goarch: arm64
+          - goos: linux
+            goarch: riscv64
+          # BEGIN MIPS
+          - goos: linux
+            goarch: mips64
+          - goos: linux
+            goarch: mips64le
+          - goos: linux
+            goarch: mipsle
+          - goos: linux
+            goarch: mips
+          # END MIPS
+          # BEGIN Android
+          - goos: android
+            goarch: arm64
+          # END Android
+          # END Other architectures
+      fail-fast: false    
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    env:
+      GOOS: ${{ matrix.goos }}
+      GOARCH: ${{ matrix.goarch }}
+      GOARM: ${{ matrix.goarm }}
+      CGO_ENABLED: 0    
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
+  
+    - name: Show workflow information
+      id: get_filename
+      run: |
+        export _NAME=$(jq ".[\"$GOOS-$GOARCH$GOARM\"].friendlyName" -r < release/friendly-filenames.json)
+        echo "GOOS: $GOOS, GOARCH: $GOARCH, GOARM: $GOARM, RELEASE_NAME: $_NAME"
+        echo "::set-output name=ASSET_NAME::$_NAME"
+        echo "ASSET_NAME=$_NAME" >> $GITHUB_ENV    
     
     # Setup Go
     - name: Setup Go
       uses: actions/setup-go@v2
       with:
-        go-version: '1.16.0' # The Go version to download (if necessary) and use.
+        go-version: ^1.16.3 # The Go version to download (if necessary) and use.
     
     # Install all the dependencies
     - name: Install dependencies
@@ -40,10 +103,16 @@ jobs:
     
     # Run testing on the code
     - name: Run testing
+      if: matrix.goos != 'windows'
       run: ls -thla lite
 
-    - name: Upload Lite
-      uses: actions/upload-artifact@v1
+    - name: Create ZIP archive
+      run: |
+        zip -9vr lite-$ASSET_NAME.zip lite
+        FILE=./lite-$ASSET_NAME.zip
+
+    - name: Upload ZIP file to Artifacts
+      uses: actions/upload-artifact@v2
       with:
-        name: lite
-        path: lite
+        name: lite-${{ steps.get_filename.outputs.ASSET_NAME }}.zip
+        path: lite-${{ steps.get_filename.outputs.ASSET_NAME }}.zip
