@@ -58,3 +58,57 @@ func Link2Dialer(link string) (outbound.Dialer, error) {
 		return nil, common.NewError("Not Suported Link")
 	}
 }
+
+type Config struct {
+	Protocol string
+	Remarks  string
+	Server   string
+	Port     int
+}
+
+func GetConfig(link string) (*Config, error) {
+	var cfg *Config
+	cfgVmess, err := VmessLinkToVmessConfigIP(link, false)
+	if err == nil {
+		cfg = &Config{
+			Protocol: "vmess",
+			Remarks:  cfgVmess.Ps,
+			Server:   cfgVmess.Add,
+			Port:     cfgVmess.PortInt,
+		}
+		return cfg, nil
+	}
+	cfgSSR, err := SSRLinkToSSROption(link)
+	if err == nil {
+		cfg = &Config{
+			Protocol: "ssr",
+			Remarks:  cfgSSR.Remarks,
+			Server:   cfgSSR.Server,
+			Port:     cfgSSR.Port,
+		}
+		return cfg, nil
+	}
+	cfgTrojan, err := TrojanLinkToTrojanOption(link)
+	if err == nil {
+		cfg = &Config{
+			Protocol: "trojan",
+			Remarks:  cfgTrojan.Remarks,
+			Server:   cfgTrojan.Server,
+			Port:     cfgTrojan.Port,
+		}
+		return cfg, nil
+	}
+	cfgSS, err := SSLinkToSSOption(link)
+	if err == nil {
+		cfg.Protocol = "ss"
+		cfg.Remarks = cfgSS.Remarks
+		cfg = &Config{
+			Protocol: "ss",
+			Remarks:  cfgSS.Remarks,
+			Server:   cfgSS.Server,
+			Port:     cfg.Port,
+		}
+		return cfg, nil
+	}
+	return cfg, err
+}
