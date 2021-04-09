@@ -144,7 +144,7 @@
 							:sort-method="speedSort">
 							</el-table-column>
 							<el-table-column label="MaxSpeed" align="center" prop="maxspeed" width="150" sortable
-							:sort-method="speedSort">
+							:sort-method="maxSpeedSort">
 							</el-table-column>
 						</el-table>
 					</el-container>
@@ -716,6 +716,11 @@
 				speedSort: function (obj1, obj2) {
 					const speed1 = isNaN(this.getSpeed(obj1.speed)) ? -1 : this.getSpeed(obj1.speed);
 					const speed2 = isNaN(this.getSpeed(obj2.speed)) ? -1 : this.getSpeed(obj2.speed);
+					return speed1 - speed2;
+				},
+				maxSpeedSort: function (obj1, obj2) {
+					const speed1 = isNaN(this.getSpeed(obj1.maxspeed)) ? -1 : this.getSpeed(obj1.maxspeed);
+					const speed2 = isNaN(this.getSpeed(obj2.maxspeed)) ? -1 : this.getSpeed(obj2.maxspeed);
 					return speed1 - speed2;
 				},
 				filterPing: function(value, row) {
