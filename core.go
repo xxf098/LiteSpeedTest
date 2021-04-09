@@ -39,7 +39,7 @@ func startInstance(c Config) (*proxy.Proxy, error) {
 	if err != nil {
 		return nil, err
 	}
-	cfg, err := config.GetConfig(c.Link)
+	cfg, err := config.Link2Config(c.Link)
 	if err != nil {
 		return nil, err
 	}

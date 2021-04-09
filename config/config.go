@@ -66,8 +66,13 @@ type Config struct {
 	Port     int
 }
 
-func GetConfig(link string) (*Config, error) {
-	var cfg *Config
+func Link2Config(link string) (*Config, error) {
+	var cfg *Config = &Config{
+		Protocol: "unknown",
+		Remarks:  "",
+		Server:   "127.0.0.1",
+		Port:     80,
+	}
 	cfgVmess, err := VmessLinkToVmessConfigIP(link, false)
 	if err == nil {
 		cfg = &Config{

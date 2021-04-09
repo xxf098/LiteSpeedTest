@@ -31,23 +31,8 @@ type Message struct {
 }
 
 func getRemarks(link string) (string, string, error) {
-	cfgVmess, err := config.VmessLinkToVmessConfigIP(link, false)
-	if err == nil {
-		return "vmess", cfgVmess.Ps, nil
-	}
-	cfgSSR, err := config.SSRLinkToSSROption(link)
-	if err == nil {
-		return "ssr", cfgSSR.Remarks, nil
-	}
-	cfgTrojan, err := config.TrojanLinkToTrojanOption(link)
-	if err == nil {
-		return "trojan", cfgTrojan.Remarks, nil
-	}
-	cfgSS, err := config.SSLinkToSSOption(link)
-	if err == nil {
-		return "ss", cfgSS.Remarks, nil
-	}
-	return "unknown", "", nil
+	cfg, err := config.Link2Config(link)
+	return cfg.Protocol, cfg.Remarks, err
 }
 
 func gotserverMsg(id int, link string, groupName string) []byte {
