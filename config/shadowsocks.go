@@ -51,11 +51,11 @@ func SSLinkToSSOption(link string) (*outbound.ShadowSocksOption, error) {
 	}
 	pass := u.User.Username()
 	hostport := u.Host
-	host, _, err := net.SplitHostPort(hostport)
+	host, port1, err := net.SplitHostPort(hostport)
 	if err != nil {
 		return nil, err
 	}
-	port, err := strconv.Atoi(u.Port())
+	port, err := strconv.Atoi(port1)
 	if err != nil {
 		return nil, err
 	}
