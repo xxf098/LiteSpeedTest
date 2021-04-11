@@ -6,13 +6,15 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/websocket"
 )
 
 var upgrader = websocket.Upgrader{}
 
 func ServeFile() error {
-	http.Handle("/", http.FileServer(AssetFile()))
+	box := packr.New("myBox", "./gui")
+	http.Handle("/", http.FileServer(box))
 	http.HandleFunc("/test", updateTest)
 	fmt.Println("Start server at http://127.0.0.1:10888")
 	err := http.ListenAndServe(":10888", nil)

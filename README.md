@@ -16,8 +16,8 @@ As test tool:
 ```bash
     go get -u ./...
     # go-bindata
-    go get -u github.com/go-bindata/go-bindata/...
-    go-bindata -fs -pkg web -prefix "web/gui"  -o ./web/asset.go web/gui/
+    go get -u github.com/gobuffalo/packr/v2/...
+    packr2
     go build -o lite
 ```
 
