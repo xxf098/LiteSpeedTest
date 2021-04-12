@@ -15,7 +15,7 @@ As test tool:
 ### Build
 ```bash
     go get -u ./...
-    # go-bindata
+    # packr2
     go get -u github.com/gobuffalo/packr/v2/...
     packr2
     go build -o lite
