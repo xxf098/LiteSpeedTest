@@ -4,12 +4,12 @@ LiteSpeedTest is a simple tool for batch test ss/ssr/v2ray/trojan server.
 
 ### Usage
 ```
-As proxy:
+As http/socks proxy:
     lite vmess://ABCDEFGHIJKLMNOPQRSTUVWXYZ
     lite ssr://ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
-As test tool:
-    lite
+As speed test tool:
+    lite    
 ```
 
 ### Build
