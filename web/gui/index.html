@@ -408,7 +408,9 @@
 					this.send(JSON.stringify(data));
 				},
 				handleSave: function () {
-					const links = this.multipleSelection.map(elem => elem.link).join("\n")
+					const links = this.multipleSelection.map(elem => {
+							return `# ${elem.remark}\t${elem.ping}\t${elem.speed}\t${elem.maxspeed}\n${elem.link}`
+					}).join("\n")
 					const blob = new Blob([links], { type: 'text/plain;charset=utf-8;' })
 					const link = document.createElement('a')
 					if (link == null || link.download == null || link.download == undefined) {
