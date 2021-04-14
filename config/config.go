@@ -111,7 +111,7 @@ func Link2Config(link string) (*Config, error) {
 			Protocol: "ss",
 			Remarks:  cfgSS.Remarks,
 			Server:   cfgSS.Server,
-			Port:     cfg.Port,
+			Port:     cfgSS.Port,
 		}
 		return cfg, nil
 	}
