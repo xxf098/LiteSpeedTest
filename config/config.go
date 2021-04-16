@@ -13,50 +13,36 @@ func Link2Dialer(link string) (outbound.Dialer, error) {
 	if err != nil {
 		return nil, err
 	}
+	var d outbound.Dialer
 	switch strings.ToLower(matches[1]) {
 	case "vmess":
-		option, err := VmessLinkToVmessOption(link)
-		if err != nil {
-			return nil, err
+		option, err1 := VmessLinkToVmessOption(link)
+		if err1 != nil {
+			return nil, err1
 		}
-		d, err := outbound.NewVmess(option)
-		if err != nil {
-			return nil, err
-		}
-		return d, nil
+		d, err = outbound.NewVmess(option)
 	case "trojan":
-		option, err := TrojanLinkToTrojanOption(link)
-		if err != nil {
-			return nil, err
+		option, err1 := TrojanLinkToTrojanOption(link)
+		if err1 != nil {
+			return nil, err1
 		}
-		d, err := outbound.NewTrojan(option)
-		if err != nil {
-			return nil, err
-		}
-		return d, nil
+		d, err = outbound.NewTrojan(option)
 	case "ss":
-		option, err := SSLinkToSSOption(link)
-		if err != nil {
-			return nil, err
+		option, err1 := SSLinkToSSOption(link)
+		if err1 != nil {
+			return nil, err1
 		}
-		d, err := outbound.NewShadowSocks(option)
-		if err != nil {
-			return nil, err
-		}
-		return d, nil
+		d, err = outbound.NewShadowSocks(option)
 	case "ssr":
-		option, err := SSRLinkToSSROption(link)
-		if err != nil {
-			return nil, err
+		option, err1 := SSRLinkToSSROption(link)
+		if err1 != nil {
+			return nil, err1
 		}
-		d, err := outbound.NewShadowSocksR(option)
-		if err != nil {
-			return nil, err
-		}
-		return d, nil
+		d, err = outbound.NewShadowSocksR(option)
 	default:
 		return nil, common.NewError("Not Suported Link")
 	}
+	return d, err
 }
 
 type Config struct {
@@ -73,6 +59,7 @@ func Link2Config(link string) (*Config, error) {
 		Server:   "127.0.0.1",
 		Port:     80,
 	}
+
 	cfgVmess, err := VmessLinkToVmessConfigIP(link, false)
 	if err == nil {
 		cfg = &Config{
