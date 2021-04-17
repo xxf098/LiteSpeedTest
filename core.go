@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"time"
 
 	"github.com/xxf098/lite-proxy/component/resolver"
 	"github.com/xxf098/lite-proxy/config"
@@ -11,6 +12,7 @@ import (
 	"github.com/xxf098/lite-proxy/dns"
 	"github.com/xxf098/lite-proxy/outbound"
 	"github.com/xxf098/lite-proxy/proxy"
+	"github.com/xxf098/lite-proxy/request"
 	"github.com/xxf098/lite-proxy/tunnel"
 	"github.com/xxf098/lite-proxy/tunnel/adapter"
 	"github.com/xxf098/lite-proxy/tunnel/http"
@@ -39,11 +41,17 @@ func startInstance(c Config) (*proxy.Proxy, error) {
 	if err != nil {
 		return nil, err
 	}
-	cfg, err := config.Link2Config(c.Link)
-	if err != nil {
-		return nil, err
-	}
-	log.Printf("%s %s:%d", cfg.Remarks, cfg.Server, cfg.Port)
+	go func(link string) {
+		if cfg, err := config.Link2Config(c.Link); err == nil {
+			opt := request.PingOption{
+				Attempts: 1,
+				TimeOut:  1000 * time.Millisecond,
+			}
+			if elapse, err := request.PingLinkInternal(link, opt); err == nil {
+				log.Printf("%s %s:%d %dms", cfg.Remarks, cfg.Server, cfg.Port, elapse)
+			}
+		}
+	}(c.Link)
 	setDefaultResolver()
 	p := proxy.NewProxy(ctx, cancel, sources, sink)
 	return p, nil

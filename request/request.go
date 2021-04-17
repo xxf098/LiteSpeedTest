@@ -21,14 +21,19 @@ import (
 )
 
 const (
-	tcpTimeout   = 2400 * time.Millisecond
 	remoteHost   = "clients3.google.com"
 	generate_204 = "http://clients3.google.com/generate_204"
 )
 
 var (
 	httpRequest = []byte("GET /generate_204 HTTP/1.1\r\nHost: clients3.google.com\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36\r\n\r\n")
+	tcpTimeout  = 2400 * time.Millisecond
 )
+
+type PingOption struct {
+	Attempts int
+	TimeOut  time.Duration
+}
 
 func PingVmess(vmessOption *outbound.VmessOption) (int64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
@@ -188,6 +193,14 @@ func PingSSR(ssrOption *outbound.ShadowSocksROption) (int64, error) {
 }
 
 func PingLink(link string, attempts int) (int64, error) {
+	opt := PingOption{
+		Attempts: attempts,
+		TimeOut:  tcpTimeout,
+	}
+	return PingLinkInternal(link, opt)
+}
+
+func PingLinkInternal(link string, pingOption PingOption) (int64, error) {
 	matches, err := utils.CheckLink(link)
 	if err != nil {
 		return 0, err
@@ -209,7 +222,10 @@ func PingLink(link string, attempts int) (int64, error) {
 		return 0, err
 	}
 	var elapse int64
-	err = utils.ExponentialBackoff(attempts, 100).On(func() error {
+	if pingOption.TimeOut > 0 {
+		tcpTimeout = pingOption.TimeOut
+	}
+	err = utils.ExponentialBackoff(pingOption.Attempts, 100).On(func() error {
 		elp, err := Ping(option)
 		if err != nil {
 			return err
