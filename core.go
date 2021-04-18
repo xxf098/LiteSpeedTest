@@ -48,7 +48,7 @@ func startInstance(c Config) (*proxy.Proxy, error) {
 				TimeOut:  1000 * time.Millisecond,
 			}
 			if elapse, err := request.PingLinkInternal(link, opt); err == nil {
-				log.Printf("%s %s:%d %dms", cfg.Remarks, cfg.Server, cfg.Port, elapse)
+				log.Printf("%s %s:%d \033[32m%dms\033[0m", cfg.Remarks, cfg.Server, cfg.Port, elapse)
 			}
 		}
 	}(c.Link)
