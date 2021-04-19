@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -47,9 +48,11 @@ func startInstance(c Config) (*proxy.Proxy, error) {
 				Attempts: 1,
 				TimeOut:  1000 * time.Millisecond,
 			}
+			info := fmt.Sprintf("%s %s:%d", cfg.Remarks, cfg.Server, cfg.Port)
 			if elapse, err := request.PingLinkInternal(link, opt); err == nil {
-				log.Printf("%s %s:%d \033[32m%dms\033[0m", cfg.Remarks, cfg.Server, cfg.Port, elapse)
+				info = fmt.Sprintf("%s \033[32m%dms\033[0m", info, elapse)
 			}
+			log.Print(info)
 		}
 	}(c.Link)
 	setDefaultResolver()
