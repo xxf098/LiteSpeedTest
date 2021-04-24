@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 
@@ -21,7 +20,7 @@ func main() {
 	if *test || len(os.Args) < 2 {
 		err := webServer.ServeFile()
 		if err != nil {
-			fmt.Println(err)
+			log.Fatalln(err)
 		}
 		return
 	}

@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"strconv"
 
@@ -141,8 +142,7 @@ func NewAddressFromAddr(network string, addr string) (*Address, error) {
 	}
 	port, err := strconv.ParseInt(portStr, 10, 32)
 	if err != nil {
-		fmt.Println(err)
-		panic(err)
+		log.Fatalln(err)
 	}
 	return NewAddressFromHostPort(network, host, int(port)), nil
 }

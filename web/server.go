@@ -2,7 +2,6 @@ package web
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -16,7 +15,7 @@ func ServeFile() error {
 	box := packr.New("myBox", "./gui")
 	http.Handle("/", http.FileServer(box))
 	http.HandleFunc("/test", updateTest)
-	fmt.Println("Start server at http://127.0.0.1:10888")
+	log.Println("Start server at http://127.0.0.1:10888")
 	err := http.ListenAndServe(":10888", nil)
 	return err
 }
