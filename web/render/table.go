@@ -15,8 +15,9 @@ type Node struct {
 type Nodes []Node
 
 type TableOptions struct {
-	horizontalpadding float64
-	verticalpadding   float64
+	horizontalpadding float64 // left + right
+	verticalpadding   float64 // up + down
+	tableTopPadding   float64 // padding for table
 	lineWidth         float64
 	fontHeight        float64
 }
@@ -49,10 +50,10 @@ func NewTable(width int, height int, options TableOptions) Table {
 }
 
 func (t *Table) drawHorizonLines() {
-	y := t.options.fontHeight + 10 + 20
+	y := t.options.fontHeight + t.options.tableTopPadding
 	for i := 0; i < len(t.nodes)+4; i++ {
-		t.drawHorizonLine(y - t.options.fontHeight - 10)
-		y = y + t.options.fontHeight + 20
+		t.drawHorizonLine(y - t.options.fontHeight)
+		y = y + t.options.fontHeight + t.options.verticalpadding
 	}
 }
 
@@ -63,7 +64,7 @@ func (t *Table) drawHorizonLine(y float64) {
 }
 
 func (t *Table) drawVerticalLines() {
-	padding := t.options.horizontalpadding
+	padding := t.options.verticalpadding
 	x := t.cellWidths.group + padding
 	t.drawVerticalLine(x)
 	x += t.cellWidths.remarks + padding
@@ -75,26 +76,27 @@ func (t *Table) drawVerticalLines() {
 }
 
 func (t *Table) drawVerticalLine(x float64) {
-	t.DrawLine(x, 20, x, float64(t.height)-15)
+	t.DrawLine(x, t.options.tableTopPadding, x, float64(t.height)-15)
 	t.SetLineWidth(0.5)
 	t.Stroke()
 }
 
 func (t *Table) drawNodes() {
-	var x float64 = 10
-	var y float64 = t.options.fontHeight + 10 + 20
+	horizontalpadding := t.options.horizontalpadding
+	var x float64 = horizontalpadding / 2
+	var y float64 = t.options.fontHeight + t.options.verticalpadding/2 + t.options.tableTopPadding
 	for _, v := range t.nodes {
 		t.DrawString(v.Group, x, y)
-		x += t.cellWidths.group + 20
+		x += t.cellWidths.group + horizontalpadding
 		t.DrawString(v.Remarks, x, y)
-		x += t.cellWidths.remarks + 20
+		x += t.cellWidths.remarks + horizontalpadding
 		t.DrawString(v.Ping, x, y)
-		x += t.cellWidths.ping + 20
+		x += t.cellWidths.ping + horizontalpadding
 		t.DrawString(v.AvgSpeed, x, y)
-		x += t.cellWidths.avgspeed + 20
+		x += t.cellWidths.avgspeed + horizontalpadding
 		t.DrawString(v.MaxSpeed, x, y)
-		y = y + t.options.fontHeight + 20
-		x = 10
+		y = y + t.options.fontHeight + t.options.verticalpadding
+		x = horizontalpadding / 2
 	}
 }
 
