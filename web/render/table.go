@@ -80,6 +80,24 @@ func (t *Table) drawVerticalLine(x float64) {
 	t.Stroke()
 }
 
+func (t *Table) drawNodes() {
+	var x float64 = 10
+	var y float64 = t.options.fontHeight + 10 + 20
+	for _, v := range t.nodes {
+		t.DrawString(v.Group, x, y)
+		x += t.cellWidths.group + 20
+		t.DrawString(v.Remarks, x, y)
+		x += t.cellWidths.remarks + 20
+		t.DrawString(v.Ping, x, y)
+		x += t.cellWidths.ping + 20
+		t.DrawString(v.AvgSpeed, x, y)
+		x += t.cellWidths.avgspeed + 20
+		t.DrawString(v.MaxSpeed, x, y)
+		y = y + t.options.fontHeight + 20
+		x = 10
+	}
+}
+
 func (t *Table) draw() error {
 	t.drawHorizonLines()
 	return nil
