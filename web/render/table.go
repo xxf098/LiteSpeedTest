@@ -131,6 +131,7 @@ func calcWidth(fontface font.Face, nodes Nodes) *CellWidths {
 		return cellWidths
 	}
 	cellWidths.group = getWidth(fontface, nodes[0].Group)
+
 	for _, v := range nodes {
 		width := getWidth(fontface, v.Ping)
 		if cellWidths.ping < width {
@@ -149,6 +150,22 @@ func calcWidth(fontface font.Face, nodes Nodes) *CellWidths {
 			cellWidths.remarks = width
 		}
 	}
+	if cellWidths.group < getWidth(fontface, "Group") {
+		cellWidths.group = getWidth(fontface, "Group")
+	}
+	if cellWidths.remarks < getWidth(fontface, "Remarks") {
+		cellWidths.remarks = getWidth(fontface, "Remarks")
+	}
+	if cellWidths.ping < getWidth(fontface, "Ping") {
+		cellWidths.ping = getWidth(fontface, "Ping")
+	}
+	if cellWidths.avgspeed < getWidth(fontface, "AvgSpeed") {
+		cellWidths.avgspeed = getWidth(fontface, "AvgSpeed")
+	}
+	if cellWidths.maxspeed < getWidth(fontface, "MaxSpeed") {
+		cellWidths.maxspeed = getWidth(fontface, "MaxSpeed")
+	}
+
 	return cellWidths
 }
 
