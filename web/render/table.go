@@ -1,6 +1,8 @@
 package render
 
 import (
+	"fmt"
+
 	"golang.org/x/image/font"
 )
 
@@ -80,7 +82,7 @@ func (t *Table) drawVerticalLines() {
 }
 
 func (t *Table) drawVerticalLine(x float64) {
-	height := (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+4)) + t.options.tableTopPadding
+	height := (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+2)) + t.options.tableTopPadding
 	y := t.options.tableTopPadding + t.options.fontHeight + t.options.verticalpadding
 	t.DrawLine(x, y, x, height)
 	t.SetLineWidth(t.options.lineWidth)
@@ -113,6 +115,14 @@ func (t *Table) drawHeader() {
 	t.DrawString("AvgSpeed", x, y)
 	x += t.cellWidths.avgspeed + horizontalpadding
 	t.DrawString("MaxSpeed", x, y)
+}
+
+func (t *Table) drawTraffic(traffic string, time string, workingNodes string) {
+	// horizontalpadding := t.options.horizontalpadding
+	msg := fmt.Sprintf("Traffic used : %s. Time used : %s, Working Nodes: [%s]", traffic, time, workingNodes)
+	var x float64 = t.options.horizontalpadding / 2
+	var y float64 = (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+2)) + t.options.tableTopPadding + t.fontHeight + t.options.verticalpadding/2
+	t.DrawString(msg, x, y)
 }
 
 func (t *Table) drawNodes() {
