@@ -65,8 +65,8 @@ func TestDraw(t *testing.T) {
 	}
 	widths := calcWidth(fontface, nodes)
 	fontHeight := calcHeight(fontface)
-	var horizontalpadding float64 = 20
-	tableWidth := widths.group + horizontalpadding + widths.remarks + horizontalpadding + widths.protocol + horizontalpadding + widths.ping + horizontalpadding + widths.avgspeed + horizontalpadding + widths.maxspeed + 20
+	var horizontalpadding float64 = 40
+	tableWidth := widths.group + horizontalpadding + widths.remarks + horizontalpadding + widths.protocol + horizontalpadding + widths.ping + horizontalpadding + widths.avgspeed + horizontalpadding + widths.maxspeed + horizontalpadding
 	options := TableOptions{
 		horizontalpadding: horizontalpadding,
 		verticalpadding:   20,

@@ -66,7 +66,7 @@ func (t *Table) drawHorizonLine(y float64) {
 }
 
 func (t *Table) drawVerticalLines() {
-	padding := t.options.verticalpadding
+	padding := t.options.horizontalpadding
 	x := t.cellWidths.group + padding
 	t.drawVerticalLine(x)
 	x += t.cellWidths.remarks + padding
