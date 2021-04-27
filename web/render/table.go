@@ -1,7 +1,9 @@
 package render
 
 import (
+	"encoding/csv"
 	"fmt"
+	"os"
 	"time"
 
 	"golang.org/x/image/font"
@@ -17,6 +19,34 @@ type Node struct {
 }
 
 type Nodes []Node
+
+func CSV2Nodes(path string) (Nodes, error) {
+	recordFile, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer recordFile.Close()
+	reader := csv.NewReader(recordFile)
+	records, err := reader.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+	nodes := make(Nodes, len(records))
+	for i, v := range records {
+		if len(v) < 6 {
+			continue
+		}
+		nodes[i] = Node{
+			Group:    v[0],
+			Remarks:  v[1],
+			Protocol: v[2],
+			Ping:     v[3],
+			AvgSpeed: v[4],
+			MaxSpeed: v[5],
+		}
+	}
+	return nodes, nil
+}
 
 type TableOptions struct {
 	horizontalpadding float64 // left + right
