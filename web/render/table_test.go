@@ -69,7 +69,7 @@ func TestDraw(t *testing.T) {
 	tableWidth := widths.group + horizontalpadding + widths.remarks + horizontalpadding + widths.protocol + horizontalpadding + widths.ping + horizontalpadding + widths.avgspeed + horizontalpadding + widths.maxspeed + horizontalpadding
 	options := TableOptions{
 		horizontalpadding: horizontalpadding,
-		verticalpadding:   36,
+		verticalpadding:   30,
 		tableTopPadding:   20,
 		lineWidth:         0.6,
 		fontHeight:        fontHeight,
@@ -90,5 +90,7 @@ func TestDraw(t *testing.T) {
 	table.drawTitle()
 	table.drawHeader()
 	table.drawNodes()
+	table.drawTraffic("9.45GB", "06:24", "21/22")
+	table.drawGeneratedAt()
 	table.SavePNG("out.png")
 }

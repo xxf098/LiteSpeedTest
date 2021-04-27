@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"time"
 
 	"golang.org/x/image/font"
 )
@@ -122,6 +123,14 @@ func (t *Table) drawTraffic(traffic string, time string, workingNodes string) {
 	msg := fmt.Sprintf("Traffic used : %s. Time used : %s, Working Nodes: [%s]", traffic, time, workingNodes)
 	var x float64 = t.options.horizontalpadding / 2
 	var y float64 = (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+2)) + t.options.tableTopPadding + t.fontHeight + t.options.verticalpadding/2
+	t.DrawString(msg, x, y)
+}
+
+func (t *Table) drawGeneratedAt() {
+	// horizontalpadding := t.options.horizontalpadding
+	msg := fmt.Sprintf("Generated at %s", time.Now().Format(time.RFC3339))
+	var x float64 = t.options.horizontalpadding / 2
+	var y float64 = (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+3)) + t.options.tableTopPadding + t.fontHeight + t.options.verticalpadding/2
 	t.DrawString(msg, x, y)
 }
 
