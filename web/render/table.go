@@ -51,7 +51,7 @@ func NewTable(width int, height int, options TableOptions) Table {
 
 func (t *Table) drawHorizonLines() {
 	y := t.options.fontHeight + t.options.tableTopPadding
-	for i := 0; i < len(t.nodes)+4; i++ {
+	for i := 0; i <= len(t.nodes)+4; i++ {
 		t.drawHorizonLine(y - t.options.fontHeight)
 		y = y + t.options.fontHeight + t.options.verticalpadding
 	}
@@ -76,7 +76,8 @@ func (t *Table) drawVerticalLines() {
 }
 
 func (t *Table) drawVerticalLine(x float64) {
-	t.DrawLine(x, t.options.tableTopPadding, x, float64(t.height)-15)
+	height := (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+4)) + t.options.tableTopPadding
+	t.DrawLine(x, t.options.tableTopPadding, x, height)
 	t.SetLineWidth(0.5)
 	t.Stroke()
 }
