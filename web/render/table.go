@@ -77,7 +77,8 @@ func (t *Table) drawVerticalLines() {
 
 func (t *Table) drawVerticalLine(x float64) {
 	height := (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+4)) + t.options.tableTopPadding
-	t.DrawLine(x, t.options.tableTopPadding, x, height)
+	y := t.options.tableTopPadding + t.options.fontHeight + t.options.verticalpadding
+	t.DrawLine(x, y, x, height)
 	t.SetLineWidth(t.options.lineWidth)
 	t.Stroke()
 }
@@ -85,7 +86,7 @@ func (t *Table) drawVerticalLine(x float64) {
 func (t *Table) drawNodes() {
 	horizontalpadding := t.options.horizontalpadding
 	var x float64 = horizontalpadding / 2
-	var y float64 = t.options.fontHeight + t.options.verticalpadding/2 + t.options.tableTopPadding
+	var y float64 = t.options.fontHeight + t.options.verticalpadding/2 + t.options.tableTopPadding + (t.options.fontHeight+t.options.verticalpadding)*2
 	for _, v := range t.nodes {
 		t.DrawString(v.Group, x, y)
 		x += t.cellWidths.group + horizontalpadding
@@ -106,7 +107,7 @@ func (t *Table) drawSpeed() {
 	var lineWidth float64 = t.options.lineWidth
 	var x1 float64 = t.cellWidths.group + padding + t.cellWidths.remarks + padding + t.cellWidths.ping + padding + lineWidth*2
 	var x2 float64 = t.cellWidths.group + padding + t.cellWidths.remarks + padding + t.cellWidths.ping + padding + t.cellWidths.avgspeed + padding + lineWidth*2
-	var y float64 = t.options.tableTopPadding + lineWidth
+	var y float64 = t.options.tableTopPadding + lineWidth + (t.options.fontHeight+t.options.verticalpadding)*2
 	var wAvg float64 = t.cellWidths.avgspeed + padding - lineWidth*2
 	var wMax float64 = t.cellWidths.maxspeed + padding - lineWidth*2
 	var h float64 = t.options.fontHeight + t.options.verticalpadding - 2*lineWidth
