@@ -143,8 +143,8 @@ func (t *Table) drawNodes() {
 func (t *Table) drawSpeed() {
 	padding := t.options.horizontalpadding
 	var lineWidth float64 = t.options.lineWidth
-	var x1 float64 = t.cellWidths.group + padding + t.cellWidths.remarks + padding + t.cellWidths.protocol + padding + t.cellWidths.ping + padding + lineWidth*2
-	var x2 float64 = t.cellWidths.group + padding + t.cellWidths.remarks + padding + t.cellWidths.protocol + padding + t.cellWidths.ping + padding + t.cellWidths.avgspeed + padding + lineWidth*2
+	var x1 float64 = t.cellWidths.group + padding + t.cellWidths.remarks + padding + t.cellWidths.protocol + padding + t.cellWidths.ping + padding + lineWidth
+	var x2 float64 = t.cellWidths.group + padding + t.cellWidths.remarks + padding + t.cellWidths.protocol + padding + t.cellWidths.ping + padding + t.cellWidths.avgspeed + padding + lineWidth
 	var y float64 = t.options.tableTopPadding + lineWidth + (t.options.fontHeight+t.options.verticalpadding)*2
 	var wAvg float64 = t.cellWidths.avgspeed + padding - lineWidth*2
 	var wMax float64 = t.cellWidths.maxspeed + padding - lineWidth*2
