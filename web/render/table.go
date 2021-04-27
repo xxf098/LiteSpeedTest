@@ -78,7 +78,7 @@ func (t *Table) drawVerticalLines() {
 func (t *Table) drawVerticalLine(x float64) {
 	height := (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+4)) + t.options.tableTopPadding
 	t.DrawLine(x, t.options.tableTopPadding, x, height)
-	t.SetLineWidth(0.5)
+	t.SetLineWidth(t.options.lineWidth)
 	t.Stroke()
 }
 
@@ -99,6 +99,25 @@ func (t *Table) drawNodes() {
 		y = y + t.options.fontHeight + t.options.verticalpadding
 		x = horizontalpadding / 2
 	}
+}
+
+func (t *Table) drawSpeed() {
+	padding := t.options.horizontalpadding
+	var lineWidth float64 = t.options.lineWidth
+	var x1 float64 = t.cellWidths.group + padding + t.cellWidths.remarks + padding + t.cellWidths.ping + padding + lineWidth*2
+	var x2 float64 = t.cellWidths.group + padding + t.cellWidths.remarks + padding + t.cellWidths.ping + padding + t.cellWidths.avgspeed + padding + lineWidth*2
+	var y float64 = t.options.tableTopPadding + lineWidth
+	var wAvg float64 = t.cellWidths.avgspeed + padding - lineWidth*2
+	var wMax float64 = t.cellWidths.maxspeed + padding - lineWidth*2
+	var h float64 = t.options.fontHeight + t.options.verticalpadding - 2*lineWidth
+	for i := 0; i < len(t.nodes); i++ {
+		t.DrawRectangle(x1, y, wAvg, h)
+		t.DrawRectangle(x2, y, wMax, h)
+		t.SetRGB(5, 0, 0)
+		t.Fill()
+		y = y + t.options.fontHeight + t.options.verticalpadding
+	}
+	t.SetRGB(0, 0, 0)
 }
 
 func (t *Table) draw() error {
