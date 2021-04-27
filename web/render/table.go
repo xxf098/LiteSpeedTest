@@ -7,6 +7,7 @@ import (
 type Node struct {
 	Group    string
 	Remarks  string
+	Protocol string
 	Ping     string
 	AvgSpeed string
 	MaxSpeed string
@@ -25,6 +26,7 @@ type TableOptions struct {
 type CellWidths struct {
 	group    float64
 	remarks  float64
+	protocol float64
 	ping     float64
 	avgspeed float64
 	maxspeed float64
@@ -69,6 +71,8 @@ func (t *Table) drawVerticalLines() {
 	t.drawVerticalLine(x)
 	x += t.cellWidths.remarks + padding
 	t.drawVerticalLine(x)
+	x += t.cellWidths.protocol + padding
+	t.drawVerticalLine(x)
 	x += t.cellWidths.ping + padding
 	t.drawVerticalLine(x)
 	x += t.cellWidths.avgspeed + padding
@@ -101,6 +105,8 @@ func (t *Table) drawHeader() {
 	adjust = t.cellWidths.remarks/2 - getWidth(t.fontFace, "Remarks")/2
 	t.DrawString("Remarks", x+adjust, y)
 	x += t.cellWidths.remarks + horizontalpadding
+	t.DrawString("Protocol", x, y)
+	x += t.cellWidths.protocol + horizontalpadding
 	adjust = t.cellWidths.ping/2 - getWidth(t.fontFace, "Ping")/2
 	t.DrawString("Ping", x+adjust, y)
 	x += t.cellWidths.ping + horizontalpadding
@@ -118,6 +124,8 @@ func (t *Table) drawNodes() {
 		x += t.cellWidths.group + horizontalpadding
 		t.DrawString(v.Remarks, x, y)
 		x += t.cellWidths.remarks + horizontalpadding
+		t.DrawString(v.Protocol, x, y)
+		x += t.cellWidths.protocol + horizontalpadding
 		t.DrawString(v.Ping, x, y)
 		x += t.cellWidths.ping + horizontalpadding
 		t.DrawString(v.AvgSpeed, x, y)
@@ -131,8 +139,8 @@ func (t *Table) drawNodes() {
 func (t *Table) drawSpeed() {
 	padding := t.options.horizontalpadding
 	var lineWidth float64 = t.options.lineWidth
-	var x1 float64 = t.cellWidths.group + padding + t.cellWidths.remarks + padding + t.cellWidths.ping + padding + lineWidth*2
-	var x2 float64 = t.cellWidths.group + padding + t.cellWidths.remarks + padding + t.cellWidths.ping + padding + t.cellWidths.avgspeed + padding + lineWidth*2
+	var x1 float64 = t.cellWidths.group + padding + t.cellWidths.remarks + padding + t.cellWidths.protocol + padding + t.cellWidths.ping + padding + lineWidth*2
+	var x2 float64 = t.cellWidths.group + padding + t.cellWidths.remarks + padding + t.cellWidths.protocol + padding + t.cellWidths.ping + padding + t.cellWidths.avgspeed + padding + lineWidth*2
 	var y float64 = t.options.tableTopPadding + lineWidth + (t.options.fontHeight+t.options.verticalpadding)*2
 	var wAvg float64 = t.cellWidths.avgspeed + padding - lineWidth*2
 	var wMax float64 = t.cellWidths.maxspeed + padding - lineWidth*2
@@ -158,6 +166,7 @@ func calcWidth(fontface font.Face, nodes Nodes) *CellWidths {
 		return cellWidths
 	}
 	cellWidths.group = getWidth(fontface, nodes[0].Group)
+	cellWidths.protocol = getWidth(fontface, "Protocol")
 
 	for _, v := range nodes {
 		width := getWidth(fontface, v.Ping)

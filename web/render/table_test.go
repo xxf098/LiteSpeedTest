@@ -17,6 +17,7 @@ func TestDraw(t *testing.T) {
 		{
 			Group:    "节点列表",
 			Remarks:  "美国加利福尼亚免费测试1",
+			Protocol: "vmess",
 			Ping:     "80",
 			AvgSpeed: "18.18MB",
 			MaxSpeed: "32.18MB",
@@ -25,12 +26,14 @@ func TestDraw(t *testing.T) {
 			Group:    "节点列表",
 			Remarks:  "美国加利福尼亚免费测试2",
 			Ping:     "80",
+			Protocol: "trojan",
 			AvgSpeed: "18.18MB",
 			MaxSpeed: "32.18MB",
 		},
 		{
 			Group:    "节点列表",
 			Remarks:  "美国加利福尼亚免费测试3",
+			Protocol: "vmess",
 			Ping:     "80",
 			AvgSpeed: "18.18MB",
 			MaxSpeed: "32.18MB",
@@ -38,6 +41,7 @@ func TestDraw(t *testing.T) {
 		{
 			Group:    "节点列表",
 			Remarks:  "美国加利福尼亚免费测试4",
+			Protocol: "ss",
 			Ping:     "80",
 			AvgSpeed: "18.18MB",
 			MaxSpeed: "32.18MB",
@@ -45,6 +49,7 @@ func TestDraw(t *testing.T) {
 		{
 			Group:    "节点列表",
 			Remarks:  "美国加利福尼亚免费测试5",
+			Protocol: "ssr",
 			Ping:     "80",
 			AvgSpeed: "18.18MB",
 			MaxSpeed: "32.18MB",
@@ -52,6 +57,7 @@ func TestDraw(t *testing.T) {
 		{
 			Group:    "节点列表",
 			Remarks:  "美国加利福尼亚免费测试6",
+			Protocol: "vmess",
 			Ping:     "80",
 			AvgSpeed: "18.18MB",
 			MaxSpeed: "32.18MB",
@@ -60,7 +66,7 @@ func TestDraw(t *testing.T) {
 	widths := calcWidth(fontface, nodes)
 	fontHeight := calcHeight(fontface)
 	var horizontalpadding float64 = 20
-	tableWidth := widths.group + horizontalpadding + widths.remarks + horizontalpadding + widths.ping + horizontalpadding + widths.avgspeed + horizontalpadding + widths.maxspeed + 20
+	tableWidth := widths.group + horizontalpadding + widths.remarks + horizontalpadding + widths.protocol + horizontalpadding + widths.ping + horizontalpadding + widths.avgspeed + horizontalpadding + widths.maxspeed + 20
 	options := TableOptions{
 		horizontalpadding: horizontalpadding,
 		verticalpadding:   20,
@@ -72,7 +78,7 @@ func TestDraw(t *testing.T) {
 	fmt.Printf("width: %f, height: %f\n", tableWidth, tableHeight)
 	table := NewTable(int(tableWidth), int(tableHeight), options)
 	table.nodes = nodes
-	table.cellWidths = calcWidth(fontface, nodes)
+	table.cellWidths = widths
 	// set background
 	table.SetRGB(1, 1, 1)
 	table.Clear()
