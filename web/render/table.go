@@ -95,11 +95,14 @@ func (t *Table) drawHeader() {
 	horizontalpadding := t.options.horizontalpadding
 	var x float64 = horizontalpadding / 2
 	var y float64 = t.options.fontHeight + t.options.verticalpadding/2 + t.options.tableTopPadding + t.options.fontHeight + t.options.verticalpadding
-	t.DrawString("Group", x, y)
+	adjust := t.cellWidths.group/2 - getWidth(t.fontFace, "Group")/2
+	t.DrawString("Group", x+adjust, y)
 	x += t.cellWidths.group + horizontalpadding
-	t.DrawString("Remarks", x, y)
+	adjust = t.cellWidths.remarks/2 - getWidth(t.fontFace, "Remarks")/2
+	t.DrawString("Remarks", x+adjust, y)
 	x += t.cellWidths.remarks + horizontalpadding
-	t.DrawString("Ping", x, y)
+	adjust = t.cellWidths.ping/2 - getWidth(t.fontFace, "Ping")/2
+	t.DrawString("Ping", x+adjust, y)
 	x += t.cellWidths.ping + horizontalpadding
 	t.DrawString("AvgSpeed", x, y)
 	x += t.cellWidths.avgspeed + horizontalpadding
