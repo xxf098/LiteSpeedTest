@@ -83,6 +83,14 @@ func (t *Table) drawVerticalLine(x float64) {
 	t.Stroke()
 }
 
+func (t *Table) drawTitle() {
+	// horizontalpadding := t.options.horizontalpadding
+	title := "LiteSpeedTest Result Table"
+	var x float64 = float64(t.width)/2 - getWidth(t.fontFace, title)/2
+	var y float64 = t.options.fontHeight + t.options.verticalpadding/2 + t.options.tableTopPadding
+	t.DrawString(title, x, y)
+}
+
 func (t *Table) drawHeader() {
 	horizontalpadding := t.options.horizontalpadding
 	var x float64 = horizontalpadding / 2
