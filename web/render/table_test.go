@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"math/rand"
 	"path/filepath"
 	"testing"
 )
@@ -13,55 +14,16 @@ func TestDraw(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	nodes := []Node{
-		{
+	nodes := make([]Node, 50)
+	for i := 0; i < 50; i++ {
+		nodes[i] = Node{
 			Group:    "节点列表",
-			Remarks:  "美国加利福尼亚免费测试1",
+			Remarks:  fmt.Sprintf("美国加利福尼亚免费测试%d", i),
 			Protocol: "vmess",
-			Ping:     "1206",
-			AvgSpeed: "18.18MB",
-			MaxSpeed: "32.18MB",
-		},
-		{
-			Group:    "节点列表",
-			Remarks:  "美国加利福尼亚免费测试2",
-			Ping:     "80",
-			Protocol: "trojan",
-			AvgSpeed: "18.18MB",
-			MaxSpeed: "32.18MB",
-		},
-		{
-			Group:    "节点列表",
-			Remarks:  "美国加利福尼亚免费测试3",
-			Protocol: "vmess",
-			Ping:     "80",
-			AvgSpeed: "18.18MB",
-			MaxSpeed: "32.18MB",
-		},
-		{
-			Group:    "节点列表",
-			Remarks:  "美国加利福尼亚免费测试4",
-			Protocol: "ss",
-			Ping:     "80",
-			AvgSpeed: "18.18MB",
-			MaxSpeed: "32.18MB",
-		},
-		{
-			Group:    "节点列表",
-			Remarks:  "美国加利福尼亚免费测试5",
-			Protocol: "ssr",
-			Ping:     "180",
-			AvgSpeed: "18.18MB",
-			MaxSpeed: "32.18MB",
-		},
-		{
-			Group:    "节点列表",
-			Remarks:  "美国加利福尼亚免费测试6",
-			Protocol: "vmess",
-			Ping:     "120",
-			AvgSpeed: "18.18MB",
-			MaxSpeed: "32.18MB",
-		},
+			Ping:     fmt.Sprintf("%d", rand.Intn(800-50)+50),
+			AvgSpeed: fmt.Sprintf("%d.%dMB", rand.Intn(20-5)+5, rand.Intn(20-5)+5),
+			MaxSpeed: fmt.Sprintf("%d.%dMB", rand.Intn(70-20)+20, rand.Intn(70-20)+20),
+		}
 	}
 	widths := calcWidth(fontface, nodes)
 	fontHeight := calcHeight(fontface)
@@ -90,7 +52,7 @@ func TestDraw(t *testing.T) {
 	table.drawTitle()
 	table.drawHeader()
 	table.drawNodes()
-	table.drawTraffic("9.45GB", "06:24", "21/22")
+	table.drawTraffic("9.45GB", "06:24", "50/50")
 	table.drawGeneratedAt()
 	table.SavePNG("out.png")
 }
