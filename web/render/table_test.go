@@ -8,7 +8,7 @@ import (
 
 func TestDraw(t *testing.T) {
 	fontPath, _ := filepath.Abs("../misc/WenQuanYiMicroHei-01.ttf")
-	fontSize := 14
+	fontSize := 22
 	fontface, err := LoadFontFace(fontPath, float64(fontSize))
 	if err != nil {
 		panic(err)
@@ -69,7 +69,7 @@ func TestDraw(t *testing.T) {
 	tableWidth := widths.group + horizontalpadding + widths.remarks + horizontalpadding + widths.protocol + horizontalpadding + widths.ping + horizontalpadding + widths.avgspeed + horizontalpadding + widths.maxspeed + horizontalpadding
 	options := TableOptions{
 		horizontalpadding: horizontalpadding,
-		verticalpadding:   20,
+		verticalpadding:   36,
 		tableTopPadding:   20,
 		lineWidth:         0.6,
 		fontHeight:        fontHeight,
