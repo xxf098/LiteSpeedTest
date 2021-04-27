@@ -124,13 +124,17 @@ func (t *Table) drawNodes() {
 		x += t.cellWidths.group + horizontalpadding
 		t.DrawString(v.Remarks, x, y)
 		x += t.cellWidths.remarks + horizontalpadding
-		t.DrawString(v.Protocol, x, y)
+		adjust := t.cellWidths.protocol/2 - getWidth(t.fontFace, v.Protocol)/2
+		t.DrawString(v.Protocol, x+adjust, y)
 		x += t.cellWidths.protocol + horizontalpadding
-		t.DrawString(v.Ping, x, y)
+		adjust = t.cellWidths.ping/2 - getWidth(t.fontFace, v.Ping)/2
+		t.DrawString(v.Ping, x+adjust, y)
 		x += t.cellWidths.ping + horizontalpadding
-		t.DrawString(v.AvgSpeed, x, y)
+		adjust = t.cellWidths.avgspeed/2 - getWidth(t.fontFace, v.AvgSpeed)/2
+		t.DrawString(v.AvgSpeed, x+adjust, y)
 		x += t.cellWidths.avgspeed + horizontalpadding
-		t.DrawString(v.MaxSpeed, x, y)
+		adjust = t.cellWidths.maxspeed/2 - getWidth(t.fontFace, v.MaxSpeed)/2
+		t.DrawString(v.MaxSpeed, x+adjust, y)
 		y = y + t.options.fontHeight + t.options.verticalpadding
 		x = horizontalpadding / 2
 	}
