@@ -4,8 +4,10 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
+	"github.com/xxf098/lite-proxy/download"
 	"golang.org/x/image/font"
 )
 
@@ -27,8 +29,8 @@ type Node struct {
 	Remarks  string
 	Protocol string
 	Ping     string
-	AvgSpeed string
-	MaxSpeed string
+	AvgSpeed int64
+	MaxSpeed int64
 }
 
 type Nodes []Node
@@ -49,13 +51,21 @@ func CSV2Nodes(path string) (Nodes, error) {
 		if len(v) < 6 {
 			continue
 		}
+		avg, err := strconv.Atoi(v[4])
+		if err != nil {
+			continue
+		}
+		max, err := strconv.Atoi(v[5])
+		if err != nil {
+			continue
+		}
 		nodes[i] = Node{
 			Group:    v[0],
 			Remarks:  v[1],
 			Protocol: v[2],
 			Ping:     v[3],
-			AvgSpeed: v[4],
-			MaxSpeed: v[5],
+			AvgSpeed: int64(avg),
+			MaxSpeed: int64(max),
 		}
 	}
 	return nodes, nil
@@ -192,11 +202,13 @@ func (t *Table) drawNodes() {
 		adjust = t.cellWidths.ping/2 - getWidth(t.fontFace, v.Ping)/2
 		t.DrawString(v.Ping, x+adjust, y)
 		x += t.cellWidths.ping + horizontalpadding
-		adjust = t.cellWidths.avgspeed/2 - getWidth(t.fontFace, v.AvgSpeed)/2
-		t.DrawString(v.AvgSpeed, x+adjust, y)
+		avgSpeed := download.ByteCountIECTrim(v.AvgSpeed)
+		adjust = t.cellWidths.avgspeed/2 - getWidth(t.fontFace, avgSpeed)/2
+		t.DrawString(avgSpeed, x+adjust, y)
 		x += t.cellWidths.avgspeed + horizontalpadding
-		adjust = t.cellWidths.maxspeed/2 - getWidth(t.fontFace, v.MaxSpeed)/2
-		t.DrawString(v.MaxSpeed, x+adjust, y)
+		maxSpeed := download.ByteCountIECTrim(v.MaxSpeed)
+		adjust = t.cellWidths.maxspeed/2 - getWidth(t.fontFace, maxSpeed)/2
+		t.DrawString(maxSpeed, x+adjust, y)
 		y = y + t.options.fontHeight + t.options.verticalpadding
 		x = horizontalpadding / 2
 	}
@@ -239,11 +251,11 @@ func calcWidth(fontface font.Face, nodes Nodes) *CellWidths {
 		if cellWidths.ping < width {
 			cellWidths.ping = width
 		}
-		width = getWidth(fontface, v.AvgSpeed)
+		width = getWidth(fontface, download.ByteCountIECTrim(v.AvgSpeed))
 		if cellWidths.avgspeed < width {
 			cellWidths.avgspeed = width
 		}
-		width = getWidth(fontface, v.MaxSpeed)
+		width = getWidth(fontface, download.ByteCountIECTrim(v.MaxSpeed))
 		if cellWidths.maxspeed < width {
 			cellWidths.maxspeed = width
 		}

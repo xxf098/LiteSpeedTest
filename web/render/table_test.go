@@ -21,8 +21,8 @@ func TestDraw(t *testing.T) {
 			Remarks:  fmt.Sprintf("美国加利福尼亚免费测试%d", i),
 			Protocol: "vmess",
 			Ping:     fmt.Sprintf("%d", rand.Intn(800-50)+50),
-			AvgSpeed: fmt.Sprintf("%d.%dMB", rand.Intn(20-5)+5, rand.Intn(20-5)+5),
-			MaxSpeed: fmt.Sprintf("%d.%dMB", rand.Intn(70-20)+20, rand.Intn(70-20)+20),
+			AvgSpeed: int64((rand.Intn(20-5) + 5) * 1024 * 1024),
+			MaxSpeed: int64((rand.Intn(60-20) + 20) * 1024 * 1024),
 		}
 	}
 	widths := calcWidth(fontface, nodes)
