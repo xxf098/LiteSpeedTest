@@ -225,8 +225,12 @@ func (t *Table) drawSpeed() {
 	var h float64 = t.options.fontHeight + t.options.verticalpadding - 2*lineWidth
 	for i := 0; i < len(t.nodes); i++ {
 		t.DrawRectangle(x1, y, wAvg, h)
+		r, g, b := getSpeedColor(t.nodes[i].AvgSpeed)
+		t.SetRGB255(r, g, b)
+		t.Fill()
 		t.DrawRectangle(x2, y, wMax, h)
-		t.SetRGB255(255, 0, 0)
+		r, g, b = getSpeedColor(t.nodes[i].MaxSpeed)
+		t.SetRGB255(r, g, b)
 		t.Fill()
 		y = y + t.options.fontHeight + t.options.verticalpadding
 	}
@@ -236,6 +240,18 @@ func (t *Table) drawSpeed() {
 func (t *Table) draw() error {
 	t.drawHorizonLines()
 	return nil
+}
+
+func getSpeedColor(speed int64) (r int, g int, b int) {
+	index := 0
+	for i, v := range bounds {
+		index = i
+		if speed < int64(v) {
+			break
+		}
+	}
+	group := colorgroup[index]
+	return group[0], group[1], group[2]
 }
 
 func calcWidth(fontface font.Face, nodes Nodes) *CellWidths {
