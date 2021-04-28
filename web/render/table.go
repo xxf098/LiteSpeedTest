@@ -107,6 +107,31 @@ func NewTable(width int, height int, options TableOptions) Table {
 	}
 }
 
+func DefaultTable(nodes Nodes, fontPath string) (*Table, error) {
+	fontSize := 22
+	fontface, err := LoadFontFace(fontPath, float64(fontSize))
+	if err != nil {
+		return nil, err
+	}
+	widths := calcWidth(fontface, nodes)
+	fontHeight := calcHeight(fontface)
+	var horizontalpadding float64 = 40
+	tableWidth := widths.group + horizontalpadding + widths.remarks + horizontalpadding + widths.protocol + horizontalpadding + widths.ping + horizontalpadding + widths.avgspeed + horizontalpadding + widths.maxspeed + horizontalpadding
+	options := TableOptions{
+		horizontalpadding: horizontalpadding,
+		verticalpadding:   30,
+		tableTopPadding:   20,
+		lineWidth:         0.5,
+		fontHeight:        fontHeight,
+	}
+	tableHeight := (fontHeight+options.verticalpadding)*float64((len(nodes)+4)) + options.tableTopPadding*2
+	table := NewTable(int(tableWidth), int(tableHeight), options)
+	table.nodes = nodes
+	table.cellWidths = widths
+	table.SetFontFace(fontface)
+	return &table, nil
+}
+
 func (t *Table) drawHorizonLines() {
 	y := t.options.fontHeight + t.options.tableTopPadding
 	for i := 0; i <= len(t.nodes)+4; i++ {
@@ -171,12 +196,11 @@ func (t *Table) drawHeader() {
 	t.DrawString("MaxSpeed", x, y)
 }
 
-func (t *Table) drawTraffic(traffic string, time string, workingNodes string) {
+func (t *Table) drawTraffic(traffic string) {
 	// horizontalpadding := t.options.horizontalpadding
-	msg := fmt.Sprintf("Traffic used : %s. Time used : %s, Working Nodes: [%s]", traffic, time, workingNodes)
 	var x float64 = t.options.horizontalpadding / 2
 	var y float64 = (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+2)) + t.options.tableTopPadding + t.fontHeight + t.options.verticalpadding/2
-	t.DrawString(msg, x, y)
+	t.DrawString(traffic, x, y)
 }
 
 func (t *Table) drawGeneratedAt() {
@@ -237,9 +261,19 @@ func (t *Table) drawSpeed() {
 	t.SetRGB255(0, 0, 0)
 }
 
-func (t *Table) draw() error {
+func (t *Table) draw(path string, traffic string) {
+	t.SetRGB255(255, 255, 255)
+	t.Clear()
+	t.SetRGB255(0, 0, 0)
 	t.drawHorizonLines()
-	return nil
+	t.drawVerticalLines()
+	t.drawSpeed()
+	t.drawTitle()
+	t.drawHeader()
+	t.drawNodes()
+	t.drawTraffic(traffic)
+	t.drawGeneratedAt()
+	t.SavePNG(path)
 }
 
 func getSpeedColor(speed int64) (r int, g int, b int) {

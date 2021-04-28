@@ -33,7 +33,7 @@ func TestDraw(t *testing.T) {
 		horizontalpadding: horizontalpadding,
 		verticalpadding:   30,
 		tableTopPadding:   20,
-		lineWidth:         0.6,
+		lineWidth:         0.5,
 		fontHeight:        fontHeight,
 	}
 	tableHeight := (fontHeight+options.verticalpadding)*float64((len(nodes)+4)) + options.tableTopPadding*2
@@ -42,17 +42,25 @@ func TestDraw(t *testing.T) {
 	table.nodes = nodes
 	table.cellWidths = widths
 	// set background
-	table.SetRGB255(255, 255, 255)
-	table.Clear()
-	table.SetRGB255(0, 0, 0)
 	table.SetFontFace(fontface)
-	table.drawHorizonLines()
-	table.drawVerticalLines()
-	table.drawSpeed()
-	table.drawTitle()
-	table.drawHeader()
-	table.drawNodes()
-	table.drawTraffic("9.45GB", "06:24", "50/50")
-	table.drawGeneratedAt()
-	table.SavePNG("out.png")
+	msg := fmt.Sprintf("Traffic used : %s. Time used : %s, Working Nodes: [%s]", "10.6G", "12:50", "50/50")
+	table.draw("out.png", msg)
+}
+
+func TestDefaultTable(t *testing.T) {
+	nodes := make([]Node, 50)
+	for i := 0; i < 50; i++ {
+		nodes[i] = Node{
+			Group:    "节点列表",
+			Remarks:  fmt.Sprintf("美国加利福尼亚免费测试%d", i),
+			Protocol: "vmess",
+			Ping:     fmt.Sprintf("%d", rand.Intn(800-50)+50),
+			AvgSpeed: int64((rand.Intn(20-1) + 1) * 1024 * 1024),
+			MaxSpeed: int64((rand.Intn(60-20) + 20) * 1024 * 1024),
+		}
+	}
+	fontPath, _ := filepath.Abs("../misc/WenQuanYiMicroHei-01.ttf")
+	table, _ := DefaultTable(nodes, fontPath)
+	msg := fmt.Sprintf("Traffic used : %s. Time used : %s, Working Nodes: [%s]", "10.6G", "12:50", "50/50")
+	table.draw("out.png", msg)
 }

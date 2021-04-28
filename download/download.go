@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"errors"
@@ -58,6 +59,11 @@ func ByteCountIEC(b int64) string {
 	}
 	return fmt.Sprintf("%.1f%cB/s",
 		float64(b)/float64(div), "KMGTPE"[exp])
+}
+
+func ByteCountIECTrim(b int64) string {
+	result := ByteCountIEC(b)
+	return strings.TrimSuffix(result, "/s")
 }
 
 func createClient(ctx context.Context, link string) (*proxy.Client, error) {
