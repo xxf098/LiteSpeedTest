@@ -236,6 +236,10 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string) error
 	go func(ch <-chan int64) {
 		var max int64
 		var speeds []int64
+		_, remarks, err := getRemarks(link)
+		if err != nil {
+			remarks = fmt.Sprintf("Profile %d", index)
+		}
 		for {
 			select {
 			case speed, ok := <-ch:
@@ -249,10 +253,6 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string) error
 				}
 				if max < speed {
 					max = speed
-				}
-				_, remarks, err := getRemarks(link)
-				if err != nil {
-					remarks = fmt.Sprintf("Profile %d", index)
 				}
 				log.Printf("%s recv: %s", remarks, download.ByteCountIEC(speed))
 				err = p.WriteMessage(getMsgByte(index, "gotspeed", avg, max, speed))
