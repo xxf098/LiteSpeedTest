@@ -261,7 +261,7 @@ func (t *Table) drawSpeed() {
 	t.SetRGB255(0, 0, 0)
 }
 
-func (t *Table) draw(path string, traffic string) {
+func (t *Table) Draw(path string, traffic string) {
 	t.SetRGB255(255, 255, 255)
 	t.Clear()
 	t.SetRGB255(0, 0, 0)
