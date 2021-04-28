@@ -42,9 +42,9 @@ func TestDraw(t *testing.T) {
 	table.nodes = nodes
 	table.cellWidths = widths
 	// set background
-	table.SetRGB(1, 1, 1)
+	table.SetRGB255(255, 255, 255)
 	table.Clear()
-	table.SetRGB(0, 0, 0)
+	table.SetRGB255(0, 0, 0)
 	table.SetFontFace(fontface)
 	table.drawHorizonLines()
 	table.drawVerticalLines()

@@ -201,11 +201,11 @@ func (t *Table) drawSpeed() {
 	for i := 0; i < len(t.nodes); i++ {
 		t.DrawRectangle(x1, y, wAvg, h)
 		t.DrawRectangle(x2, y, wMax, h)
-		t.SetRGB(5, 0, 0)
+		t.SetRGB255(255, 0, 0)
 		t.Fill()
 		y = y + t.options.fontHeight + t.options.verticalpadding
 	}
-	t.SetRGB(0, 0, 0)
+	t.SetRGB255(0, 0, 0)
 }
 
 func (t *Table) draw() error {
