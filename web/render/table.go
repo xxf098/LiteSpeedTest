@@ -276,16 +276,22 @@ func (t *Table) Draw(path string, traffic string) {
 	t.SavePNG(path)
 }
 
-func getSpeedColor(speed int64) (r int, g int, b int) {
-	index := 0
-	for i, v := range bounds {
-		index = i
-		if speed < int64(v) {
-			break
+func getSpeedColor(speed int64) (int, int, int) {
+	for i := 0; i < len(bounds)-1; i++ {
+		if speed >= int64(bounds[i]) && speed <= int64(bounds[i+1]) {
+			level := float64(speed-int64(bounds[i])) / float64(bounds[i+1]-bounds[i])
+			return getColor(colorgroup[i], colorgroup[i+1], level)
 		}
 	}
-	group := colorgroup[index]
-	return group[0], group[1], group[2]
+	l := len(colorgroup)
+	return colorgroup[l-1][0], colorgroup[l-1][1], colorgroup[l-1][2]
+}
+
+func getColor(lc []int, rc []int, level float64) (int, int, int) {
+	r := float64(lc[0])*(1-level) + float64(rc[0])*level
+	g := float64(lc[1])*(1-level) + float64(rc[1])*level
+	b := float64(lc[2])*(1-level) + float64(rc[2])*level
+	return int(r), int(g), int(b)
 }
 
 func calcWidth(fontface font.Face, nodes Nodes) *CellWidths {

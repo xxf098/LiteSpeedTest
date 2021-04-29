@@ -56,11 +56,19 @@ func TestDefaultTable(t *testing.T) {
 			Protocol: "vmess",
 			Ping:     fmt.Sprintf("%d", rand.Intn(800-50)+50),
 			AvgSpeed: int64((rand.Intn(20-1) + 1) * 1024 * 1024),
-			MaxSpeed: int64((rand.Intn(60-20) + 20) * 1024 * 1024),
+			MaxSpeed: int64((rand.Intn(60-5) + 5) * 1024 * 1024),
 		}
 	}
 	fontPath, _ := filepath.Abs("../misc/WenQuanYiMicroHei-01.ttf")
 	table, _ := DefaultTable(nodes, fontPath)
 	msg := fmt.Sprintf("Traffic used : %s. Time used : %s, Working Nodes: [%s]", "10.6G", "12:50", "50/50")
 	table.Draw("out.png", msg)
+}
+
+func TestCSV2Nodes(t *testing.T) {
+	nodes, err := CSV2Nodes("/home/arch/Downloads/test.csv")
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(nodes)
 }
