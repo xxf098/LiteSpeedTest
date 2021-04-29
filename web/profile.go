@@ -235,22 +235,21 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string) error
 	defer close(ch)
 	go func(ch <-chan int64) {
 		var max int64
-		var speeds []int64
+		var sum int64
 		_, remarks, err := getRemarks(link)
 		if err != nil {
 			remarks = fmt.Sprintf("Profile %d", index)
 		}
+		start := time.Now()
 		for {
 			select {
 			case speed, ok := <-ch:
 				if !ok || speed < 0 {
 					return
 				}
-				speeds = append(speeds, speed)
-				var avg int64
-				for _, s := range speeds {
-					avg += s / int64(len(speeds))
-				}
+				sum += speed
+				duration := float64(time.Since(start)/time.Millisecond) / float64(1000)
+				avg := int64(float64(sum) / duration)
 				if max < speed {
 					max = speed
 				}
