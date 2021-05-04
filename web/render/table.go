@@ -90,6 +90,9 @@ type TableOptions struct {
 	tableTopPadding   float64 // padding for table
 	lineWidth         float64
 	fontHeight        float64
+	fontSize          int
+	smallFontRatio    float64
+	fontPath          string
 }
 
 type CellWidths struct {
@@ -135,9 +138,12 @@ func DefaultTable(nodes Nodes, fontPath string) (*Table, error) {
 		tableTopPadding:   0.5,
 		lineWidth:         0.5,
 		fontHeight:        fontHeight,
+		fontSize:          fontSize,
+		smallFontRatio:    0.5,
+		fontPath:          fontPath,
 	}
 	tableWidth := widths.group + horizontalpadding + widths.remarks + horizontalpadding + widths.protocol + horizontalpadding + widths.ping + horizontalpadding + widths.avgspeed + horizontalpadding + widths.maxspeed + horizontalpadding + options.lineWidth*2
-	tableHeight := (fontHeight+options.verticalpadding)*float64((len(nodes)+4)) + options.tableTopPadding*2
+	tableHeight := (fontHeight+options.verticalpadding)*float64((len(nodes)+4)) + options.tableTopPadding*2 + options.fontHeight*options.smallFontRatio
 	table := NewTable(int(tableWidth), int(tableHeight), options)
 	table.nodes = nodes
 	table.cellWidths = widths
@@ -230,9 +236,22 @@ func (t *Table) drawTraffic(traffic string) {
 
 func (t *Table) drawGeneratedAt() {
 	// horizontalpadding := t.options.horizontalpadding
-	msg := fmt.Sprintf("Generated at %s", time.Now().Format(time.RFC3339))
+	msg := fmt.Sprintf("Created at %s", time.Now().Format(time.RFC3339))
 	var x float64 = t.options.horizontalpadding / 2
 	var y float64 = (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+3)) + t.options.tableTopPadding + t.fontHeight + t.options.verticalpadding/2
+	t.DrawString(msg, x, y)
+}
+
+func (t *Table) drawPoweredBy() {
+	fontSize := int(float64(t.options.fontSize) * t.options.smallFontRatio)
+	fontface, err := LoadFontFace(t.options.fontPath, float64(fontSize))
+	if err != nil {
+		return
+	}
+	t.SetFontFace(fontface)
+	msg := "powered by https://github.com/xxf098"
+	var x float64 = float64(t.width) - getWidth(fontface, msg) - t.options.lineWidth
+	var y float64 = (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+4)) + t.options.fontHeight*t.options.smallFontRatio
 	t.DrawString(msg, x, y)
 }
 
@@ -298,6 +317,7 @@ func (t *Table) Draw(path string, traffic string) {
 	t.drawNodes()
 	t.drawTraffic(traffic)
 	t.drawGeneratedAt()
+	t.drawPoweredBy()
 	t.SavePNG(path)
 }
 
