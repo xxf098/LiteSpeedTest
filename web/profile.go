@@ -18,6 +18,7 @@ import (
 	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/download"
 	"github.com/xxf098/lite-proxy/request"
+	"github.com/xxf098/lite-proxy/web/render"
 )
 
 var ErrInvalidData = errors.New("invalid data")
@@ -195,6 +196,9 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		p.WriteMessage(gotserverMsg(i, p.Links[i], p.Options.GroupName))
 	}
 	guard := make(chan int, p.Options.Concurrency)
+	nodeChan := make(chan render.Node, len(p.Links))
+
+	nodes := make(render.Nodes, len(p.Links))
 	for i := range p.Links {
 		p.wg.Add(1)
 		id := i
@@ -205,29 +209,55 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		}
 		select {
 		case guard <- i:
-			go func(id int, link string, c <-chan int) {
-				p.testOne(ctx, id, link)
+			go func(id int, link string, c <-chan int, nodeChan chan<- render.Node) {
+				p.testOne(ctx, id, link, nodeChan)
 				_ = p.WriteMessage(getMsgByte(id, "endone"))
 				<-c
-			}(id, link, guard)
+			}(id, link, guard, nodeChan)
 		case <-ctx.Done():
 			return nil
 		}
 	}
 	p.wg.Wait()
 	p.WriteMessage(getMsgByte(-1, "eof"))
+	// draw png
+	for i := 0; i < len(p.Links); i++ {
+		node := <-nodeChan
+		nodes[node.Id] = node
+	}
+	close(nodeChan)
+	table, err := render.DefaultTable(nodes, "./web/misc/WenQuanYiMicroHei-01.ttf")
+	if err != nil {
+		return err
+	}
+	msg := fmt.Sprintf("Traffic used : %s. Time used : %s, Working Nodes: [%d/%d]", "10.6G", "12:50", len(p.Links), len(p.Links))
+	table.Draw("out1.png", msg)
 	return nil
 }
 
-func (p *ProfileTest) testOne(ctx context.Context, index int, link string) error {
+func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeChan chan<- render.Node) error {
 	// panic
 	if link == "" {
 		defer p.wg.Done()
 		link = p.Links[index]
 		link = strings.SplitN(link, "^", 2)[0]
 	}
-	err := p.pingLink(index, link)
+	protocol, remarks, err := getRemarks(link)
 	if err != nil {
+		remarks = fmt.Sprintf("Profile %d", index)
+	}
+	elapse, err := p.pingLink(index, link)
+	if err != nil {
+		node := render.Node{
+			Id:       index,
+			Group:    "Default",
+			Remarks:  remarks,
+			Protocol: protocol,
+			Ping:     fmt.Sprintf("%d", elapse),
+			AvgSpeed: 0,
+			MaxSpeed: 0,
+		}
+		nodeChan <- node
 		return err
 	}
 	err = p.WriteMessage(getMsgByte(index, "startspeed"))
@@ -236,20 +266,18 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string) error
 	go func(ch <-chan int64) {
 		var max int64
 		var sum int64
-		_, remarks, err := getRemarks(link)
-		if err != nil {
-			remarks = fmt.Sprintf("Profile %d", index)
-		}
+		var avg int64
 		start := time.Now()
+	Loop:
 		for {
 			select {
 			case speed, ok := <-ch:
 				if !ok || speed < 0 {
-					return
+					break Loop
 				}
 				sum += speed
 				duration := float64(time.Since(start)/time.Millisecond) / float64(1000)
-				avg := int64(float64(sum) / duration)
+				avg = int64(float64(sum) / duration)
 				if max < speed {
 					max = speed
 				}
@@ -257,9 +285,19 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string) error
 				err = p.WriteMessage(getMsgByte(index, "gotspeed", avg, max, speed))
 			case <-ctx.Done():
 				log.Printf("index %d done!", index)
-				return
+				break Loop
 			}
 		}
+		node := render.Node{
+			Id:       index,
+			Group:    "Default",
+			Remarks:  remarks,
+			Protocol: protocol,
+			Ping:     fmt.Sprintf("%d", elapse),
+			AvgSpeed: avg,
+			MaxSpeed: max,
+		}
+		nodeChan <- node
 	}(ch)
 	speed, err := download.Download(link, p.Options.Timeout, p.Options.Timeout, ch)
 	if speed < 1 {
@@ -268,9 +306,9 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string) error
 	return err
 }
 
-func (p *ProfileTest) pingLink(index int, link string) error {
+func (p *ProfileTest) pingLink(index int, link string) (int64, error) {
 	if p.Options.SpeedTestMode == SpeedOnly {
-		return nil
+		return 0, nil
 	}
 	if link == "" {
 		link = p.Links[index]
@@ -280,11 +318,11 @@ func (p *ProfileTest) pingLink(index int, link string) error {
 	p.WriteMessage(getMsgByte(index, "gotping", elapse))
 	if elapse < 1 {
 		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1, 0))
-		return err
+		return 0, err
 	}
 	if p.Options.SpeedTestMode == PingOnly {
 		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1, 0))
-		return errors.New(PingOnly)
+		return 0, errors.New(PingOnly)
 	}
-	return err
+	return elapse, err
 }
