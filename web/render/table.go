@@ -42,6 +42,7 @@ type Node struct {
 	Ping     string
 	AvgSpeed int64
 	MaxSpeed int64
+	IsOk     bool
 }
 
 type Nodes []Node

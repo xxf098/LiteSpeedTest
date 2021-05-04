@@ -192,13 +192,14 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		return fmt.Errorf("no profile found")
 	}
 	p.WriteMessage(getMsgByte(-1, "started"))
+	linksCount := len(p.Links)
 	for i := range p.Links {
 		p.WriteMessage(gotserverMsg(i, p.Links[i], p.Options.GroupName))
 	}
 	guard := make(chan int, p.Options.Concurrency)
-	nodeChan := make(chan render.Node, len(p.Links))
+	nodeChan := make(chan render.Node, linksCount)
 
-	nodes := make(render.Nodes, len(p.Links))
+	nodes := make(render.Nodes, linksCount)
 	for i := range p.Links {
 		p.wg.Add(1)
 		id := i
@@ -221,24 +222,28 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	p.wg.Wait()
 	p.WriteMessage(getMsgByte(-1, "eof"))
 	// draw png
-	for i := 0; i < len(p.Links); i++ {
+	successCount := 0
+	for i := 0; i < linksCount; i++ {
 		node := <-nodeChan
 		nodes[node.Id] = node
+		if node.IsOk {
+			successCount += 1
+		}
 	}
 	close(nodeChan)
 	table, err := render.DefaultTable(nodes, "./web/misc/WenQuanYiMicroHei-01.ttf")
 	if err != nil {
 		return err
 	}
-	msg := fmt.Sprintf("Traffic used : %s. Time used : %s, Working Nodes: [%d/%d]", "10.6G", "12:50", len(p.Links), len(p.Links))
+	msg := fmt.Sprintf("Traffic used : %s. Time used : %s, Working Nodes: [%d/%d]", "10.6G", "12:50", successCount, linksCount)
 	table.Draw("out1.png", msg)
 	return nil
 }
 
 func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeChan chan<- render.Node) error {
 	// panic
+	defer p.wg.Done()
 	if link == "" {
-		defer p.wg.Done()
 		link = p.Links[index]
 		link = strings.SplitN(link, "^", 2)[0]
 	}
@@ -256,6 +261,7 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 			Ping:     fmt.Sprintf("%d", elapse),
 			AvgSpeed: 0,
 			MaxSpeed: 0,
+			IsOk:     false,
 		}
 		nodeChan <- node
 		return err
@@ -296,6 +302,7 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 			Ping:     fmt.Sprintf("%d", elapse),
 			AvgSpeed: avg,
 			MaxSpeed: max,
+			IsOk:     true,
 		}
 		nodeChan <- node
 	}(ch)
