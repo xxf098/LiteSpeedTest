@@ -200,6 +200,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	nodeChan := make(chan render.Node, linksCount)
 
 	nodes := make(render.Nodes, linksCount)
+	start := time.Now()
 	for i := range p.Links {
 		p.wg.Add(1)
 		id := i
@@ -235,7 +236,8 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	msg := fmt.Sprintf("Traffic used : %s. Time used : %s, Working Nodes: [%d/%d]", "10.6G", "12:50", successCount, linksCount)
+	duration := formatDuration(time.Since(start))
+	msg := fmt.Sprintf("Traffic used : %s. Time used : %s, Working Nodes: [%d/%d]", "10.6G", duration, successCount, linksCount)
 	table.Draw("out1.png", msg)
 	return nil
 }
@@ -332,4 +334,16 @@ func (p *ProfileTest) pingLink(index int, link string) (int64, error) {
 		return 0, errors.New(PingOnly)
 	}
 	return elapse, err
+}
+
+func formatDuration(duration time.Duration) string {
+	h := duration / time.Hour
+	duration -= h * time.Hour
+	m := duration / time.Minute
+	duration -= m * time.Minute
+	s := duration / time.Second
+	if h > 0 {
+		return fmt.Sprintf("%dh %dm %ds", h, m, s)
+	}
+	return fmt.Sprintf("%dm %ds", m, s)
 }
