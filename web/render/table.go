@@ -132,7 +132,7 @@ func DefaultTable(nodes Nodes, fontPath string) (*Table, error) {
 	options := TableOptions{
 		horizontalpadding: horizontalpadding,
 		verticalpadding:   30,
-		tableTopPadding:   20,
+		tableTopPadding:   0.5,
 		lineWidth:         0.5,
 		fontHeight:        fontHeight,
 	}
