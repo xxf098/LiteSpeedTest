@@ -224,9 +224,11 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	p.WriteMessage(getMsgByte(-1, "eof"))
 	// draw png
 	successCount := 0
+	var traffic int64 = 0
 	for i := 0; i < linksCount; i++ {
 		node := <-nodeChan
 		nodes[node.Id] = node
+		traffic += node.Traffic
 		if node.IsOk {
 			successCount += 1
 		}
@@ -237,7 +239,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		return err
 	}
 	duration := formatDuration(time.Since(start))
-	msg := fmt.Sprintf("Traffic used : %s. Time used : %s, Working Nodes: [%d/%d]", "10.6G", duration, successCount, linksCount)
+	msg := fmt.Sprintf("Traffic used : %s. Time used : %s, Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
 	table.Draw("out1.png", msg)
 	return nil
 }
@@ -305,6 +307,7 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 			AvgSpeed: avg,
 			MaxSpeed: max,
 			IsOk:     true,
+			Traffic:  sum,
 		}
 		nodeChan <- node
 	}(ch)

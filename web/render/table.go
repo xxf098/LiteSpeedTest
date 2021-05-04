@@ -43,6 +43,7 @@ type Node struct {
 	AvgSpeed int64
 	MaxSpeed int64
 	IsOk     bool
+	Traffic  int64
 }
 
 type Nodes []Node
