@@ -129,7 +129,6 @@ func DefaultTable(nodes Nodes, fontPath string) (*Table, error) {
 	widths := calcWidth(fontface, nodes)
 	fontHeight := calcHeight(fontface)
 	var horizontalpadding float64 = 40
-	tableWidth := widths.group + horizontalpadding + widths.remarks + horizontalpadding + widths.protocol + horizontalpadding + widths.ping + horizontalpadding + widths.avgspeed + horizontalpadding + widths.maxspeed + horizontalpadding
 	options := TableOptions{
 		horizontalpadding: horizontalpadding,
 		verticalpadding:   30,
@@ -137,6 +136,7 @@ func DefaultTable(nodes Nodes, fontPath string) (*Table, error) {
 		lineWidth:         0.5,
 		fontHeight:        fontHeight,
 	}
+	tableWidth := widths.group + horizontalpadding + widths.remarks + horizontalpadding + widths.protocol + horizontalpadding + widths.ping + horizontalpadding + widths.avgspeed + horizontalpadding + widths.maxspeed + horizontalpadding + options.lineWidth*2
 	tableHeight := (fontHeight+options.verticalpadding)*float64((len(nodes)+4)) + options.tableTopPadding*2
 	table := NewTable(int(tableWidth), int(tableHeight), options)
 	table.nodes = nodes
@@ -161,7 +161,9 @@ func (t *Table) drawHorizonLine(y float64) {
 
 func (t *Table) drawVerticalLines() {
 	padding := t.options.horizontalpadding
-	x := t.cellWidths.group + padding
+	x := t.options.lineWidth
+	t.drawFullVerticalLine(x)
+	x = t.cellWidths.group + padding
 	t.drawVerticalLine(x)
 	x += t.cellWidths.remarks + padding
 	t.drawVerticalLine(x)
@@ -171,11 +173,21 @@ func (t *Table) drawVerticalLines() {
 	t.drawVerticalLine(x)
 	x += t.cellWidths.avgspeed + padding
 	t.drawVerticalLine(x)
+	x += t.cellWidths.maxspeed + padding
+	t.drawFullVerticalLine(x)
 }
 
 func (t *Table) drawVerticalLine(x float64) {
 	height := (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+2)) + t.options.tableTopPadding
 	y := t.options.tableTopPadding + t.options.fontHeight + t.options.verticalpadding
+	t.DrawLine(x, y, x, height)
+	t.SetLineWidth(t.options.lineWidth)
+	t.Stroke()
+}
+
+func (t *Table) drawFullVerticalLine(x float64) {
+	height := (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+4)) + t.options.tableTopPadding
+	y := t.options.tableTopPadding
 	t.DrawLine(x, y, x, height)
 	t.SetLineWidth(t.options.lineWidth)
 	t.Stroke()
