@@ -28,6 +28,7 @@ type Message struct {
 	Traffic  int64  `json:"traffic"`
 	Link     string `json:"link"`
 	Protocol string `json:"protocol"`
+	PicData  string `json:"data"`
 }
 
 func getRemarks(link string) (string, string, error) {
@@ -53,13 +54,12 @@ func getMsgByte(id int, typ string, option ...interface{}) []byte {
 	switch typ {
 	case "gotping":
 		msg.Lost = "0.00%"
-		var ping int64
 		if len(option) > 0 {
 			if v, ok := option[0].(int64); ok {
-				ping = v
+				msg.Ping = v
 			}
 		}
-		msg.Ping = ping
+
 	case "gotspeed":
 		var speed int64
 		var maxspeed int64
@@ -85,6 +85,12 @@ func getMsgByte(id int, typ string, option ...interface{}) []byte {
 		}
 		if maxspeed < 1 {
 			msg.MaxSpeed = "N/A"
+		}
+	case "picdata":
+		if len(option) > 0 {
+			if v, ok := option[0].(string); ok {
+				msg.PicData = v
+			}
 		}
 	}
 	b, _ := json.Marshal(msg)

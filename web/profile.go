@@ -2,10 +2,12 @@ package web
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"regexp"
@@ -240,7 +242,12 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	}
 	duration := formatDuration(time.Since(start))
 	msg := fmt.Sprintf("Traffic used : %s. Time used : %s, Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
-	table.Draw("out1.png", msg)
+	filepath := "out1.png"
+	// save to base64
+	table.Draw(filepath, msg)
+	if picdata, err := png2base64(filepath); err == nil {
+		p.WriteMessage(getMsgByte(-1, "picdata", picdata))
+	}
 	return nil
 }
 
@@ -349,4 +356,12 @@ func formatDuration(duration time.Duration) string {
 		return fmt.Sprintf("%dh %dm %ds", h, m, s)
 	}
 	return fmt.Sprintf("%dm %ds", m, s)
+}
+
+func png2base64(path string) (string, error) {
+	bytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	return "data:image/png;base64," + base64.StdEncoding.EncodeToString(bytes), nil
 }
