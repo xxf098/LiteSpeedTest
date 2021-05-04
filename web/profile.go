@@ -241,7 +241,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		return err
 	}
 	duration := formatDuration(time.Since(start))
-	msg := fmt.Sprintf("Traffic used : %s. Time used : %s, Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
+	msg := fmt.Sprintf("Total Traffic : %s. Total Time : %s. Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
 	filepath := "out1.png"
 	// save to base64
 	table.Draw(filepath, msg)
