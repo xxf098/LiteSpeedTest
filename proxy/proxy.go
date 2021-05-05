@@ -89,30 +89,6 @@ func (p *Proxy) relayConnLoop() {
 					continue
 				}
 				pool.Serve(inbound)
-				// go func(inbound tunnel.Conn) {
-				// 	defer inbound.Close()
-				// 	addr := inbound.Metadata().Address
-				// 	var outbound net.Conn
-				// 	var err error
-				// 	if addr.IP != nil && N.IsPrivateAddress(addr.IP) {
-				// 		networkType := addr.NetworkType
-				// 		if networkType == "" {
-				// 			networkType = "tcp"
-				// 		}
-				// 		add := fmt.Sprintf("%s:%d", addr.IP.String(), addr.Port)
-				// 		outbound, err = net.Dial(networkType, add)
-				// 	} else {
-				// 		outbound, err = p.sink.DialConn(addr, nil)
-				// 	}
-				// 	if err != nil {
-				// 		log.Error(common.NewError("proxy failed to dial connection").Base(err))
-				// 		return
-				// 	}
-				// 	log.D("connect to:", addr)
-				// 	defer outbound.Close()
-				// 	// relay
-				// 	relay(outbound, inbound)
-				// }(inbound)
 			}
 		}(source)
 	}

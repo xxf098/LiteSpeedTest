@@ -28,7 +28,7 @@ func TestDraw(t *testing.T) {
 	widths := calcWidth(fontface, nodes)
 	fontHeight := calcHeight(fontface)
 	var horizontalpadding float64 = 40
-	tableWidth := widths.group + horizontalpadding + widths.remarks + horizontalpadding + widths.protocol + horizontalpadding + widths.ping + horizontalpadding + widths.avgspeed + horizontalpadding + widths.maxspeed + horizontalpadding
+	tableWidth := widths.Group + horizontalpadding + widths.Remarks + horizontalpadding + widths.Protocol + horizontalpadding + widths.Ping + horizontalpadding + widths.AvgSpeed + horizontalpadding + widths.MaxSpeed + horizontalpadding
 	options := TableOptions{
 		horizontalpadding: horizontalpadding,
 		verticalpadding:   30,
@@ -71,4 +71,11 @@ func TestCSV2Nodes(t *testing.T) {
 		t.Error(err)
 	}
 	fmt.Println(nodes)
+}
+
+func TestGetNodeHeaders(t *testing.T) {
+	_, tags := getNodeHeaders("en")
+	for k, v := range tags {
+		fmt.Printf("%s:%s\n", k, v)
+	}
 }
