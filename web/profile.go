@@ -193,6 +193,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		p.WriteString(SPEEDTEST_ERROR_NONODES)
 		return fmt.Errorf("no profile found")
 	}
+	start := time.Now()
 	p.WriteMessage(getMsgByte(-1, "started"))
 	linksCount := len(p.Links)
 	for i := range p.Links {
@@ -202,7 +203,6 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	nodeChan := make(chan render.Node, linksCount)
 
 	nodes := make(render.Nodes, linksCount)
-	start := time.Now()
 	for i := range p.Links {
 		p.wg.Add(1)
 		id := i

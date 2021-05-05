@@ -108,6 +108,7 @@ type TableOptions struct {
 	fontSize          int
 	smallFontRatio    float64
 	fontPath          string
+	language          string
 }
 
 type CellWidths struct {
@@ -117,6 +118,17 @@ type CellWidths struct {
 	Ping     float64
 	AvgSpeed float64
 	MaxSpeed float64
+}
+
+func (c CellWidths) toMap() map[string]float64 {
+	m := map[string]float64{}
+	m["Group"] = c.Group
+	m["Remarks"] = c.Remarks
+	m["Protocol"] = c.Protocol
+	m["Ping"] = c.Ping
+	m["AvgSpeed"] = c.AvgSpeed
+	m["MaxSpeed"] = c.MaxSpeed
+	return m
 }
 
 type Table struct {
@@ -156,6 +168,7 @@ func DefaultTable(nodes Nodes, fontPath string) (*Table, error) {
 		fontSize:          fontSize,
 		smallFontRatio:    0.5,
 		fontPath:          fontPath,
+		language:          "en",
 	}
 	tableWidth := widths.Group + horizontalpadding + widths.Remarks + horizontalpadding + widths.Protocol + horizontalpadding + widths.Ping + horizontalpadding + widths.AvgSpeed + horizontalpadding + widths.MaxSpeed + horizontalpadding + options.lineWidth*2
 	tableHeight := (fontHeight+options.verticalpadding)*float64((len(nodes)+4)) + options.tableTopPadding*2 + options.fontHeight*options.smallFontRatio
@@ -182,19 +195,16 @@ func (t *Table) drawHorizonLine(y float64) {
 
 func (t *Table) drawVerticalLines() {
 	padding := t.options.horizontalpadding
-	x := t.options.lineWidth
-	t.drawFullVerticalLine(x)
-	x = t.cellWidths.Group + padding
-	t.drawVerticalLine(x)
-	x += t.cellWidths.Remarks + padding
-	t.drawVerticalLine(x)
-	x += t.cellWidths.Protocol + padding
-	t.drawVerticalLine(x)
-	x += t.cellWidths.Ping + padding
-	t.drawVerticalLine(x)
-	x += t.cellWidths.AvgSpeed + padding
-	t.drawVerticalLine(x)
-	x += t.cellWidths.MaxSpeed + padding
+	var x float64
+	t.drawFullVerticalLine(t.options.lineWidth)
+	ks, _ := getNodeHeaders(t.options.language)
+	cellWidths := t.cellWidths.toMap()
+	for i := 1; i < len(cellWidths); i++ {
+		k := ks[i-1]
+		x += cellWidths[k] + padding
+		t.drawVerticalLine(x)
+	}
+	x += cellWidths[ks[len(cellWidths)-1]] + padding
 	t.drawFullVerticalLine(x)
 }
 
@@ -226,20 +236,13 @@ func (t *Table) drawHeader() {
 	horizontalpadding := t.options.horizontalpadding
 	var x float64 = horizontalpadding / 2
 	var y float64 = t.options.fontHeight + t.options.verticalpadding/2 + t.options.tableTopPadding + t.options.fontHeight + t.options.verticalpadding
-	adjust := t.cellWidths.Group/2 - getWidth(t.fontFace, "Group")/2
-	t.DrawString("Group", x+adjust, y)
-	x += t.cellWidths.Group + horizontalpadding
-	adjust = t.cellWidths.Remarks/2 - getWidth(t.fontFace, "Remarks")/2
-	t.DrawString("Remarks", x+adjust, y)
-	x += t.cellWidths.Remarks + horizontalpadding
-	t.DrawString("Protocol", x, y)
-	x += t.cellWidths.Protocol + horizontalpadding
-	adjust = t.cellWidths.Ping/2 - getWidth(t.fontFace, "Ping")/2
-	t.DrawString("Ping", x+adjust, y)
-	x += t.cellWidths.Ping + horizontalpadding
-	t.DrawString("AvgSpeed", x, y)
-	x += t.cellWidths.AvgSpeed + horizontalpadding
-	t.DrawString("MaxSpeed", x, y)
+	cellWidths := t.cellWidths.toMap()
+	ks, kvs := getNodeHeaders(t.options.language)
+	for _, k := range ks {
+		adjust := cellWidths[k]/2 - getWidth(t.fontFace, kvs[k])/2
+		t.DrawString(kvs[k], x+adjust, y)
+		x += cellWidths[k] + horizontalpadding
+	}
 }
 
 func (t *Table) drawTraffic(traffic string) {
