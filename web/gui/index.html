@@ -88,17 +88,11 @@
 											:label="item" :value="key">
 										</el-option>
 									</el-select>
-								</el-form-item>
-								<el-form-item label="导出速度峰值：" v-if="option" :disabled="loading">
-									<el-select v-model="exportMaxSpeed" size="small">
-										<el-option key="0" label="否" :value="false"></el-option>
-										<el-option key="1" label="是" :value="true"></el-option>
-									</el-select>
 									<el-button type="primary" @click="submit" style="margin-left: 20px"
 										icon="el-icon-check" :disabled="loading" :loading="loading">提 交</el-button>
 									<el-button type="danger" @click="terminate" icon="el-icon-close"
-										:disabled="!loading">终 止</el-button>
-								</el-form-item>
+										:disabled="!loading">终 止</el-button>									
+								</el-form-item>		
 							</el-row>
 						</el-form>
 					</el-container>
@@ -229,7 +223,7 @@
 					speedtestMode: "all",
 					pingMethod: "googleping",
 					sortMethod: "none",
-					exportMaxSpeed: false,
+					exportMaxSpeed: true,
 					method: "SOCKET",
 					picdata: "",
 					option: 0,
