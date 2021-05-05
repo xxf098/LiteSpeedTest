@@ -29,14 +29,15 @@
 					<el-container :element-loading-text="loadingContent">
 						<el-form label-width="120px">
 							<el-row>
-								<el-form-item label="模式设置：">
+								<el-form-item label="设置：">
 									<el-radio-group v-model="option" :disabled="loading">
-										<el-radio :label="0">基础模式</el-radio>
-										<el-radio :label="1">进阶模式</el-radio>
+										<el-radio :label="0">基础</el-radio>
+										<el-radio :label="1">高级</el-radio>
+										<el-radio :label="2">导出</el-radio>
 									</el-radio-group>
 								</el-form-item>
 
-								<el-form-item label="订阅链接：">
+								<el-form-item label="订阅链接：" v-if="option<2">
 									<el-input v-model="subscription" style="width: 800px" size="small"
 										@keyup.enter.native="submit" placeholder="支持 SSR/V2Ray/Trojan 订阅链接及多个节点链接批量测速"
 										:disabled="loading||upload"></el-input>
@@ -51,15 +52,15 @@
 											还可以将配置文件拖到此处，或<em>点击上传</em></div>
 									</el-upload>
 								</el-form-item>
-								<el-form-item label="并发数：">
+								<el-form-item label="并发数：" v-if="option<2">
 									<el-input v-model="concurrency" style="width: 215px" type="number" min="1" max="50"
 										size="small" @keyup.enter.native="submit" :disabled="loading"></el-input>
 								</el-form-item>
-								<el-form-item label="测试时长(秒)：">
+								<el-form-item label="测试时长(秒)：" v-if="option<2">
 									<el-input v-model="timeout" style="width: 215px" type="number" min="1" max="60"
 										size="small" @keyup.enter.native="submit" :disabled="loading"></el-input>
 								</el-form-item>
-								<el-form-item label="自定义组名：">
+								<el-form-item label="自定义组名：" v-if="option<2">
 									<el-input v-model="groupname" style="width: 215px" size="small"
 										@keyup.enter.native="submit" :disabled="loading"></el-input>
 									<el-button type="primary" @click="submit" style="margin-left: 20px" v-if="!option"
@@ -68,21 +69,21 @@
 										:disabled="!loading">终 止</el-button>
 								</el-form-item>
 
-								<el-form-item label="测试项：" v-if="option" :disabled="loading">
+								<el-form-item label="测试项：" v-if="option===1" :disabled="loading">
 									<el-select v-model="speedtestMode" size="small">
 										<el-option v-for="(item, key, index) in init.speedtestModes" :key="index"
 											:label="item" :value="key">
 										</el-option>
 									</el-select>
 								</el-form-item>
-								<el-form-item label="Ping方式：" v-if="option" :disabled="loading">
+								<el-form-item label="Ping方式：" v-if="option===1" :disabled="loading">
 									<el-select v-model="pingMethod" size="small">
 										<el-option v-for="(item, key, index) in init.pingMethods" :key="index"
 											:label="item" :value="key">
 										</el-option>
 									</el-select>
 								</el-form-item>
-								<el-form-item label="排序方式：" v-if="option" :disabled="loading">
+								<el-form-item label="排序方式：" v-if="option===1" :disabled="loading">
 									<el-select v-model="sortMethod" size="small">
 										<el-option v-for="(item, key, index) in init.sortMethods" :key="index"
 											:label="item" :value="key">
@@ -92,7 +93,20 @@
 										icon="el-icon-check" :disabled="loading" :loading="loading">提 交</el-button>
 									<el-button type="danger" @click="terminate" icon="el-icon-close"
 										:disabled="!loading">终 止</el-button>									
-								</el-form-item>		
+								</el-form-item>
+								
+								<!-- export -->
+								<el-form-item label="语言：" v-if="option===2" :disabled="loading">
+									<el-select v-model="language" size="small">
+										<el-option key="1" label="EN" value="en"></el-option>
+										<el-option key="2" label="中文" value="cn"></el-option>
+									</el-select>
+								</el-form-item>
+								<el-form-item label="字体大小：" v-if="option===2">
+									<el-input v-model="fontSize" style="width: 215px" type="number" min="12" max="36"
+										size="small" @keyup.enter.native="submit" :disabled="loading"></el-input>
+								</el-form-item>
+								
 							</el-row>
 						</el-form>
 					</el-container>
@@ -231,6 +245,8 @@
 					qrCodeDialogVisible: false,
 					totalTraffic: 0,
 					totalTime: 0,
+					language: "en",
+					fontSize: 22,
 
 					init: {
 						speedtestModes: {
