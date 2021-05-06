@@ -271,19 +271,19 @@ func (t *Table) drawTitle() {
 	// horizontalpadding := t.options.horizontalpadding
 	title := t.i18n.Title
 	var x float64 = float64(t.width)/2 - getWidth(t.fontFace, title)/2
-	var y float64 = t.options.fontHeight + t.options.verticalpadding/2 + t.options.tableTopPadding
-	t.DrawString(title, x, y)
+	var y float64 = t.options.fontHeight/2 + t.options.verticalpadding/2 + t.options.tableTopPadding
+	t.centerString(title, x, y)
 }
 
 func (t *Table) drawHeader() {
 	horizontalpadding := t.options.horizontalpadding
 	var x float64 = horizontalpadding / 2
-	var y float64 = t.options.fontHeight + t.options.verticalpadding/2 + t.options.tableTopPadding + t.options.fontHeight + t.options.verticalpadding
+	var y float64 = t.options.fontHeight/2 + t.options.verticalpadding/2 + t.options.tableTopPadding + t.options.fontHeight + t.options.verticalpadding
 	cellWidths := t.cellWidths.toMap()
 	ks, kvs := getNodeHeaders(t.options.language)
 	for _, k := range ks {
 		adjust := cellWidths[k]/2 - getWidth(t.fontFace, kvs[k])/2
-		t.DrawString(kvs[k], x+adjust, y)
+		t.centerString(kvs[k], x+adjust, y)
 		x += cellWidths[k] + horizontalpadding
 	}
 }
@@ -318,6 +318,10 @@ func (t *Table) drawPoweredBy() {
 	var x float64 = float64(t.width) - getWidth(fontface, msg) - t.options.lineWidth
 	var y float64 = (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+4)) + t.options.fontHeight*t.options.smallFontRatio
 	t.DrawString(msg, x, y)
+}
+
+func (t *Table) centerString(s string, x, y float64) {
+	t.DrawStringAnchored(s, x, y, 0, 0.4)
 }
 
 func (t *Table) drawNodes() {
