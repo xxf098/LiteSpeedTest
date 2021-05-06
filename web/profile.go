@@ -122,22 +122,32 @@ type ProfileTestOptions struct {
 	TestIDs       []int         `json:"testids"`
 	Timeout       time.Duration `json:"timeout"`
 	Links         []string      `json:"links"`
+	Subscription  string        `json:"subscription"`
+	Language      string        `json:"language"`
+	FontSize      int           `json:"fontSize"`
 }
 
 func parseMessage(message []byte) ([]string, *ProfileTestOptions, error) {
-	links, options, err := parseRetestMessage(message)
-	if err == nil {
-		return links, options, err
-	}
-	splits := strings.SplitN(string(message), "^", 2)
-	if len(splits) < 2 {
-		return nil, nil, ErrInvalidData
-	}
-	links, err = parseLinks(splits[0])
+	options := &ProfileTestOptions{}
+	err := json.Unmarshal(message, options)
 	if err != nil {
 		return nil, nil, err
 	}
-	options, err = parseOptions(splits[1])
+	options.Timeout = time.Duration(int(options.Timeout)) * time.Second
+	if options.GroupName == "?empty?" || options.GroupName == "" {
+		options.GroupName = "Default"
+	}
+	if options.Timeout < 8 {
+		options.Timeout = 8
+	}
+	if options.Concurrency < 1 {
+		options.Concurrency = 1
+	}
+	if options.TestMode == RETEST {
+		return options.Links, options, nil
+	}
+	options.TestMode = ALLTEST
+	links, err := parseLinks(options.Subscription)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -236,6 +246,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		}
 	}
 	close(nodeChan)
+
 	table, err := render.DefaultTable(nodes, "./web/misc/WenQuanYiMicroHei-01.ttf")
 	if err != nil {
 		return err
