@@ -57,7 +57,7 @@
 										size="small" @keyup.enter.native="submit" :disabled="loading"></el-input>
 								</el-form-item>
 								<el-form-item label="测试时长(秒)：" v-if="option<2">
-									<el-input v-model="timeout" style="width: 215px" type="number" min="1" max="60"
+									<el-input v-model="timeout" style="width: 215px" type="number" min="5" max="60"
 										size="small" @keyup.enter.native="submit" :disabled="loading"></el-input>
 								</el-form-item>
 								<el-form-item label="自定义组名：" v-if="option<2">
