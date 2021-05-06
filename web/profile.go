@@ -247,12 +247,14 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	}
 	close(nodeChan)
 
-	table, err := render.DefaultTable(nodes, "./web/misc/WenQuanYiMicroHei-01.ttf")
+	options := render.NewTableOptions(40, 30, 0.5, 0.5, 22, 0.5, "./web/misc/WenQuanYiMicroHei-01.ttf", p.Options.Language)
+	table, err := render.NewTableWithOption(nodes, &options)
 	if err != nil {
 		return err
 	}
 	duration := formatDuration(time.Since(start))
-	msg := fmt.Sprintf("Total Traffic : %s. Total Time : %s. Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
+	// msg := fmt.Sprintf("Total Traffic : %s. Total Time : %s. Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
+	msg := table.FormatTraffic(download.ByteCountIECTrim(traffic), duration, fmt.Sprintf("%d/%d", successCount, linksCount))
 	filepath := "out1.png"
 	// save to base64
 	table.Draw(filepath, msg)
