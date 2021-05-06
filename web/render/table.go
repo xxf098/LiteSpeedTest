@@ -37,21 +37,21 @@ var (
 
 	i18n = map[string]string{
 		"cn": `{
-			"title":    "LiteSpeedTest结果表",
-			"createAt": "测试时间",
-			"traffic":  "总流量: %s. 总时间: %s, 可用节点: [%s]"
+			"Title":    "LiteSpeedTest结果表",
+			"CreateAt": "测试时间",
+			"Traffic":  "总流量: %s. 总时间: %s, 可用节点: [%s]"
 		}`,
 		"en": `{
-			"title":    "LiteSpeedTest Result Table",
-			"createAt": "Create At",
-			"traffic":  "Traffic used: %s. Time used: %s, Working Nodes: [%s]"
+			"Title":    "LiteSpeedTest Result Table",
+			"CreateAt": "Create At",
+			"Traffic":  "Traffic used: %s. Time used: %s, Working Nodes: [%s]"
 		}`,
 	}
 )
 
 type Node struct {
 	Id       int
-	Group    string `en:"Group" cn:"组名"`
+	Group    string `en:"Group" cn:"群组名"`
 	Remarks  string `en:"Remarks" cn:"备注"`
 	Protocol string `en:"Protocol" cn:"协议"`
 	Ping     string `en:"Ping" cn:"Ping"`
@@ -149,20 +149,17 @@ type CellWidths struct {
 }
 
 func (c CellWidths) toMap() map[string]float64 {
+	data, _ := json.Marshal(&c)
 	m := map[string]float64{}
-	m["Group"] = c.Group
-	m["Remarks"] = c.Remarks
-	m["Protocol"] = c.Protocol
-	m["Ping"] = c.Ping
-	m["AvgSpeed"] = c.AvgSpeed
-	m["MaxSpeed"] = c.MaxSpeed
+	// ignore error
+	json.Unmarshal(data, &m)
 	return m
 }
 
 type I18N struct {
-	CreateAt string `json:"createAt"`
-	Title    string `json:"title"`
-	Traffic  string `json:"traffic"`
+	CreateAt string
+	Title    string
+	Traffic  string
 }
 
 func NewI18N(data string) (*I18N, error) {
