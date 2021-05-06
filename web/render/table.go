@@ -223,10 +223,10 @@ func NewTableWithOption(nodes Nodes, options *TableOptions) (*Table, error) {
 }
 
 func (t *Table) drawHorizonLines() {
-	y := t.options.fontHeight + t.options.tableTopPadding
+	y := t.options.tableTopPadding
 	for i := 0; i <= len(t.nodes)+4; i++ {
-		t.drawHorizonLine(y - t.options.fontHeight)
-		y = y + t.options.fontHeight + t.options.verticalpadding
+		t.drawHorizonLine(y)
+		y += t.options.fontHeight + t.options.verticalpadding
 	}
 }
 
@@ -453,13 +453,7 @@ func calcHeight(fontface font.Face) float64 {
 	return float64(fontface.Metrics().Height) / 64
 }
 
-func getWidth(fontface font.Face, text string) float64 {
-	var totalWidth float64 = 0
-	for _, r := range text {
-		awidth, _ := fontface.GlyphAdvance(r)
-		iwidthf := float64(awidth) / 64
-		// fmt.Printf("%.2f\n", iwidthf)
-		totalWidth += float64(iwidthf)
-	}
-	return totalWidth
+func getWidth(fontface font.Face, s string) float64 {
+	a := font.MeasureString(fontface, s)
+	return float64(a >> 6)
 }
