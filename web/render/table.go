@@ -111,6 +111,20 @@ type TableOptions struct {
 	language          string
 }
 
+func NewTableOptions(horizontalpadding float64, verticalpadding float64, tableTopPadding float64,
+	lineWidth float64, fontSize int, smallFontRatio float64, fontPath string, language string) TableOptions {
+	return TableOptions{
+		horizontalpadding: horizontalpadding,
+		verticalpadding:   verticalpadding,
+		tableTopPadding:   tableTopPadding,
+		lineWidth:         lineWidth,
+		fontSize:          fontSize,
+		smallFontRatio:    smallFontRatio,
+		fontPath:          fontPath,
+		language:          language,
+	}
+}
+
 type CellWidths struct {
 	Group    float64
 	Remarks  float64
@@ -151,28 +165,50 @@ func NewTable(width int, height int, options TableOptions) Table {
 }
 
 func DefaultTable(nodes Nodes, fontPath string) (*Table, error) {
-	fontSize := 22
+	// fontSize := 22
+	// fontface, err := LoadFontFace(fontPath, float64(fontSize))
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// widths := calcWidth(fontface, nodes)
+	// fontHeight := calcHeight(fontface)
+	// var horizontalpadding float64 = 40
+	// options := TableOptions{
+	// 	horizontalpadding: horizontalpadding,
+	// 	verticalpadding:   30,
+	// 	tableTopPadding:   0.5,
+	// 	lineWidth:         0.5,
+	// 	fontHeight:        fontHeight,
+	// 	fontSize:          fontSize,
+	// 	smallFontRatio:    0.5,
+	// 	fontPath:          fontPath,
+	// 	language:          "en",
+	// }
+	// tableWidth := widths.Group + horizontalpadding + widths.Remarks + horizontalpadding + widths.Protocol + horizontalpadding + widths.Ping + horizontalpadding + widths.AvgSpeed + horizontalpadding + widths.MaxSpeed + horizontalpadding + options.lineWidth*2
+	// tableHeight := (fontHeight+options.verticalpadding)*float64((len(nodes)+4)) + options.tableTopPadding*2 + options.fontHeight*options.smallFontRatio
+	// table := NewTable(int(tableWidth), int(tableHeight), options)
+	// table.nodes = nodes
+	// table.cellWidths = widths
+	// table.SetFontFace(fontface)
+	options := NewTableOptions(40, 30, 0.5, 0.5, 22, 0.5, fontPath, "en")
+	return NewTableWithOption(nodes, &options)
+}
+
+// TODO: load font by name
+func NewTableWithOption(nodes Nodes, options *TableOptions) (*Table, error) {
+	fontSize := options.fontSize
+	fontPath := options.fontPath
 	fontface, err := LoadFontFace(fontPath, float64(fontSize))
 	if err != nil {
 		return nil, err
 	}
 	widths := calcWidth(fontface, nodes)
 	fontHeight := calcHeight(fontface)
-	var horizontalpadding float64 = 40
-	options := TableOptions{
-		horizontalpadding: horizontalpadding,
-		verticalpadding:   30,
-		tableTopPadding:   0.5,
-		lineWidth:         0.5,
-		fontHeight:        fontHeight,
-		fontSize:          fontSize,
-		smallFontRatio:    0.5,
-		fontPath:          fontPath,
-		language:          "en",
-	}
+	options.fontHeight = fontHeight
+	horizontalpadding := options.horizontalpadding
 	tableWidth := widths.Group + horizontalpadding + widths.Remarks + horizontalpadding + widths.Protocol + horizontalpadding + widths.Ping + horizontalpadding + widths.AvgSpeed + horizontalpadding + widths.MaxSpeed + horizontalpadding + options.lineWidth*2
 	tableHeight := (fontHeight+options.verticalpadding)*float64((len(nodes)+4)) + options.tableTopPadding*2 + options.fontHeight*options.smallFontRatio
-	table := NewTable(int(tableWidth), int(tableHeight), options)
+	table := NewTable(int(tableWidth), int(tableHeight), *options)
 	table.nodes = nodes
 	table.cellWidths = widths
 	table.SetFontFace(fontface)
