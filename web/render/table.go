@@ -38,10 +38,12 @@ var (
 		"cn": {
 			"title":    "LiteSpeedTest结果表",
 			"createAt": "测试时间",
+			"traffic":  "总流量: %s. 总时间: %s, 可用节点: [%s]",
 		},
 		"en": {
 			"title":    "LiteSpeedTest Result Table",
 			"createAt": "Create At",
+			"traffic":  "Traffic used: %s. Time used: %s, Working Nodes: [%s]",
 		},
 	}
 )
@@ -159,12 +161,14 @@ func (c CellWidths) toMap() map[string]float64 {
 type I18N struct {
 	createAt string
 	title    string
+	traffic  string
 }
 
 func NewI18N(kvs map[string]string) I18N {
 	return I18N{
 		createAt: kvs["createAt"],
 		title:    kvs["title"],
+		traffic:  kvs["traffic"],
 	}
 }
 
@@ -189,32 +193,7 @@ func NewTable(width int, height int, options TableOptions) Table {
 }
 
 func DefaultTable(nodes Nodes, fontPath string) (*Table, error) {
-	// fontSize := 22
-	// fontface, err := LoadFontFace(fontPath, float64(fontSize))
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// widths := calcWidth(fontface, nodes)
-	// fontHeight := calcHeight(fontface)
-	// var horizontalpadding float64 = 40
-	// options := TableOptions{
-	// 	horizontalpadding: horizontalpadding,
-	// 	verticalpadding:   30,
-	// 	tableTopPadding:   0.5,
-	// 	lineWidth:         0.5,
-	// 	fontHeight:        fontHeight,
-	// 	fontSize:          fontSize,
-	// 	smallFontRatio:    0.5,
-	// 	fontPath:          fontPath,
-	// 	language:          "en",
-	// }
-	// tableWidth := widths.Group + horizontalpadding + widths.Remarks + horizontalpadding + widths.Protocol + horizontalpadding + widths.Ping + horizontalpadding + widths.AvgSpeed + horizontalpadding + widths.MaxSpeed + horizontalpadding + options.lineWidth*2
-	// tableHeight := (fontHeight+options.verticalpadding)*float64((len(nodes)+4)) + options.tableTopPadding*2 + options.fontHeight*options.smallFontRatio
-	// table := NewTable(int(tableWidth), int(tableHeight), options)
-	// table.nodes = nodes
-	// table.cellWidths = widths
-	// table.SetFontFace(fontface)
-	options := NewTableOptions(40, 30, 0.5, 0.5, 22, 0.5, fontPath, "en")
+	options := NewTableOptions(40, 30, 0.5, 0.5, 22, 0.5, fontPath, "cn")
 	return NewTableWithOption(nodes, &options)
 }
 
@@ -311,6 +290,10 @@ func (t *Table) drawTraffic(traffic string) {
 	var x float64 = t.options.horizontalpadding / 2
 	var y float64 = (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+2)) + t.options.tableTopPadding + t.fontHeight + t.options.verticalpadding/2
 	t.DrawString(traffic, x, y)
+}
+
+func (t *Table) FormatTraffic(traffic string, time string, workingNode string) string {
+	return fmt.Sprintf(t.i18n.traffic, traffic, time, workingNode)
 }
 
 func (t *Table) drawGeneratedAt() {

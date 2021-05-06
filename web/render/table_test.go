@@ -61,7 +61,7 @@ func TestDefaultTable(t *testing.T) {
 	}
 	fontPath, _ := filepath.Abs("../misc/WenQuanYiMicroHei-01.ttf")
 	table, _ := DefaultTable(nodes, fontPath)
-	msg := fmt.Sprintf("Traffic used : %s. Time used : %s, Working Nodes: [%s]", "10.6G", "12:50", "50/50")
+	msg := table.FormatTraffic("10.2G", "3m13s", "50/50")
 	table.Draw("out.png", msg)
 }
 
