@@ -77,7 +77,7 @@ func parseOptions(message string) (*ProfileTestOptions, error) {
 	}
 	groupName := opts[0]
 	if groupName == "?empty?" || groupName == "" {
-		groupName = "Default Group"
+		groupName = "Default"
 	}
 	concurrency, err := strconv.Atoi(opts[5])
 	if err != nil {
@@ -156,7 +156,7 @@ func parseRetestMessage(message []byte) ([]string, *ProfileTestOptions, error) {
 	options.TestMode = RETEST
 	options.Timeout = time.Duration(int(options.Timeout)) * time.Second
 	if options.GroupName == "?empty?" || options.GroupName == "" {
-		options.GroupName = "Default Group"
+		options.GroupName = "Default"
 	}
 	if options.Timeout < 20 {
 		options.Timeout = 20
@@ -266,7 +266,7 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 	if err != nil {
 		node := render.Node{
 			Id:       index,
-			Group:    "Default",
+			Group:    p.Options.GroupName,
 			Remarks:  remarks,
 			Protocol: protocol,
 			Ping:     fmt.Sprintf("%d", elapse),
@@ -307,7 +307,7 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 		}
 		node := render.Node{
 			Id:       index,
-			Group:    "Default",
+			Group:    p.Options.GroupName,
 			Remarks:  remarks,
 			Protocol: protocol,
 			Ping:     fmt.Sprintf("%d", elapse),
