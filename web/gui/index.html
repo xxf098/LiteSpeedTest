@@ -565,7 +565,9 @@
 						pingMethod: self.pingMethod,
 						sortMethod: self.sortMethod,
 						concurrency: parseInt(self.concurrency),
-						timeout: self.timeout
+						timeout: parseInt(self.timeout),
+						language: self.language,
+						fontSize: self.fontSize
 					}
 				},
 				getOptions() {
@@ -587,7 +589,10 @@
 								this.send(self.filecontent);
 							}
 							else {
-								this.send(self.subscription + options);
+								const data = self.getJSONOptions()
+								data.subscription = self.subscription
+								data.testMode = 2
+								this.send(JSON.stringify(data));
 							}
 						});
 						ws.addEventListener("message", this.MessageEvent);
