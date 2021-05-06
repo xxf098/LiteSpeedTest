@@ -60,7 +60,10 @@ func TestDefaultTable(t *testing.T) {
 		}
 	}
 	fontPath, _ := filepath.Abs("../misc/WenQuanYiMicroHei-01.ttf")
-	table, _ := DefaultTable(nodes, fontPath)
+	table, err := DefaultTable(nodes, fontPath)
+	if err != nil {
+		t.Error(err)
+	}
 	msg := table.FormatTraffic("10.2G", "3m13s", "50/50")
 	table.Draw("out.png", msg)
 }

@@ -2,6 +2,7 @@ package render
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"os"
 	"reflect"
@@ -34,17 +35,17 @@ var (
 	// }
 	// bounds = []int{0, 64 * 1024, 512 * 1024, 4 * 1024 * 1024, 16 * 1024 * 1024}
 
-	i18n = map[string]map[string]string{
-		"cn": {
+	i18n = map[string]string{
+		"cn": `{
 			"title":    "LiteSpeedTest结果表",
 			"createAt": "测试时间",
-			"traffic":  "总流量: %s. 总时间: %s, 可用节点: [%s]",
-		},
-		"en": {
+			"traffic":  "总流量: %s. 总时间: %s, 可用节点: [%s]"
+		}`,
+		"en": `{
 			"title":    "LiteSpeedTest Result Table",
 			"createAt": "Create At",
-			"traffic":  "Traffic used: %s. Time used: %s, Working Nodes: [%s]",
-		},
+			"traffic":  "Traffic used: %s. Time used: %s, Working Nodes: [%s]"
+		}`,
 	}
 )
 
@@ -159,17 +160,18 @@ func (c CellWidths) toMap() map[string]float64 {
 }
 
 type I18N struct {
-	createAt string
-	title    string
-	traffic  string
+	CreateAt string `json:"createAt"`
+	Title    string `json:"title"`
+	Traffic  string `json:"traffic"`
 }
 
-func NewI18N(kvs map[string]string) I18N {
-	return I18N{
-		createAt: kvs["createAt"],
-		title:    kvs["title"],
-		traffic:  kvs["traffic"],
+func NewI18N(data string) (*I18N, error) {
+	i18n := &I18N{}
+	err := json.Unmarshal([]byte(data), i18n)
+	if err != nil {
+		return nil, err
 	}
+	return i18n, nil
 }
 
 type Table struct {
@@ -179,7 +181,7 @@ type Table struct {
 	nodes      Nodes
 	options    TableOptions
 	cellWidths *CellWidths
-	i18n       I18N
+	i18n       *I18N
 }
 
 func NewTable(width int, height int, options TableOptions) Table {
@@ -193,7 +195,7 @@ func NewTable(width int, height int, options TableOptions) Table {
 }
 
 func DefaultTable(nodes Nodes, fontPath string) (*Table, error) {
-	options := NewTableOptions(40, 30, 0.5, 0.5, 22, 0.5, fontPath, "cn")
+	options := NewTableOptions(40, 30, 0.5, 0.5, 22, 0.5, fontPath, "en")
 	return NewTableWithOption(nodes, &options)
 }
 
@@ -214,7 +216,11 @@ func NewTableWithOption(nodes Nodes, options *TableOptions) (*Table, error) {
 	table := NewTable(int(tableWidth), int(tableHeight), *options)
 	table.nodes = nodes
 	table.cellWidths = widths
-	table.i18n = NewI18N(i18n[options.language])
+	result, err := NewI18N(i18n[options.language])
+	if err != nil {
+		return nil, err
+	}
+	table.i18n = result
 	table.SetFontFace(fontface)
 	return &table, nil
 }
@@ -266,7 +272,7 @@ func (t *Table) drawFullVerticalLine(x float64) {
 
 func (t *Table) drawTitle() {
 	// horizontalpadding := t.options.horizontalpadding
-	title := t.i18n.title
+	title := t.i18n.Title
 	var x float64 = float64(t.width)/2 - getWidth(t.fontFace, title)/2
 	var y float64 = t.options.fontHeight + t.options.verticalpadding/2 + t.options.tableTopPadding
 	t.DrawString(title, x, y)
@@ -293,12 +299,12 @@ func (t *Table) drawTraffic(traffic string) {
 }
 
 func (t *Table) FormatTraffic(traffic string, time string, workingNode string) string {
-	return fmt.Sprintf(t.i18n.traffic, traffic, time, workingNode)
+	return fmt.Sprintf(t.i18n.Traffic, traffic, time, workingNode)
 }
 
 func (t *Table) drawGeneratedAt() {
 	// horizontalpadding := t.options.horizontalpadding
-	msg := fmt.Sprintf("%s %s", t.i18n.createAt, time.Now().Format(time.RFC3339))
+	msg := fmt.Sprintf("%s %s", t.i18n.CreateAt, time.Now().Format(time.RFC3339))
 	var x float64 = t.options.horizontalpadding / 2
 	var y float64 = (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+3)) + t.options.tableTopPadding + t.fontHeight + t.options.verticalpadding/2
 	t.DrawString(msg, x, y)
