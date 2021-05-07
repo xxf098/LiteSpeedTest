@@ -192,7 +192,7 @@ func NewTable(width int, height int, options TableOptions) Table {
 }
 
 func DefaultTable(nodes Nodes, fontPath string) (*Table, error) {
-	options := NewTableOptions(40, 30, 0.5, 0.5, 22, 0.5, fontPath, "en")
+	options := NewTableOptions(40, 30, 0.5, 0.5, 24, 0.5, fontPath, "en")
 	return NewTableWithOption(nodes, &options)
 }
 
