@@ -291,8 +291,8 @@ func (t *Table) drawHeader() {
 func (t *Table) drawTraffic(traffic string) {
 	// horizontalpadding := t.options.horizontalpadding
 	var x float64 = t.options.horizontalpadding / 2
-	var y float64 = (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+2)) + t.options.tableTopPadding + t.fontHeight + t.options.verticalpadding/2
-	t.DrawString(traffic, x, y)
+	var y float64 = (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+2)) + t.options.tableTopPadding + t.fontHeight/2 + t.options.verticalpadding/2
+	t.centerString(traffic, x, y)
 }
 
 func (t *Table) FormatTraffic(traffic string, time string, workingNode string) string {
@@ -303,8 +303,8 @@ func (t *Table) drawGeneratedAt() {
 	// horizontalpadding := t.options.horizontalpadding
 	msg := fmt.Sprintf("%s %s", t.i18n.CreateAt, time.Now().Format(time.RFC3339))
 	var x float64 = t.options.horizontalpadding / 2
-	var y float64 = (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+3)) + t.options.tableTopPadding + t.fontHeight + t.options.verticalpadding/2
-	t.DrawString(msg, x, y)
+	var y float64 = (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+3)) + t.options.tableTopPadding + t.fontHeight/2 + t.options.verticalpadding/2
+	t.centerString(msg, x, y)
 }
 
 func (t *Table) drawPoweredBy() {
@@ -327,26 +327,26 @@ func (t *Table) centerString(s string, x, y float64) {
 func (t *Table) drawNodes() {
 	horizontalpadding := t.options.horizontalpadding
 	var x float64 = horizontalpadding / 2
-	var y float64 = t.options.fontHeight + t.options.verticalpadding/2 + t.options.tableTopPadding + (t.options.fontHeight+t.options.verticalpadding)*2
+	var y float64 = t.options.fontHeight/2 + t.options.verticalpadding/2 + t.options.tableTopPadding + (t.options.fontHeight+t.options.verticalpadding)*2
 	for _, v := range t.nodes {
-		t.DrawString(v.Group, x, y)
+		t.centerString(v.Group, x, y)
 		x += t.cellWidths.Group + horizontalpadding
-		t.DrawString(v.Remarks, x, y)
+		t.centerString(v.Remarks, x, y)
 		x += t.cellWidths.Remarks + horizontalpadding
 		adjust := t.cellWidths.Protocol/2 - getWidth(t.fontFace, v.Protocol)/2
-		t.DrawString(v.Protocol, x+adjust, y)
+		t.centerString(v.Protocol, x+adjust, y)
 		x += t.cellWidths.Protocol + horizontalpadding
 		adjust = t.cellWidths.Ping/2 - getWidth(t.fontFace, v.Ping)/2
-		t.DrawString(v.Ping, x+adjust, y)
+		t.centerString(v.Ping, x+adjust, y)
 		x += t.cellWidths.Ping + horizontalpadding
 		avgSpeed := download.ByteCountIECTrim(v.AvgSpeed)
 		adjust = t.cellWidths.AvgSpeed/2 - getWidth(t.fontFace, avgSpeed)/2
-		t.DrawString(avgSpeed, x+adjust, y)
+		t.centerString(avgSpeed, x+adjust, y)
 		x += t.cellWidths.AvgSpeed + horizontalpadding
 		maxSpeed := download.ByteCountIECTrim(v.MaxSpeed)
 		adjust = t.cellWidths.MaxSpeed/2 - getWidth(t.fontFace, maxSpeed)/2
-		t.DrawString(maxSpeed, x+adjust, y)
-		y = y + t.options.fontHeight + t.options.verticalpadding
+		t.centerString(maxSpeed, x+adjust, y)
+		y += t.options.fontHeight + t.options.verticalpadding
 		x = horizontalpadding / 2
 	}
 }
