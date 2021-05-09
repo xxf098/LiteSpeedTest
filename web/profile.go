@@ -58,16 +58,29 @@ func parseLinks(message string) ([]string, error) {
 	if matched && err == nil {
 		return getSubscriptionLinks(message)
 	}
+	links := parseProfiles(message)
+	if len(links) < 1 {
+		return parseBase64(message)
+	}
+	return links, nil
+}
+
+func parseProfiles(data string) []string {
 	reg := regexp.MustCompile(`((?i)(vmess|ssr)://[a-zA-Z0-9+_/=-]+)|((?i)(ss|trojan)://(.+?)@(.+?):([0-9]{2,5})([?#][^\s]+))`)
-	matches := reg.FindAllStringSubmatch(message, -1)
+	matches := reg.FindAllStringSubmatch(data, -1)
 	links := make([]string, len(matches))
 	for index, match := range matches {
 		links[index] = match[0]
 	}
-	if len(links) < 1 {
-		return nil, ErrInvalidData
+	return links
+}
+
+func parseBase64(data string) ([]string, error) {
+	msg, err := common.DecodeB64(data)
+	if err != nil {
+		return nil, err
 	}
-	return links, nil
+	return parseProfiles(msg), nil
 }
 
 func parseOptions(message string) (*ProfileTestOptions, error) {
