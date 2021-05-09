@@ -298,7 +298,7 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 			Ping:     fmt.Sprintf("%d", elapse),
 			AvgSpeed: 0,
 			MaxSpeed: 0,
-			IsOk:     false,
+			IsOk:     elapse > 0,
 		}
 		nodeChan <- node
 		return err
@@ -367,7 +367,7 @@ func (p *ProfileTest) pingLink(index int, link string) (int64, error) {
 	}
 	if p.Options.SpeedTestMode == PingOnly {
 		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1, 0))
-		return 0, errors.New(PingOnly)
+		return elapse, errors.New(PingOnly)
 	}
 	return elapse, err
 }
