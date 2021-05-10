@@ -52,13 +52,21 @@
 											还可以将配置文件拖到此处，或<em>点击上传</em></div>
 									</el-upload>
 								</el-form-item>
+
 								<el-form-item label="并发数：" v-if="option<2">
 									<el-input v-model="concurrency" style="width: 215px" type="number" min="1" max="50"
 										size="small" @keyup.enter.native="submit" :disabled="loading"></el-input>
 								</el-form-item>
-								<el-form-item label="测试时长(秒)：" v-if="option<2">
+								<el-form-item label="测试时长(秒)：" v-if="option===1">
 									<el-input v-model="timeout" style="width: 215px" type="number" min="5" max="60"
 										size="small" @keyup.enter.native="submit" :disabled="loading"></el-input>
+								</el-form-item>
+								<el-form-item label="测试项：" v-if="option<2" :disabled="loading">
+									<el-select v-model="speedtestMode" size="small">
+										<el-option v-for="(item, key, index) in init.speedtestModes" :key="index"
+											:label="item" :value="key">
+										</el-option>
+									</el-select>
 								</el-form-item>
 								<el-form-item label="自定义组名：" v-if="option<2">
 									<el-input v-model="groupname" style="width: 215px" size="small"
@@ -69,30 +77,14 @@
 										:disabled="!loading">终 止</el-button>
 								</el-form-item>
 
-								<el-form-item label="测试项：" v-if="option===1" :disabled="loading">
-									<el-select v-model="speedtestMode" size="small">
-										<el-option v-for="(item, key, index) in init.speedtestModes" :key="index"
-											:label="item" :value="key">
-										</el-option>
-									</el-select>
-								</el-form-item>
 								<el-form-item label="Ping方式：" v-if="option===1" :disabled="loading">
 									<el-select v-model="pingMethod" size="small">
-										<el-option v-for="(item, key, index) in init.pingMethods" :key="index"
-											:label="item" :value="key">
+										<el-option v-for="(item, key, index) in init.pingMethods" :key="index" :label="item" :value="key">
 										</el-option>
 									</el-select>
-								</el-form-item>
-								<el-form-item label="排序方式：" v-if="option===1" :disabled="loading">
-									<el-select v-model="sortMethod" size="small">
-										<el-option v-for="(item, key, index) in init.sortMethods" :key="index"
-											:label="item" :value="key">
-										</el-option>
-									</el-select>
-									<el-button type="primary" @click="submit" style="margin-left: 20px"
-										icon="el-icon-check" :disabled="loading" :loading="loading">提 交</el-button>
-									<el-button type="danger" @click="terminate" icon="el-icon-close"
-										:disabled="!loading">终 止</el-button>									
+									<el-button type="primary" @click="submit" style="margin-left: 20px" icon="el-icon-check" :disabled="loading"
+										:loading="loading">提 交</el-button>
+									<el-button type="danger" @click="terminate" icon="el-icon-close" :disabled="!loading">终 止</el-button>
 								</el-form-item>
 								
 								<!-- export -->
@@ -106,7 +98,13 @@
 									<el-input v-model="fontSize" style="width: 215px" type="number" min="12" max="36"
 										size="small" @keyup.enter.native="submit" :disabled="loading"></el-input>
 								</el-form-item>
-								
+								<el-form-item label="排序方式：" v-if="option===2" :disabled="loading">
+									<el-select v-model="sortMethod" size="small">
+										<el-option v-for="(item, key, index) in init.sortMethods" :key="index"
+											:label="item" :value="key">
+										</el-option>
+									</el-select>
+								</el-form-item>
 							</el-row>
 						</el-form>
 					</el-container>
@@ -256,12 +254,10 @@
 						},
 						pingMethods: {
 							googleping: "Google",
-							gstaticping: "Gstatic",
-							bingping: "Bing",
 							tcping: "TCP",
 						},
 						sortMethods: {
-							none: "订阅列表",
+							none: "默认",
 							speed: "speed 顺序",
 							rspeed: "speed 倒序",
 							ping: "ping 顺序",
