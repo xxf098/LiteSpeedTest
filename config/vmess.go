@@ -52,6 +52,7 @@ type RawConfig struct {
 type VmessConfig struct {
 	Add        string          `json:"add"`
 	Aid        json.RawMessage `json:"aid"`
+	AlterId    json.RawMessage `json:"alterId"`
 	Host       string          `json:"host"`
 	ID         string          `json:"id"`
 	Net        string          `json:"net"`
@@ -227,7 +228,10 @@ func VmessLinkToVmessConfigIP(link string, resolveip bool) (*VmessConfig, error)
 	config.PortInt = port
 	aid, err := rawMessageToInt(config.Aid)
 	if err != nil {
-		return nil, err
+		aid, err = rawMessageToInt(config.AlterId)
+		if err != nil {
+			return nil, err
+		}
 	}
 	config.AidInt = aid
 	if resolveip {

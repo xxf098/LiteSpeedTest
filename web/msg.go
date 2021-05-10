@@ -33,6 +33,9 @@ type Message struct {
 
 func getRemarks(link string) (string, string, error) {
 	cfg, err := config.Link2Config(link)
+	if err != nil {
+		return "", "", err
+	}
 	return cfg.Protocol, cfg.Remarks, err
 }
 
