@@ -49,6 +49,10 @@ func getSubscriptionLinks(link string) ([]string, error) {
 	return parseLinks(msg)
 }
 
+func getClashLinks() ([]string, error) {
+	return nil, nil
+}
+
 func parseLinks(message string) ([]string, error) {
 	// splits := strings.SplitN(string(message), "^", 2)
 	// if len(splits) < 1 {
