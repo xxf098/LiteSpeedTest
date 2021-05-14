@@ -1,6 +1,8 @@
 package config
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 
 	"github.com/xxf098/lite-proxy/common/structure"
@@ -44,6 +46,31 @@ func ParseProxy(mapping map[string]interface{}) (string, error) {
 		if err != nil {
 			break
 		}
+		tls := ""
+		if vmessOption.TLS {
+			tls = ""
+		}
+		host := ""
+		if h, ok := vmessOption.WSHeaders["Host"]; ok {
+			host = h
+		}
+		c := VmessConfig{
+			Ps:   vmessOption.Name,
+			Add:  vmessOption.Server,
+			Port: []byte(fmt.Sprintf("%d", vmessOption.Port)),
+			Aid:  []byte(fmt.Sprintf("%d", vmessOption.AlterID)),
+			ID:   vmessOption.UUID,
+			Type: vmessOption.Cipher,
+			TLS:  tls,
+			Net:  vmessOption.Network,
+			Path: vmessOption.WSPath,
+			Host: host,
+		}
+		data, err := json.MarshalIndent(&c, "", "    ")
+		if err != nil {
+			return "", err
+		}
+		link = fmt.Sprintf("vmess://%s", base64.StdEncoding.EncodeToString(data))
 	case "trojan":
 		trojanOption := &outbound.TrojanOption{}
 		err = decoder.Decode(mapping, trojanOption)

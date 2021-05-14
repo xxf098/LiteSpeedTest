@@ -52,7 +52,7 @@ type RawConfig struct {
 type VmessConfig struct {
 	Add        string          `json:"add"`
 	Aid        json.RawMessage `json:"aid"`
-	AlterId    json.RawMessage `json:"alterId"`
+	AlterId    json.RawMessage `json:"alterId,omitempty"`
 	Host       string          `json:"host"`
 	ID         string          `json:"id"`
 	Net        string          `json:"net"`
@@ -61,12 +61,12 @@ type VmessConfig struct {
 	Ps         string          `json:"ps"`
 	TLS        string          `json:"tls"`
 	Type       string          `json:"type"`
-	V          json.RawMessage `json:"v"`
+	V          json.RawMessage `json:"v,omitempty"`
 	Security   string          `json:"security"`
-	ResolveIP  bool            `json:"resolve_ip"`
-	ServerName string
-	PortInt    int
-	AidInt     int
+	ResolveIP  bool            `json:"resolve_ip,omitempty"`
+	ServerName string          `json:"-"`
+	PortInt    int             `json:"-"`
+	AidInt     int             `json:"-"`
 }
 
 func RawConfigToVmessOption(config *RawConfig) (*outbound.VmessOption, error) {
