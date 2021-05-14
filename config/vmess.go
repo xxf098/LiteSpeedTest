@@ -62,7 +62,7 @@ type VmessConfig struct {
 	TLS        string          `json:"tls"`
 	Type       string          `json:"type"`
 	V          json.RawMessage `json:"v,omitempty"`
-	Security   string          `json:"security"`
+	Security   string          `json:"security,omitempty"`
 	ResolveIP  bool            `json:"resolve_ip,omitempty"`
 	ServerName string          `json:"-"`
 	PortInt    int             `json:"-"`

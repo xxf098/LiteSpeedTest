@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/xxf098/lite-proxy/common/structure"
 	"github.com/xxf098/lite-proxy/outbound"
@@ -57,8 +58,8 @@ func ParseProxy(mapping map[string]interface{}) (string, error) {
 		c := VmessConfig{
 			Ps:   vmessOption.Name,
 			Add:  vmessOption.Server,
-			Port: []byte(fmt.Sprintf("%d", vmessOption.Port)),
-			Aid:  []byte(fmt.Sprintf("%d", vmessOption.AlterID)),
+			Port: []byte(fmt.Sprintf("%s", strconv.Itoa(vmessOption.Port))),
+			Aid:  []byte(fmt.Sprintf("%s", strconv.Itoa(vmessOption.AlterID))),
 			ID:   vmessOption.UUID,
 			Type: vmessOption.Cipher,
 			TLS:  tls,

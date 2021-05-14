@@ -18,6 +18,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/xxf098/lite-proxy/common"
+	"github.com/xxf098/lite-proxy/config"
 	"github.com/xxf098/lite-proxy/download"
 	"github.com/xxf098/lite-proxy/request"
 	"github.com/xxf098/lite-proxy/web/render"
@@ -44,14 +45,12 @@ func getSubscriptionLinks(link string) ([]string, error) {
 	}
 	msg, err := common.DecodeB64(string(data))
 	if err != nil {
-		return nil, err
+		return parseClash(string(data))
 	}
 	return parseLinks(msg)
 }
 
-func getClashLinks() ([]string, error) {
-	return nil, nil
-}
+type parseFunc func(string) ([]string, error)
 
 func parseLinks(message string) ([]string, error) {
 	// splits := strings.SplitN(string(message), "^", 2)
@@ -62,21 +61,24 @@ func parseLinks(message string) ([]string, error) {
 	if matched && err == nil {
 		return getSubscriptionLinks(message)
 	}
-	links := parseProfiles(message)
-	if len(links) < 1 {
-		return parseBase64(message)
+	var links []string
+	for _, fn := range []parseFunc{parseProfiles, parseBase64, parseClash} {
+		links, err = fn(message)
+		if err == nil && len(links) > 0 {
+			break
+		}
 	}
-	return links, nil
+	return links, err
 }
 
-func parseProfiles(data string) []string {
+func parseProfiles(data string) ([]string, error) {
 	reg := regexp.MustCompile(`((?i)(vmess|ssr)://[a-zA-Z0-9+_/=-]+)|((?i)(ss|trojan)://(.+?)@(.+?):([0-9]{2,5})([?#][^\s]+))`)
 	matches := reg.FindAllStringSubmatch(data, -1)
 	links := make([]string, len(matches))
 	for index, match := range matches {
 		links[index] = match[0]
 	}
-	return links
+	return links, nil
 }
 
 func parseBase64(data string) ([]string, error) {
@@ -84,7 +86,15 @@ func parseBase64(data string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return parseProfiles(msg), nil
+	return parseProfiles(msg)
+}
+
+func parseClash(data string) ([]string, error) {
+	cc, err := config.ParseClash([]byte(data))
+	if err != nil {
+		return nil, err
+	}
+	return cc.Proxies, nil
 }
 
 func parseOptions(message string) (*ProfileTestOptions, error) {
