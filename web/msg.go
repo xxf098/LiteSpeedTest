@@ -31,7 +31,7 @@ type Message struct {
 	PicData  string `json:"data"`
 }
 
-func getRemarks(link string) (string, string, error) {
+func GetRemarks(link string) (string, string, error) {
 	cfg, err := config.Link2Config(link)
 	if err != nil {
 		return "", "", err
@@ -41,7 +41,7 @@ func getRemarks(link string) (string, string, error) {
 
 func gotserverMsg(id int, link string, groupName string) []byte {
 	msg := Message{ID: id, Info: "gotserver"}
-	protocol, remarks, err := getRemarks(link)
+	protocol, remarks, err := GetRemarks(link)
 	if err == nil {
 		msg.Group = groupName
 		msg.Remarks = remarks

@@ -214,9 +214,12 @@ type ProfileTest struct {
 }
 
 func (p *ProfileTest) WriteMessage(data []byte) error {
-	p.mu.Lock()
-	err := p.Conn.WriteMessage(p.MessageType, data)
-	p.mu.Unlock()
+	var err error
+	if p.Conn != nil {
+		p.mu.Lock()
+		err = p.Conn.WriteMessage(p.MessageType, data)
+		p.mu.Unlock()
+	}
 	return err
 }
 
@@ -226,13 +229,13 @@ func (p *ProfileTest) WriteString(data string) error {
 }
 
 func (p *ProfileTest) testAll(ctx context.Context) error {
-	if len(p.Links) < 1 {
+	linksCount := len(p.Links)
+	if linksCount < 1 {
 		p.WriteString(SPEEDTEST_ERROR_NONODES)
 		return fmt.Errorf("no profile found")
 	}
 	start := time.Now()
 	p.WriteMessage(getMsgByte(-1, "started"))
-	linksCount := len(p.Links)
 	for i := range p.Links {
 		p.WriteMessage(gotserverMsg(i, p.Links[i], p.Options.GroupName))
 	}
@@ -251,7 +254,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		select {
 		case guard <- i:
 			go func(id int, link string, c <-chan int, nodeChan chan<- render.Node) {
-				p.testOne(ctx, id, link, nodeChan)
+				p.TestOne(ctx, id, link, nodeChan, nil)
 				_ = p.WriteMessage(getMsgByte(id, "endone"))
 				<-c
 			}(id, link, guard, nodeChan)
@@ -291,14 +294,14 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	return nil
 }
 
-func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeChan chan<- render.Node) error {
+func (p *ProfileTest) TestOne(ctx context.Context, index int, link string, nodeChan chan<- render.Node, trafficChan chan<- int64) error {
 	// panic
 	defer p.wg.Done()
 	if link == "" {
 		link = p.Links[index]
 		link = strings.SplitN(link, "^", 2)[0]
 	}
-	protocol, remarks, err := getRemarks(link)
+	protocol, remarks, err := GetRemarks(link)
 	if err != nil {
 		remarks = fmt.Sprintf("Profile %d", index)
 	}
@@ -340,6 +343,9 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 				}
 				log.Printf("%s recv: %s", remarks, download.ByteCountIEC(speed))
 				err = p.WriteMessage(getMsgByte(index, "gotspeed", avg, max, speed))
+				if trafficChan != nil {
+					trafficChan <- speed
+				}
 			case <-ctx.Done():
 				log.Printf("index %d done!", index)
 				break Loop
