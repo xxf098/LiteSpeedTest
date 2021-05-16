@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -11,12 +12,12 @@ import (
 
 var upgrader = websocket.Upgrader{}
 
-func ServeFile() error {
+func ServeFile(port int) error {
 	box := packr.New("myBox", "./gui")
 	http.Handle("/", http.FileServer(box))
 	http.HandleFunc("/test", updateTest)
-	log.Println("Start server at http://127.0.0.1:10888")
-	err := http.ListenAndServe(":10888", nil)
+	log.Printf("Start server at http://127.0.0.1:%d", port)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	return err
 }
 

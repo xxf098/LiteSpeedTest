@@ -18,7 +18,7 @@ var (
 func main() {
 	flag.Parse()
 	if *test || len(os.Args) < 2 {
-		err := webServer.ServeFile()
+		err := webServer.ServeFile(10888)
 		if err != nil {
 			log.Fatalln(err)
 		}
