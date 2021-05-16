@@ -228,6 +228,38 @@ func (p *ProfileTest) WriteString(data string) error {
 	return p.WriteMessage(b)
 }
 
+// api
+func (p *ProfileTest) TestAll(ctx context.Context, links []string, max int, trafficChan chan<- int64) (chan render.Node, error) {
+	linksCount := len(links)
+	if linksCount < 1 {
+		return nil, fmt.Errorf("no profile found")
+	}
+
+	nodeChan := make(chan render.Node, linksCount)
+	go func(context.Context) {
+		guard := make(chan int, max)
+		for i := range links {
+			p.wg.Add(1)
+			id := i
+			link := links[i]
+			select {
+			case guard <- i:
+				go func(id int, link string, c <-chan int, nodeChan chan<- render.Node) {
+					p.testOne(ctx, id, link, nodeChan, trafficChan)
+					<-c
+				}(id, link, guard, nodeChan)
+			case <-ctx.Done():
+				return
+			}
+		}
+		p.wg.Wait()
+		if trafficChan != nil {
+			close(trafficChan)
+		}
+	}(ctx)
+	return nodeChan, nil
+}
+
 func (p *ProfileTest) testAll(ctx context.Context) error {
 	linksCount := len(p.Links)
 	if linksCount < 1 {
@@ -254,7 +286,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		select {
 		case guard <- i:
 			go func(id int, link string, c <-chan int, nodeChan chan<- render.Node) {
-				p.TestOne(ctx, id, link, nodeChan, nil)
+				p.testOne(ctx, id, link, nodeChan, nil)
 				_ = p.WriteMessage(getMsgByte(id, "endone"))
 				<-c
 			}(id, link, guard, nodeChan)
@@ -294,7 +326,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	return nil
 }
 
-func (p *ProfileTest) TestOne(ctx context.Context, index int, link string, nodeChan chan<- render.Node, trafficChan chan<- int64) error {
+func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeChan chan<- render.Node, trafficChan chan<- int64) error {
 	// panic
 	defer p.wg.Done()
 	if link == "" {
