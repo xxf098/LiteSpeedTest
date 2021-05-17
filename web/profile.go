@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -142,8 +143,8 @@ const (
 type ProfileTestOptions struct {
 	GroupName     string        `json:"group"`
 	SpeedTestMode string        `json:"speedtestMode"`
-	PingMethod    string        `json:"pingMethod"`
-	SortMethod    string        `json:"sortMethod"`
+	PingMethod    string        `json:"pingMethod"` // googleping
+	SortMethod    string        `json:"sortMethod"` // speed rspeed ping rping
 	Concurrency   int           `json:"concurrency"`
 	TestMode      int           `json:"testMode"`
 	TestIDs       []int         `json:"testids"`
@@ -308,6 +309,22 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		}
 	}
 	close(nodeChan)
+
+	// sort nodes
+	sort.Slice(nodes[:], func(i, j int) bool {
+		switch p.Options.SortMethod {
+		case "speed":
+			return nodes[i].MaxSpeed < nodes[j].MaxSpeed
+		case "rspeed":
+			return nodes[i].MaxSpeed > nodes[j].MaxSpeed
+		case "ping":
+			return nodes[i].Ping < nodes[j].Ping
+		case "rping":
+			return nodes[i].Ping > nodes[j].Ping
+		default:
+			return true
+		}
+	})
 
 	options := render.NewTableOptions(40, 30, 0.5, 0.5, p.Options.FontSize, 0.5, "./web/misc/WenQuanYiMicroHei-01.ttf", p.Options.Language)
 	table, err := render.NewTableWithOption(nodes, &options)
