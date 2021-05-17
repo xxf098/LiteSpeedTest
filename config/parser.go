@@ -58,8 +58,8 @@ func ParseProxy(mapping map[string]interface{}) (string, error) {
 		c := VmessConfig{
 			Ps:   vmessOption.Name,
 			Add:  vmessOption.Server,
-			Port: []byte(fmt.Sprintf("%s", strconv.Itoa(vmessOption.Port))),
-			Aid:  []byte(fmt.Sprintf("%s", strconv.Itoa(vmessOption.AlterID))),
+			Port: []byte(strconv.Itoa(vmessOption.Port)),
+			Aid:  []byte(strconv.Itoa(vmessOption.AlterID)),
 			ID:   vmessOption.UUID,
 			Type: vmessOption.Cipher,
 			TLS:  tls,
