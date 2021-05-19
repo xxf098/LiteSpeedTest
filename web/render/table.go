@@ -13,36 +13,46 @@ import (
 	"golang.org/x/image/font"
 )
 
-var (
-	colorgroup = [][]int{
-		{255, 255, 255},
-		{102, 255, 102},
-		{255, 255, 102},
-		{255, 178, 102},
-		{255, 102, 102},
-		{226, 140, 255},
-		{102, 204, 255},
-		{102, 102, 255},
-	}
-	bounds = []int{0, 64 * 1024, 512 * 1024, 4 * 1024 * 1024, 16 * 1024 * 1024, 24 * 1024 * 1024, 32 * 1024 * 1024, 40 * 1024 * 1024}
+type Theme struct {
+	colorgroup [][]int
+	bounds     []int
+}
 
-	// colorgroup = [][]int{
-	// 	{255, 255, 255},
-	// 	{128, 255, 0},
-	// 	{255, 255, 0},
-	// 	{255, 128, 192},
-	// 	{255, 0, 0},
-	// }
-	// bounds = []int{0, 64 * 1024, 512 * 1024, 4 * 1024 * 1024, 16 * 1024 * 1024}
+var (
+	themes = map[string]Theme{
+		"original": Theme{
+			colorgroup: [][]int{
+				{255, 255, 255},
+				{128, 255, 0},
+				{255, 255, 0},
+				{255, 128, 192},
+				{255, 0, 0},
+			},
+			bounds: []int{0, 64 * 1024, 512 * 1024, 4 * 1024 * 1024, 16 * 1024 * 1024},
+		},
+		"rainbow": Theme{
+			colorgroup: [][]int{
+				{255, 255, 255},
+				{102, 255, 102},
+				{255, 255, 102},
+				{255, 178, 102},
+				{255, 102, 102},
+				{226, 140, 255},
+				{102, 204, 255},
+				{102, 102, 255},
+			},
+			bounds: []int{0, 64 * 1024, 512 * 1024, 4 * 1024 * 1024, 16 * 1024 * 1024, 24 * 1024 * 1024, 32 * 1024 * 1024, 40 * 1024 * 1024},
+		},
+	}
 
 	i18n = map[string]string{
 		"cn": `{
-			"Title":    "LiteSpeedTest结果表",
+			"Title":    "Lite SpeedTest 结果表",
 			"CreateAt": "测试时间",
 			"Traffic":  "总流量: %s. 总时间: %s, 可用节点: [%s]"
 		}`,
 		"en": `{
-			"Title":    "LiteSpeedTest Result Table",
+			"Title":    "Lite SpeedTest Result Table",
 			"CreateAt": "Create At",
 			"Traffic":  "Traffic used: %s. Time used: %s, Working Nodes: [%s]"
 		}`,
@@ -123,10 +133,15 @@ type TableOptions struct {
 	smallFontRatio    float64
 	fontPath          string
 	language          string
+	theme             Theme
 }
 
 func NewTableOptions(horizontalpadding float64, verticalpadding float64, tableTopPadding float64,
-	lineWidth float64, fontSize int, smallFontRatio float64, fontPath string, language string) TableOptions {
+	lineWidth float64, fontSize int, smallFontRatio float64, fontPath string, language string, t string) TableOptions {
+	theme, ok := themes[t]
+	if !ok {
+		theme = themes["rainbow"]
+	}
 	return TableOptions{
 		horizontalpadding: horizontalpadding,
 		verticalpadding:   verticalpadding,
@@ -136,6 +151,7 @@ func NewTableOptions(horizontalpadding float64, verticalpadding float64, tableTo
 		smallFontRatio:    smallFontRatio,
 		fontPath:          fontPath,
 		language:          language,
+		theme:             theme,
 	}
 }
 
@@ -192,7 +208,7 @@ func NewTable(width int, height int, options TableOptions) Table {
 }
 
 func DefaultTable(nodes Nodes, fontPath string) (*Table, error) {
-	options := NewTableOptions(40, 30, 0.5, 0.5, 24, 0.5, fontPath, "en")
+	options := NewTableOptions(40, 30, 0.5, 0.5, 24, 0.5, fontPath, "en", "rainbow")
 	return NewTableWithOption(nodes, &options)
 }
 
@@ -362,11 +378,11 @@ func (t *Table) drawSpeed() {
 	var h float64 = t.options.fontHeight + t.options.verticalpadding - 2*lineWidth
 	for i := 0; i < len(t.nodes); i++ {
 		t.DrawRectangle(x1, y, wAvg, h)
-		r, g, b := getSpeedColor(t.nodes[i].AvgSpeed)
+		r, g, b := getSpeedColor(t.nodes[i].AvgSpeed, t.options.theme)
 		t.SetRGB255(r, g, b)
 		t.Fill()
 		t.DrawRectangle(x2, y, wMax, h)
-		r, g, b = getSpeedColor(t.nodes[i].MaxSpeed)
+		r, g, b = getSpeedColor(t.nodes[i].MaxSpeed, t.options.theme)
 		t.SetRGB255(r, g, b)
 		t.Fill()
 		y = y + t.options.fontHeight + t.options.verticalpadding
@@ -390,7 +406,9 @@ func (t *Table) Draw(path string, traffic string) {
 	t.SavePNG(path)
 }
 
-func getSpeedColor(speed int64) (int, int, int) {
+func getSpeedColor(speed int64, theme Theme) (int, int, int) {
+	bounds := theme.bounds
+	colorgroup := theme.colorgroup
 	for i := 0; i < len(bounds)-1; i++ {
 		if speed >= int64(bounds[i]) && speed <= int64(bounds[i+1]) {
 			level := float64(speed-int64(bounds[i])) / float64(bounds[i+1]-bounds[i])
