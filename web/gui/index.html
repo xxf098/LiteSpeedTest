@@ -105,6 +105,13 @@
 										</el-option>
 									</el-select>
 								</el-form-item>
+								<el-form-item label="主题：" v-if="option===2" :disabled="loading">
+									<el-select v-model="theme" size="small">
+										<el-option v-for="(item, key, index) in init.themes" :key="index"
+											:label="item" :value="key">
+										</el-option>
+									</el-select>
+								</el-form-item>
 							</el-row>
 						</el-form>
 					</el-container>
@@ -245,6 +252,7 @@
 					totalTime: 0,
 					language: "en",
 					fontSize: 24,
+					theme: "rainbow",
 
 					init: {
 						speedtestModes: {
@@ -262,6 +270,10 @@
 							ping: "ping 顺序",
 							rping: "ping 倒序",
 							none: "默认",
+						},
+						themes: {
+							rainbow: "Rainbow",
+							original: "Original",
 						}
 					},
 					result: []
@@ -563,7 +575,8 @@
 						concurrency: parseInt(self.concurrency),
 						timeout: parseInt(self.timeout),
 						language: self.language,
-						fontSize: parseInt(self.fontSize)
+						fontSize: parseInt(self.fontSize),
+						theme: self.theme,
 					}
 				},
 				getOptions() {

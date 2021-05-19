@@ -13,6 +13,7 @@ import (
 var upgrader = websocket.Upgrader{}
 
 func ServeFile(port int) error {
+	// handle font
 	box := packr.New("myBox", "./gui")
 	http.Handle("/", http.FileServer(box))
 	http.HandleFunc("/test", updateTest)
