@@ -61,8 +61,8 @@
 									<el-input v-model="timeout" style="width: 215px" type="number" min="5" max="60"
 										size="small" @keyup.enter.native="submit" :disabled="loading"></el-input>
 								</el-form-item>
-								<el-form-item label="测试项：" v-if="option<2" :disabled="loading">
-									<el-select v-model="speedtestMode" size="small">
+								<el-form-item label="测试项：" v-if="option<2">
+									<el-select v-model="speedtestMode" size="small" :disabled="loading">
 										<el-option v-for="(item, key, index) in init.speedtestModes" :key="index"
 											:label="item" :value="key">
 										</el-option>
