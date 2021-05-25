@@ -332,7 +332,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	duration := formatDuration(time.Since(start))
+	duration := FormatDuration(time.Since(start))
 	// msg := fmt.Sprintf("Total Traffic : %s. Total Time : %s. Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
 	msg := table.FormatTraffic(download.ByteCountIECTrim(traffic), duration, fmt.Sprintf("%d/%d", successCount, linksCount))
 	filepath := "out1.png"
@@ -442,7 +442,7 @@ func (p *ProfileTest) pingLink(index int, link string) (int64, error) {
 	return elapse, err
 }
 
-func formatDuration(duration time.Duration) string {
+func FormatDuration(duration time.Duration) string {
 	h := duration / time.Hour
 	duration -= h * time.Hour
 	m := duration / time.Minute
