@@ -341,7 +341,7 @@
 					this.errText = '';
 					if (!this.file || !window.FileReader) return;
 					let reader = new FileReader();
-					reader.readAsDataURL(this.file);
+					reader.readAsText(this.file);
 					reader.onloadend = function () {
 						self.filecontent = this.result;
 						self.subscription = self.file.name;
@@ -349,15 +349,15 @@
 					}
 				},
 				beforeUpload(file) {
-					const isType = file.type === 'application/json' || file.type === 'application/octet-stream'
-					const fsize = file.size / 1024 / 1024 <= 2;
-					if (!isType) {
-						this.$message.error('选择的文件格式有误!');
-					}
+					// const isType = file.type === 'application/json' || file.type === 'application/octet-stream'
+					const fsize = file.size / 1024 / 1024 <= 10;
+					// if (!isType) {
+					// 	this.$message.error('选择的文件格式有误!');
+					// }
 					if (!fsize) {
-						this.$message.error('上传的文件不能超过2MB!');
+						this.$message.error('上传的文件不能超过10MB!');
 					}
-					return isType && fsize;
+					return fsize;
 				},
 				checkUploadStatus(type) {
 					if (!this.upload) {
@@ -610,17 +610,10 @@
 					this.connect(`ws://${window.location.host}/test`);
 					if (ws) {
 						ws.addEventListener("open", function (ev) {
-							const options = self.getOptions()
-							if (self.upload) {
-								this.send("data:upload" + options);
-								this.send(self.filecontent);
-							}
-							else {
-								const data = self.getJSONOptions()
-								data.subscription = self.subscription
-								data.testMode = 2
-								this.send(JSON.stringify(data));
-							}
+							const data = self.getJSONOptions()
+							data.testMode = 2
+							data.subscription = self.upload ? self.filecontent : self.subscription;
+							this.send(JSON.stringify(data));
 						});
 						ws.addEventListener("message", this.MessageEvent);
 					} else {

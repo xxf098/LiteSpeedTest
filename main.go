@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	link = flag.String("link", "", "proxy link")
-	port = flag.Int("port", 8090, "local port")
-	test = flag.Bool("test", false, "start test")
+	link = flag.String("link", "", "add subscription link")
+	port = flag.Int("port", 8090, "set port")
+	test = flag.Bool("test", false, "start batch test")
 )
 
 func main() {
