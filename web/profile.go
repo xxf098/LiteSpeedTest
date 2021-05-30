@@ -352,7 +352,7 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 		link = strings.SplitN(link, "^", 2)[0]
 	}
 	protocol, remarks, err := GetRemarks(link)
-	if err != nil {
+	if err != nil || remarks == "" {
 		remarks = fmt.Sprintf("Profile %d", index)
 	}
 	elapse, err := p.pingLink(index, link)
