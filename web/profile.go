@@ -327,7 +327,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		}
 	})
 
-	options := render.NewTableOptions(40, 30, 0.5, 0.5, p.Options.FontSize, 0.5, "./web/misc/WenQuanYiMicroHei-01.ttf", p.Options.Language, p.Options.Theme)
+	options := render.NewTableOptions(40, 30, 0.5, 0.5, p.Options.FontSize, 0.5, "./web/misc/WenQuanYiMicroHei-01.ttf", p.Options.Language, p.Options.Theme, "Asia/Shanghai")
 	table, err := render.NewTableWithOption(nodes, &options)
 	if err != nil {
 		return err

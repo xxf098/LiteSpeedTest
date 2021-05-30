@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"runtime"
 	"strconv"
 	"time"
 
@@ -134,10 +135,11 @@ type TableOptions struct {
 	fontPath          string
 	language          string
 	theme             Theme
+	timezone          string
 }
 
 func NewTableOptions(horizontalpadding float64, verticalpadding float64, tableTopPadding float64,
-	lineWidth float64, fontSize int, smallFontRatio float64, fontPath string, language string, t string) TableOptions {
+	lineWidth float64, fontSize int, smallFontRatio float64, fontPath string, language string, t string, timezone string) TableOptions {
 	theme, ok := themes[t]
 	if !ok {
 		theme = themes["rainbow"]
@@ -152,6 +154,7 @@ func NewTableOptions(horizontalpadding float64, verticalpadding float64, tableTo
 		fontPath:          fontPath,
 		language:          language,
 		theme:             theme,
+		timezone:          timezone,
 	}
 }
 
@@ -208,7 +211,7 @@ func NewTable(width int, height int, options TableOptions) Table {
 }
 
 func DefaultTable(nodes Nodes, fontPath string) (*Table, error) {
-	options := NewTableOptions(40, 30, 0.5, 0.5, 24, 0.5, fontPath, "en", "rainbow")
+	options := NewTableOptions(40, 30, 0.5, 0.5, 24, 0.5, fontPath, "en", "rainbow", "Asia/Shanghai")
 	return NewTableWithOption(nodes, &options)
 }
 
@@ -318,6 +321,12 @@ func (t *Table) FormatTraffic(traffic string, time string, workingNode string) s
 func (t *Table) drawGeneratedAt() {
 	// horizontalpadding := t.options.horizontalpadding
 	msg := fmt.Sprintf("%s %s", t.i18n.CreateAt, time.Now().Format(time.RFC3339))
+	// https://github.com/golang/go/issues/20455
+	if runtime.GOOS == "android" {
+		loc, _ := time.LoadLocation(t.options.timezone)
+		now := time.Now()
+		msg = fmt.Sprintf("%s %s", t.i18n.CreateAt, now.In(loc).Format(time.RFC3339))
+	}
 	var x float64 = t.options.horizontalpadding / 2
 	var y float64 = (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+3)) + t.options.tableTopPadding + t.fontHeight/2 + t.options.verticalpadding/2
 	t.centerString(msg, x, y)
