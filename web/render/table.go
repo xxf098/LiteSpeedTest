@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gobuffalo/packr/v2"
 	"github.com/xxf098/lite-proxy/download"
 	"golang.org/x/image/font"
 )
@@ -136,10 +137,12 @@ type TableOptions struct {
 	language          string
 	theme             Theme
 	timezone          string
+	box               *packr.Box
 }
 
 func NewTableOptions(horizontalpadding float64, verticalpadding float64, tableTopPadding float64,
-	lineWidth float64, fontSize int, smallFontRatio float64, fontPath string, language string, t string, timezone string) TableOptions {
+	lineWidth float64, fontSize int, smallFontRatio float64, fontPath string,
+	language string, t string, timezone string, box *packr.Box) TableOptions {
 	theme, ok := themes[t]
 	if !ok {
 		theme = themes["rainbow"]
@@ -155,6 +158,7 @@ func NewTableOptions(horizontalpadding float64, verticalpadding float64, tableTo
 		language:          language,
 		theme:             theme,
 		timezone:          timezone,
+		box:               box,
 	}
 }
 
@@ -211,7 +215,7 @@ func NewTable(width int, height int, options TableOptions) Table {
 }
 
 func DefaultTable(nodes Nodes, fontPath string) (*Table, error) {
-	options := NewTableOptions(40, 30, 0.5, 0.5, 24, 0.5, fontPath, "en", "rainbow", "Asia/Shanghai")
+	options := NewTableOptions(40, 30, 0.5, 0.5, 24, 0.5, fontPath, "en", "rainbow", "Asia/Shanghai", nil)
 	return NewTableWithOption(nodes, &options)
 }
 
@@ -219,7 +223,7 @@ func DefaultTable(nodes Nodes, fontPath string) (*Table, error) {
 func NewTableWithOption(nodes Nodes, options *TableOptions) (*Table, error) {
 	fontSize := options.fontSize
 	fontPath := options.fontPath
-	fontface, err := LoadFontFace(fontPath, float64(fontSize))
+	fontface, err := LoadFontFaceWithBox(options.box, fontPath, float64(fontSize))
 	if err != nil {
 		return nil, err
 	}
@@ -334,7 +338,7 @@ func (t *Table) drawGeneratedAt() {
 
 func (t *Table) drawPoweredBy() {
 	fontSize := int(float64(t.options.fontSize) * t.options.smallFontRatio)
-	fontface, err := LoadFontFace(t.options.fontPath, float64(fontSize))
+	fontface, err := LoadFontFaceWithBox(t.options.box, t.options.fontPath, float64(fontSize))
 	if err != nil {
 		return
 	}

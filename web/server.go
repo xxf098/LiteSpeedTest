@@ -14,7 +14,7 @@ var upgrader = websocket.Upgrader{}
 
 func ServeFile(port int) error {
 	// handle font
-	box := packr.New("myBox", "./gui")
+	box := packr.New("gui", "./gui")
 	http.Handle("/", http.FileServer(box))
 	http.HandleFunc("/test", updateTest)
 	log.Printf("Start server at http://127.0.0.1:%d", port)

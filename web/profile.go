@@ -17,6 +17,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/websocket"
 	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/config"
@@ -327,7 +328,9 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		}
 	})
 
-	options := render.NewTableOptions(40, 30, 0.5, 0.5, p.Options.FontSize, 0.5, "./web/misc/WenQuanYiMicroHei-01.ttf", p.Options.Language, p.Options.Theme, "Asia/Shanghai")
+	box := packr.New("misc", "./misc")
+	fontPath := "WenQuanYiMicroHei-01.ttf"
+	options := render.NewTableOptions(40, 30, 0.5, 0.5, p.Options.FontSize, 0.5, fontPath, p.Options.Language, p.Options.Theme, "Asia/Shanghai", box)
 	table, err := render.NewTableWithOption(nodes, &options)
 	if err != nil {
 		return err

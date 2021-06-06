@@ -12,6 +12,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gobuffalo/packr/v2"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 
@@ -132,6 +133,25 @@ func unfix(x fixed.Int26_6) float64 {
 // this package-level function.
 func LoadFontFace(path string, points float64) (font.Face, error) {
 	fontBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	f, err := truetype.Parse(fontBytes)
+	if err != nil {
+		return nil, err
+	}
+	face := truetype.NewFace(f, &truetype.Options{
+		Size: points,
+		// Hinting: font.HintingFull,
+	})
+	return face, nil
+}
+
+func LoadFontFaceWithBox(box *packr.Box, fontPath string, points float64) (font.Face, error) {
+	if box == nil {
+		return LoadFontFace(fontPath, points)
+	}
+	fontBytes, err := box.Find(fontPath)
 	if err != nil {
 		return nil, err
 	}
