@@ -3,3 +3,4 @@ lite
 web/wasm/main.wasm
 web/web-packr.go
 web/render/*.png
+.vscode/
