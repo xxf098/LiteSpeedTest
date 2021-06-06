@@ -1,15 +1,15 @@
 # LiteSpeedTest
 
-LiteSpeedTest is a simple tool for batch test ss/ssr/v2ray/trojan server. 
+LiteSpeedTest is a simple tool for batch test ss/ssr/v2ray/trojan servers. 
 
 ### Usage
 ```
-As http/socks proxy:
-    lite vmess://ABCDEFGHIJKLMNOPQRSTUVWXYZ
-    lite ssr://ABCDEFGHIJKLMNOPQRSTUVWXYZ
+Run as speed test tool:
+    ./lite    
 
-As speed test tool:
-    lite    
+Run as http/socks5 proxy:
+    ./lite vmess://ABCDEFGHIJKLMNOPQRSTUVWXYZ
+    ./lite ssr://ABCDEFGHIJKLMNOPQRSTUVWXYZ
 ```
 
 ### Build
@@ -22,7 +22,13 @@ As speed test tool:
     go build -o lite
 ```
 
+## Credits
+
+- [clash](https://github.com/Dreamacro/clash)
+- [stairspeedtest-reborn](https://github.com/tindy2013/stairspeedtest-reborn)
+- [gg](https://github.com/fogleman/gg)
+
 ## Developer
 ```golang
-// release
+// TODO
 ```
