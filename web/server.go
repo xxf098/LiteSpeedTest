@@ -6,29 +6,34 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/websocket"
+	"github.com/xxf098/lite-proxy/web/box"
 )
 
 var upgrader = websocket.Upgrader{}
 
 func ServeFile(port int) error {
 	// handle font
-	box := packr.New("gui", "./gui")
+	box, err := box.GetBox("gui")
+	if err != nil {
+		return err
+	}
 	http.Handle("/", http.FileServer(box))
 	http.HandleFunc("/test", updateTest)
 	log.Printf("Start server at http://127.0.0.1:%d", port)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	err = http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	return err
 }
 
 func ServeWasm(port int) error {
 	// handle font
-	box := packr.New("wasm", "./wasm")
+	box, err := box.GetBox("wasm")
+	if err != nil {
+		return err
+	}
 	http.Handle("/", http.FileServer(box))
-	http.HandleFunc("/test", updateTest)
 	log.Printf("Start server at http://127.0.0.1:%d", port)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	err = http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	return err
 }
 

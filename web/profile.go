@@ -17,11 +17,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gobuffalo/packr/v2"
 	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/config"
 	"github.com/xxf098/lite-proxy/download"
 	"github.com/xxf098/lite-proxy/request"
+	"github.com/xxf098/lite-proxy/web/box"
 	"github.com/xxf098/lite-proxy/web/render"
 )
 
@@ -331,7 +331,10 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		}
 	})
 
-	box := packr.New("misc", "./misc")
+	box, err := box.GetBox("misc")
+	if err != nil {
+		return err
+	}
 	fontPath := "WenQuanYiMicroHei-01.ttf"
 	options := render.NewTableOptions(40, 30, 0.5, 0.5, p.Options.FontSize, 0.5, fontPath, p.Options.Language, p.Options.Theme, "Asia/Shanghai", box)
 	table, err := render.NewTableWithOption(nodes, &options)
