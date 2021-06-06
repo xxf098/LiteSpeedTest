@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         # Include amd64 on all platforms.
-        goos: [windows, linux, darwin]
+        goos: [linux]
         goarch: [amd64]
       fail-fast: false    
     # The type of runner that the job will run on
@@ -50,8 +50,8 @@ jobs:
       run: |
         go version
         go get -u ./...
-        go get -u github.com/go-bindata/go-bindata/...
-        go-bindata -fs -pkg web -prefix "web/gui"  -o ./web/asset.go web/gui/
+        go get -u github.com/gobuffalo/packr/v2/...
+        packr2
         
     # Run build of the application
     - name: Run build
