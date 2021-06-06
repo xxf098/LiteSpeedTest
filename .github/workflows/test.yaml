@@ -49,6 +49,7 @@ jobs:
     - name: Install dependencies
       run: |
         go version
+        export GO111MODULE=on
         go get -u ./...
         go get -u github.com/gobuffalo/packr/v2/...
         packr2
