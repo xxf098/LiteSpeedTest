@@ -1,9 +1,12 @@
+// +build linux
+
 package dialer
 
 import (
+	"syscall"
+
 	"github.com/xxf098/lite-proxy/common"
 	"golang.org/x/sys/unix"
-	"syscall"
 )
 
 func setReusePort(fd uintptr) error {
