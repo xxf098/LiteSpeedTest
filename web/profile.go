@@ -338,10 +338,13 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	duration := FormatDuration(time.Since(start))
 	// msg := fmt.Sprintf("Total Traffic : %s. Total Time : %s. Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
 	msg := table.FormatTraffic(download.ByteCountIECTrim(traffic), duration, fmt.Sprintf("%d/%d", successCount, linksCount))
-	filepath := "out1.png"
+	// filepath := "out1.png"
 	// save to base64
-	table.Draw(filepath, msg)
-	if picdata, err := png2base64(filepath); err == nil {
+	// table.Draw(filepath, msg)
+	// if picdata, err := png2base64(filepath); err == nil {
+	// 	p.WriteMessage(getMsgByte(-1, "picdata", picdata))
+	// }
+	if picdata, err := table.EncodeB64(msg); err == nil {
 		p.WriteMessage(getMsgByte(-1, "picdata", picdata))
 	}
 	return nil

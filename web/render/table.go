@@ -1,6 +1,8 @@
 package render
 
 import (
+	"bytes"
+	"encoding/base64"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -417,6 +419,35 @@ func (t *Table) Draw(path string, traffic string) {
 	t.drawGeneratedAt()
 	t.drawPoweredBy()
 	t.SavePNG(path)
+}
+
+func (t *Table) Encode(traffic string) ([]byte, error) {
+	t.SetRGB255(255, 255, 255)
+	t.Clear()
+	t.SetRGB255(0, 0, 0)
+	t.drawHorizonLines()
+	t.drawVerticalLines()
+	t.drawSpeed()
+	t.drawTitle()
+	t.drawHeader()
+	t.drawNodes()
+	t.drawTraffic(traffic)
+	t.drawGeneratedAt()
+	t.drawPoweredBy()
+	var buf bytes.Buffer
+	err := t.EncodePNG(&buf)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func (t *Table) EncodeB64(traffic string) (string, error) {
+	bytes, err := t.Encode(traffic)
+	if err != nil {
+		return "", err
+	}
+	return "data:image/png;base64," + base64.StdEncoding.EncodeToString(bytes), nil
 }
 
 func getSpeedColor(speed int64, theme Theme) (int, int, int) {
