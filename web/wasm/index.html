@@ -392,7 +392,8 @@
 						this.picdata = "";
 						this.incrTotalTime()
 						this.loadingContent = "等待后端响应……";
-						this.starttest();
+						// this.starttest();
+                        this.startTestWasm();
 					}
 				},
 				terminate: function () {
@@ -628,6 +629,9 @@
 						this.$alert("后端连接错误！请检查后端运行情况！", "错误");
 					}
 				},
+                startTestWasm() {
+
+                },
 				loopevent(id, tester) {
 					item = this.result[id];
 					switch (tester) {

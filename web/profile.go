@@ -18,7 +18,6 @@ import (
 	"time"
 
 	"github.com/gobuffalo/packr/v2"
-	"github.com/gorilla/websocket"
 	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/config"
 	"github.com/xxf098/lite-proxy/download"
@@ -207,8 +206,12 @@ func parseRetestMessage(message []byte) ([]string, *ProfileTestOptions, error) {
 	return options.Links, options, nil
 }
 
+type MessageWriter interface {
+	WriteMessage(messageType int, data []byte) error
+}
+
 type ProfileTest struct {
-	Conn        *websocket.Conn
+	Writer      MessageWriter
 	Options     *ProfileTestOptions
 	MessageType int
 	Links       []string
@@ -218,9 +221,9 @@ type ProfileTest struct {
 
 func (p *ProfileTest) WriteMessage(data []byte) error {
 	var err error
-	if p.Conn != nil {
+	if p.Writer != nil {
 		p.mu.Lock()
-		err = p.Conn.WriteMessage(p.MessageType, data)
+		err = p.Writer.WriteMessage(p.MessageType, data)
 		p.mu.Unlock()
 	}
 	return err

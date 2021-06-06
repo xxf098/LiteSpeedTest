@@ -12,7 +12,12 @@ func printMessage(this js.Value, inputs []js.Value) interface{} {
 	return nil
 }
 
+func startTest(this js.Value, inputs []js.Value) interface{} {
+	return nil
+}
+
 func main() {
 	js.Global().Set("printMessage", js.FuncOf(printMessage))
+	js.Global().Set("startTest", js.FuncOf(startTest))
 	<-make(chan bool)
 }

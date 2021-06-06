@@ -54,7 +54,7 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		p := ProfileTest{
-			Conn:        c,
+			Writer:      c,
 			MessageType: mt,
 			Links:       links,
 			Options:     options,
