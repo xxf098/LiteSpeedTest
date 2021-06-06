@@ -16,6 +16,7 @@ As speed test tool:
 ```bash
     go get -u ./...
     # packr2
+    # export GO111MODULE=on
     go get -u github.com/gobuffalo/packr/v2/...
     packr2
     go build -o lite
