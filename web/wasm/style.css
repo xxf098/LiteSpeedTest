@@ -1,0 +1,10 @@
+.el-scrollbar__wrap {
+    overflow-x: hidden!important;
+}
+
+.truncate_remark {
+    width: 330px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;   
+}
