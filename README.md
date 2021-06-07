@@ -14,11 +14,8 @@ Run as http/socks5 proxy:
 
 ### Build
 ```bash
+    #only support go>=1.6
     go get -u ./...
-    # packr2
-    # export GO111MODULE=on
-    go get -u github.com/gobuffalo/packr/v2/...
-    packr2
     go build -o lite
 ```
 

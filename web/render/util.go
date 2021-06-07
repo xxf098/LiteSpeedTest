@@ -12,7 +12,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gobuffalo/packr/v2"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 
@@ -147,13 +146,9 @@ func LoadFontFace(path string, points float64) (font.Face, error) {
 	return face, nil
 }
 
-func LoadFontFaceWithBox(box *packr.Box, fontPath string, points float64) (font.Face, error) {
-	if box == nil {
+func LoadFontFaceByBytes(fontBytes []byte, fontPath string, points float64) (font.Face, error) {
+	if len(fontBytes) < 1 {
 		return LoadFontFace(fontPath, points)
-	}
-	fontBytes, err := box.Find(fontPath)
-	if err != nil {
-		return nil, err
 	}
 	f, err := truetype.Parse(fontBytes)
 	if err != nil {
