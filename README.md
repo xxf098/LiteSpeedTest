@@ -14,7 +14,7 @@ Run as http/socks5 proxy:
 
 ### Build
 ```bash
-    #only support go>=1.6
+    #require go>=1.16
     go get -u ./...
     go build -o lite
 ```

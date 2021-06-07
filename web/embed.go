@@ -2,7 +2,7 @@ package web
 
 import "embed"
 
-//go:embed gui/*
+//go:embed index.html style.css favicon.ico
 var guiStatic embed.FS
 
 //go:embed wasm/*
