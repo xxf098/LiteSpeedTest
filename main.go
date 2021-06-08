@@ -14,7 +14,6 @@ var (
 	link = flag.String("link", "", "add subscription link")
 	port = flag.Int("port", 8090, "set port")
 	test = flag.Bool("test", false, "start batch test")
-	wasm = flag.Bool("wasm", false, "start wasm")
 )
 
 func main() {
@@ -28,13 +27,6 @@ func main() {
 	}
 	if (*test || len(os.Args) < 2) && *link == "" {
 		err := webServer.ServeFile(10888)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		return
-	}
-	if (*wasm || len(os.Args) < 2) && *link == "" {
-		err := webServer.ServeWasm(10888)
 		if err != nil {
 			log.Fatalln(err)
 		}

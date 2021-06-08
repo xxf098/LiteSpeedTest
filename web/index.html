@@ -16,8 +16,8 @@
 <!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
 <script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/index.js"></script>
 <!-- qrcode -->
-<!-- <script src="https://cdn.jsdelivr.net/npm/qrcodejs2@0.0.2/qrcode.js"></script> -->
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs2@0.0.2/qrcode.min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/qrcodejs2@0.0.2/qrcode.min.js"></script> -->
+<script src="wasm_exec.js"></script>
 
 
 <body>
@@ -213,6 +213,12 @@
 		</el-dialog>
 	</div>
 	<script>
+
+		const go = new Go();
+		WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
+			go.run(result.instance);
+		});
+
 		let themes = {
 			"original": {
 				colorgroup: [
@@ -420,11 +426,12 @@
 					this.$nextTick(() => {
 						this.multipleSelection.forEach(item => {
 							const gid = 'qrcode_' + item.id;
-							new QRCode(gid, {
-								text: item.link,
-								width: 260,
-								height: 260
-							})
+							// new QRCode(gid, {
+							// 	text: item.link,
+							// 	width: 260,
+							// 	height: 260
+							// })
+							wasmQRcode(gid, item.link, 260, 260)
 							// setTimeout(() => {
 							// 	const sibling = document.getElementById(gid).nextElementSibling
 							// 	if (sibling) {

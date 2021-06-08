@@ -19,12 +19,12 @@ func ServeFile(port int) error {
 	return err
 }
 
-func ServeWasm(port int) error {
-	http.Handle("/", http.FileServer(http.FS(wasmStatic)))
-	log.Printf("Start server at http://127.0.0.1:%d", port)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
-	return err
-}
+// func ServeWasm(port int) error {
+// 	http.Handle("/", http.FileServer(http.FS(wasmStatic)))
+// 	log.Printf("Start server at http://127.0.0.1:%d", port)
+// 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+// 	return err
+// }
 
 func updateTest(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)

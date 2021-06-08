@@ -1,6 +1,4 @@
-packrd/
 lite
-web/wasm/main.wasm
-web/box/box-packr.go
+web/main.wasm
 web/render/*.png
 .vscode/

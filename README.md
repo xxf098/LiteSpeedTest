@@ -16,6 +16,7 @@ Run as http/socks5 proxy:
 ```bash
     #require go>=1.16
     go get -u ./...
+    GOOS=js GOARCH=wasm go build -o ./web/main.wasm ./wasm
     go build -o lite
 ```
 
