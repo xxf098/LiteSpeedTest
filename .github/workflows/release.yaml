@@ -25,11 +25,8 @@ jobs:
       - name: Get dependencies, run test and static check
         run: |
           go version
-          export GO111MODULE=on
           go get -u ./...
-          go get -u github.com/gobuffalo/packr/v2/...
-          GOOS=js GOARCH=wasm go build -o ./web/wasm/main.wasm ./wasm
-          packr2
+          GOOS=js GOARCH=wasm go build -o ./web/main.wasm ./wasm
 
       - name: Build
         if: startsWith(github.ref, 'refs/tags/')

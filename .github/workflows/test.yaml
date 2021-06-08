@@ -60,11 +60,9 @@ jobs:
     - name: Install dependencies
       run: |
         go version
-        export GO111MODULE=on
         go get -u ./...
-        go get -u github.com/gobuffalo/packr/v2/...
-        GOOS=js GOARCH=wasm go build -o ./web/wasm/main.wasm ./wasm
-        packr2
+        GOOS=js GOARCH=wasm go build -o ./web/main.wasm ./wasm
+    
         
     # Run build of the application
     - name: Run build
