@@ -331,7 +331,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	})
 
 	fontPath := "WenQuanYiMicroHei-01.ttf"
-	options := render.NewTableOptions(40, 30, 0.5, 0.5, p.Options.FontSize, 0.5, fontPath, p.Options.Language, p.Options.Theme, "Asia/Shanghai", fontBytes)
+	options := render.NewTableOptions(40, 30, 0.5, 0.5, p.Options.FontSize, 0.5, fontPath, p.Options.Language, p.Options.Theme, "Asia/Shanghai", FontBytes)
 	table, err := render.NewTableWithOption(nodes, &options)
 	if err != nil {
 		return err
