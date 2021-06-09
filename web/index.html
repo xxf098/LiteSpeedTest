@@ -424,21 +424,18 @@
 				},
 				handleQRCodeCreate: function () {
 					this.$nextTick(() => {
-						this.multipleSelection.forEach(item => {
-							const gid = 'qrcode_' + item.id;
-							// new QRCode(gid, {
-							// 	text: item.link,
-							// 	width: 260,
-							// 	height: 260
-							// })
-							wasmQRcode(gid, item.link, 260, 260)
-							// setTimeout(() => {
-							// 	const sibling = document.getElementById(gid).nextElementSibling
-							// 	if (sibling) {
-							// 		sibling.innerHTML = `${item.remark} ${item.ping}ms`;
-							// 	}
-							// });
+						const items = this.multipleSelection.map(item => {
+							return {
+								gid: 'qrcode_' + item.id,
+								link: item.link,
+								size: 260
+							}
 						})
+						wasmQRcode(JSON.stringify(items))
+						// this.multipleSelection.forEach(item => {
+						// 	const gid = 'qrcode_' + item.id;
+						// 	wasmQRcode(gid, item.link, 260, 260)
+						// })
 					})
 				},
 				handleRetest: function () {

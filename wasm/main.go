@@ -2,11 +2,13 @@ package main
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"syscall/js"
 
-	qrcode "github.com/skip2/go-qrcode"
+	"github.com/skip2/go-qrcode"
 )
 
 func printMessage(this js.Value, inputs []js.Value) interface{} {
@@ -16,22 +18,45 @@ func printMessage(this js.Value, inputs []js.Value) interface{} {
 	return nil
 }
 
+type Item struct {
+	Gid  string `json:"gid"`
+	Link string `json:"link"`
+	Size int    `json:"size"`
+}
+
 func wasmQRcode(this js.Value, inputs []js.Value) interface{} {
-	eid := inputs[0].String()
-	text := inputs[1].String()
-	size := inputs[2].Int()
-	document := js.Global().Get("document")
-	elem := document.Call("getElementById", eid)
-	elem.Call("setAttribute", "title", text)
-	var bytes []byte
-	bytes, err := qrcode.Encode(text, qrcode.Medium, size)
+	// eid := inputs[0].String()
+	// text := inputs[1].String()
+	// size := inputs[2].Int()
+	items := []Item{}
+	jsonItems := inputs[0].String()
+	log.Println(jsonItems)
+	err := json.Unmarshal([]byte(jsonItems), &items)
 	if err != nil {
 		return nil
 	}
-	imgData := "data:image/png;base64," + base64.StdEncoding.EncodeToString(bytes)
-	html := fmt.Sprintf(`<canvas width="%d" height="%d" style="display: none;"></canvas>
-	<img style="display: block;" src="%s">`, size, size, imgData)
-	elem.Set("innerHTML", html)
+	ch := make(chan bool, 2)
+	for _, v := range items {
+		go func(eid string, text string, size int) {
+			defer func() {
+				ch <- true
+			}()
+			document := js.Global().Get("document")
+			elem := document.Call("getElementById", eid)
+			elem.Call("setAttribute", "title", text)
+			var bytes []byte
+			bytes, err := qrcode.Encode(text, qrcode.Medium, size)
+			if err != nil {
+				return
+			}
+			imgData := "data:image/png;base64," + base64.StdEncoding.EncodeToString(bytes)
+			html := fmt.Sprintf(`<canvas width="%d" height="%d" style="display: none;"></canvas>
+				<img style="display: block;" src="%s">`, size, size, imgData)
+			elem.Set("innerHTML", html)
+		}(v.Gid, v.Link, v.Size)
+		<-ch
+	}
+
 	return nil
 }
 
