@@ -116,7 +116,7 @@
 								<el-form-item label="结果数据：" v-if="option===3" :disabled="loading">
 									<el-input
 										type="textarea"
-										:autosize="{ minRows: 4, maxRows: 10}"
+										:autosize="{ minRows: 5, maxRows: 18}"
 										placeholder="input data"
 										style="width: 800px"
 										v-model="generateResultJSON">
@@ -161,7 +161,8 @@
 									<el-dropdown-item @click.native="handleCopy()">复制链接</el-dropdown-item>
 									<el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item>
 									<el-dropdown-item @click.native="handleQRCode()">QRCode</el-dropdown-item>
-									<el-dropdown-item @click.native="handleSave()">Save</el-dropdown-item>
+									<el-dropdown-item @click.native="handleExportResult()">导出结果</el-dropdown-item>
+									<el-dropdown-item @click.native="handleSave()">导出节点</el-dropdown-item>
 								</el-dropdown-menu>
 							</el-dropdown>
 						</el-col>
@@ -411,8 +412,17 @@
 					if (!this.generateResultJSON) {
 						return
 					}
-					this.picdata = wasmResultTable() || ""
-					this.generateResultJSON = ""
+					const requestOptions = {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: this.generateResultJSON
+					};
+					const url = `${window.location.protocol}//${window.location.host}/generateResult`
+					fetch(url, requestOptions)
+						.then(resp => resp.text())
+						.then(data => {
+							this.picdata = data
+						})
 				},
 				terminate: function () {
 					this.loading = false;
@@ -467,14 +477,8 @@
 					console.log(`handleRetest: ${JSON.stringify(data)}`)
 					this.send(JSON.stringify(data));
 				},
-				handleSave: function () {
-					const links = this.multipleSelection.map(elem => {
-							return `# ${elem.remark}\t${elem.ping}\t${elem.speed}\t${elem.maxspeed}\n${elem.link}`
-					})
-					if (this.subscription.match(/^https?:\/\//g)) {
-						links.unshift(`# ${this.subscription}`)
-					}
-					const blob = new Blob([links.join("\n")], { type: 'text/plain;charset=utf-8;' })
+				saveData: function (data, name) {
+					const blob = new Blob([data], { type: 'text/plain;charset=utf-8;' })
 					const link = document.createElement('a')
 					if (link == null || link.download == null || link.download == undefined) {
 						return
@@ -487,11 +491,43 @@
 					jsonDate = jsonDate.replaceAll(":", "")
 					let url = URL.createObjectURL(blob)
 					link.setAttribute('href', url)
-					link.setAttribute('download', `profiles_${jsonDate}`)
+					link.setAttribute('download', `${name}_${jsonDate}`)
 					link.style.visibility = 'hidden'
 					document.body.appendChild(link)
 					link.click()
 					document.body.removeChild(link)
+					
+				},
+				handleSave: function () {
+					const links = this.multipleSelection.map(elem => {
+							return `# ${elem.remark}\t${elem.ping}\t${elem.speed}\t${elem.maxspeed}\n${elem.link}`
+					})
+					if (this.subscription.match(/^https?:\/\//g)) {
+						links.unshift(`# ${this.subscription}`)
+					}
+					this.saveData(links.join("\n"), "profile")
+				},
+				handleExportResult: function (params) {
+					const nodes = this.result.map(item => {
+						const avg_speed = Math.floor(this.getSpeed(item.speed)) || 0
+						const max_speed = Math.floor(this.getSpeed(item.maxspeed)) || 0
+						return {
+							id: item.id,
+							group: item.group,
+							remarks: item.remark,
+							protocol: item.protocol,
+							ping: `${item.ping}`,
+							avg_speed,
+							max_speed,
+							isok: item.ping > 0,
+						}
+					})
+					const data = {
+						totalTraffic: this.bytesToSize(this.totalTraffic),
+						totalTime: this.formatSeconds(this.totalTime),
+						nodes,
+					}
+					this.saveData(JSON.stringify(data, null, 2), "result")
 				},
 				colorCell: function ({
 					row,

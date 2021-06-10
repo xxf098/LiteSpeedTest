@@ -5,13 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"strings"
 	"syscall/js"
 
 	"github.com/skip2/go-qrcode"
-	"github.com/xxf098/lite-proxy/web"
-	"github.com/xxf098/lite-proxy/web/render"
 )
 
 func printMessage(this js.Value, inputs []js.Value) interface{} {
@@ -63,39 +60,8 @@ func wasmQRcode(this js.Value, inputs []js.Value) interface{} {
 	return nil
 }
 
-func wasmResultTable(this js.Value, inputs []js.Value) interface{} {
-	nodes := make([]render.Node, 50)
-	for i := 0; i < 50; i++ {
-		nodes[i] = render.Node{
-			Group:    "节点列表",
-			Remarks:  fmt.Sprintf("美国加利福尼亚免费测试%d", i),
-			Protocol: "vmess",
-			Ping:     fmt.Sprintf("%d", rand.Intn(800-50)+50),
-			AvgSpeed: int64((rand.Intn(20-1) + 1) * 1024 * 1024),
-			MaxSpeed: int64((rand.Intn(60-5) + 5) * 1024 * 1024),
-		}
-	}
-	options := render.NewTableOptions(40, 30, 0.5, 0.5, 28, 0.5, "WenQuanYiMicroHei-01.ttf", "en", "rainbow", "Asia/Shanghai", web.FontBytes)
-	table, err := render.NewTableWithOption(nodes, &options)
-	if err != nil {
-		return nil
-	}
-	msg := table.FormatTraffic("10.2G", "3m13s", "50/50")
-	encodePNG, err := table.EncodeB64(msg)
-	if err != nil {
-		return nil
-	}
-	// document := js.Global().Get("document")
-	// elem := document.Call("getElementById", "result_png")
-	// html := fmt.Sprintf(`<img class="el-image__inner" src="%s">`, encodePNG)
-	// elem.Call("setAttribute", "src", encodePNG)
-	// elem.Set("innerHTML", html)
-	return encodePNG
-}
-
 func main() {
 	js.Global().Set("printMessage", js.FuncOf(printMessage))
 	js.Global().Set("wasmQRcode", js.FuncOf(wasmQRcode))
-	js.Global().Set("wasmResultTable", js.FuncOf(wasmResultTable))
 	<-make(chan bool)
 }

@@ -63,15 +63,15 @@ var (
 )
 
 type Node struct {
-	Id       int
-	Group    string `en:"Group" cn:"群组名"`
-	Remarks  string `en:"Remarks" cn:"备注"`
-	Protocol string `en:"Protocol" cn:"协议"`
-	Ping     string `en:"Ping" cn:"Ping"`
-	AvgSpeed int64  `en:"AvgSpeed" cn:"平均速度"`
-	MaxSpeed int64  `en:"MaxSpeed" cn:"最大速度"`
-	IsOk     bool
-	Traffic  int64
+	Id       int    `json:"id"`
+	Group    string `en:"Group" cn:"群组名" json:"group"`
+	Remarks  string `en:"Remarks" cn:"备注" json:"remarks"`
+	Protocol string `en:"Protocol" cn:"协议" json:"protocol"`
+	Ping     string `en:"Ping" cn:"Ping" json:"ping"`
+	AvgSpeed int64  `en:"AvgSpeed" cn:"平均速度" json:"avg_speed"`
+	MaxSpeed int64  `en:"MaxSpeed" cn:"最大速度" json:"max_speed"`
+	IsOk     bool   `json:"isok"`
+	Traffic  int64  `json:"traffic"`
 }
 
 func getNodeHeaders(language string) ([]string, map[string]string) {

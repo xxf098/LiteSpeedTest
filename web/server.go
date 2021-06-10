@@ -2,11 +2,14 @@ package web
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"github.com/xxf098/lite-proxy/web/render"
 )
 
 var upgrader = websocket.Upgrader{}
@@ -14,6 +17,7 @@ var upgrader = websocket.Upgrader{}
 func ServeFile(port int) error {
 	http.Handle("/", http.FileServer(http.FS(guiStatic)))
 	http.HandleFunc("/test", updateTest)
+	http.HandleFunc("/generateResult", generateResult)
 	log.Printf("Start server at http://127.0.0.1:%d", port)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	return err
@@ -60,4 +64,48 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
+}
+
+type TestResult struct {
+	TotalTraffic string       `json:"totalTraffic"`
+	TotalTime    string       `json:"totalTime"`
+	Nodes        render.Nodes `json:"nodes"`
+}
+
+func generateResult(w http.ResponseWriter, r *http.Request) {
+	result := TestResult{}
+	if r.Body == nil {
+		http.Error(w, "Please send a request body", 400)
+		return
+	}
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Please send a request body", 400)
+		return
+	}
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	fontPath := "WenQuanYiMicroHei-01.ttf"
+	options := render.NewTableOptions(40, 30, 0.5, 0.5, 28, 0.5, fontPath, "en", "rainbow", "Asia/Shanghai", FontBytes)
+	table, err := render.NewTableWithOption(result.Nodes, &options)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	linksCount := 0
+	successCount := 0
+	for _, v := range result.Nodes {
+		linksCount += 1
+		if v.IsOk {
+			successCount += 1
+		}
+	}
+	msg := table.FormatTraffic(result.TotalTraffic, result.TotalTime, fmt.Sprintf("%d/%d", successCount, linksCount))
+	if picdata, err := table.EncodeB64(msg); err == nil {
+		fmt.Fprint(w, picdata)
+	}
+
 }
