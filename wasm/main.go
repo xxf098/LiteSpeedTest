@@ -85,12 +85,12 @@ func wasmResultTable(this js.Value, inputs []js.Value) interface{} {
 	if err != nil {
 		return nil
 	}
-	document := js.Global().Get("document")
-	elem := document.Call("getElementById", "result_png")
+	// document := js.Global().Get("document")
+	// elem := document.Call("getElementById", "result_png")
 	// html := fmt.Sprintf(`<img class="el-image__inner" src="%s">`, encodePNG)
-	elem.Call("setAttribute", "src", encodePNG)
+	// elem.Call("setAttribute", "src", encodePNG)
 	// elem.Set("innerHTML", html)
-	return nil
+	return encodePNG
 }
 
 func main() {

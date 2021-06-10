@@ -119,9 +119,9 @@
 										:autosize="{ minRows: 4, maxRows: 10}"
 										placeholder="input data"
 										style="width: 800px"
-										v-model="testResultJSON">
+										v-model="generateResultJSON">
 									</el-input>
-									<el-button type="primary" @click="submit" style="margin-left: 20px" icon="el-icon-check" :disabled="loading"
+									<el-button type="primary" @click="generateResult" style="margin-left: 20px" icon="el-icon-check" :disabled="loading"
 										:loading="loading">生 成</el-button>
 								</el-form-item>
 							</el-row>
@@ -288,7 +288,7 @@
 					language: "en",
 					fontSize: 24,
 					theme: "rainbow",
-					testResultJSON: "",
+					generateResultJSON: "",
 
 					init: {
 						speedtestModes: {
@@ -406,6 +406,13 @@
 						this.loadingContent = "等待后端响应……";
 						this.starttest();
 					}
+				},
+				generateResult: function (params) {
+					if (!this.generateResultJSON) {
+						return
+					}
+					this.picdata = wasmResultTable() || ""
+					this.generateResultJSON = ""
 				},
 				terminate: function () {
 					this.loading = false;
