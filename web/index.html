@@ -34,6 +34,7 @@
 										<el-radio :label="0">基础</el-radio>
 										<el-radio :label="1">高级</el-radio>
 										<el-radio :label="2">导出</el-radio>
+										<el-radio :label="3">手动生成</el-radio>
 									</el-radio-group>
 								</el-form-item>
 
@@ -111,6 +112,17 @@
 											:label="item" :value="key">
 										</el-option>
 									</el-select>
+								</el-form-item>
+								<el-form-item label="结果数据：" v-if="option===3" :disabled="loading">
+									<el-input
+										type="textarea"
+										:autosize="{ minRows: 4, maxRows: 10}"
+										placeholder="input data"
+										style="width: 800px"
+										v-model="testResultJSON">
+									</el-input>
+									<el-button type="primary" @click="submit" style="margin-left: 20px" icon="el-icon-check" :disabled="loading"
+										:loading="loading">生 成</el-button>
 								</el-form-item>
 							</el-row>
 						</el-form>
@@ -276,6 +288,7 @@
 					language: "en",
 					fontSize: 24,
 					theme: "rainbow",
+					testResultJSON: "",
 
 					init: {
 						speedtestModes: {
