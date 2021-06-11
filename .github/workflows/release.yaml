@@ -25,8 +25,7 @@ jobs:
       - name: Get dependencies, run test and static check
         run: |
           go version
-          go get -u ./...
-          touch main.wasm
+          GOOS=js GOARCH=wasm go get -u ./...
           GOOS=js GOARCH=wasm go build -o ./web/main.wasm ./wasm
 
       - name: Build

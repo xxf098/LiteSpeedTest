@@ -60,8 +60,7 @@ jobs:
     - name: Install dependencies
       run: |
         go version
-        go get -u ./...
-        touch main.wasm
+        GOOS=js GOARCH=wasm go get -u ./...
         GOOS=js GOARCH=wasm go build -o ./web/main.wasm ./wasm
     
         
