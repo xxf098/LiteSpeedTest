@@ -26,10 +26,14 @@ func main() {
 	}
 	if *link == "" {
 		if len(os.Args) > 1 {
-			arg := os.Args[1]
-			if _, err := utils.CheckLink(os.Args[1]); err == nil {
-				link = &arg
+			for i := 1; i < len(os.Args); i++ {
+				arg := os.Args[i]
+				if _, err := utils.CheckLink(arg); err == nil {
+					link = &arg
+					break
+				}
 			}
+
 		}
 		if *link == "" {
 			err := webServer.ServeFile(*port)
