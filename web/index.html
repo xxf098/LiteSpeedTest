@@ -158,11 +158,11 @@
 									Actions<i class="el-icon-arrow-down el-icon--right"></i>
 								</el-button>
 								<el-dropdown-menu slot="dropdown">
-									<el-dropdown-item @click.native="handleCopy()">复制链接</el-dropdown-item>
-									<el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item>
-									<el-dropdown-item @click.native="handleQRCode()">QRCode</el-dropdown-item>
-									<el-dropdown-item @click.native="handleExportResult()">导出结果</el-dropdown-item>
+									<el-dropdown-item @click.native="handleCopy()">复制节点</el-dropdown-item>
 									<el-dropdown-item @click.native="handleSave()">导出节点</el-dropdown-item>
+									<!-- <el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item> -->
+									<el-dropdown-item @click.native="handleQRCode()">显示二维码</el-dropdown-item>
+									<el-dropdown-item @click.native="handleExportResult()">导出结果</el-dropdown-item>
 								</el-dropdown-menu>
 							</el-dropdown>
 						</el-col>
@@ -525,6 +525,10 @@
 					const data = {
 						totalTraffic: this.bytesToSize(this.totalTraffic),
 						totalTime: this.formatSeconds(this.totalTime),
+						language: this.language,
+						fontSize: this.fontSize,
+						theme: this.theme,
+						sortMethod: this.sortMethod,
 						nodes,
 					}
 					this.saveData(JSON.stringify(data, null, 2), "result")

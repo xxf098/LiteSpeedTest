@@ -40,6 +40,10 @@ func main() {
 			}
 		}
 		if *link == "" {
+			err := webServer.ServeFile(*port)
+			if err != nil {
+				log.Fatalln(err)
+			}
 			return
 		}
 	}

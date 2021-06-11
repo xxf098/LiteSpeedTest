@@ -67,9 +67,13 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 }
 
 type TestResult struct {
-	TotalTraffic string       `json:"totalTraffic"`
-	TotalTime    string       `json:"totalTime"`
-	Nodes        render.Nodes `json:"nodes"`
+	TotalTraffic string `json:"totalTraffic"`
+	TotalTime    string `json:"totalTime"`
+	Language     string `json:"language"`
+	FontSize     int    `json:"fontSize"`
+	Theme        string `json:"theme"`
+	// SortMethod   string       `json:"sortMethod"`
+	Nodes render.Nodes `json:"nodes"`
 }
 
 func generateResult(w http.ResponseWriter, r *http.Request) {
@@ -89,7 +93,7 @@ func generateResult(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fontPath := "WenQuanYiMicroHei-01.ttf"
-	options := render.NewTableOptions(40, 30, 0.5, 0.5, 28, 0.5, fontPath, "en", "rainbow", "Asia/Shanghai", FontBytes)
+	options := render.NewTableOptions(40, 30, 0.5, 0.5, result.FontSize, 0.5, fontPath, result.Language, result.Theme, "Asia/Shanghai", FontBytes)
 	table, err := render.NewTableWithOption(result.Nodes, &options)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
