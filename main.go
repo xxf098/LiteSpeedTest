@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"log"
 	"os"
@@ -18,13 +17,6 @@ var (
 
 func main() {
 	flag.Parse()
-	if isInputFromPipe() {
-		r := bufio.NewReader(os.Stdin)
-		l, err := r.ReadString(byte('\n'))
-		if err == nil {
-			link = &l
-		}
-	}
 	if (*test || len(os.Args) < 2) && *link == "" {
 		err := webServer.ServeFile(10888)
 		if err != nil {
@@ -57,12 +49,4 @@ func main() {
 		log.Fatalln(err)
 	}
 	p.Run()
-}
-
-func isInputFromPipe() bool {
-	fileInfo, err := os.Stdin.Stat()
-	if err != nil {
-		return false
-	}
-	return fileInfo.Mode()&os.ModeNamedPipe != 0
 }
