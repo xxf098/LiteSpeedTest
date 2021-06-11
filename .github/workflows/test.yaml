@@ -60,8 +60,11 @@ jobs:
     - name: Install dependencies
       run: |
         go version
+        touch ./web/main.wasm
+        mv ./wasm/main.go ./wasm/main.go.backup
+        go get -u github.com/skip2/go-qrcode/...
         go get -u ./...
-        touch main.wasm
+        mv ./wasm/main.go.backup ./wasm/main.go
         GOOS=js GOARCH=wasm go build -o ./web/main.wasm ./wasm
     
         
