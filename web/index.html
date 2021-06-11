@@ -174,7 +174,7 @@
 							</el-table-column>
 							<!-- <el-table-column label="Group" align="center" prop="group" width="300" sortable>
 							</el-table-column> -->
-							<el-table-column label="Remark" align="center" prop="remark" width="300" sortable>
+							<el-table-column label="Remark" align="center" prop="remark" min-width="400" sortable>
 							</el-table-column>
 							<el-table-column label="Protocol" align="center" prop="protocol" width="100" sortable>
 							</el-table-column>
@@ -184,10 +184,10 @@
 								:sort-method="floatSort" :filters="[{ text: 'Available ', value: 'available' }]"
 								:filter-method="filterPing">
 							</el-table-column>
-							<el-table-column label="AvgSpeed" align="center" prop="speed" width="150" sortable
+							<el-table-column label="AvgSpeed" align="center" prop="speed" min-width="150" sortable
 								:sort-method="speedSort">
 							</el-table-column>
-							<el-table-column label="MaxSpeed" align="center" prop="maxspeed" width="150" sortable
+							<el-table-column label="MaxSpeed" align="center" prop="maxspeed" min-width="150" sortable
 								:sort-method="maxSpeedSort">
 							</el-table-column>
 						</el-table>
