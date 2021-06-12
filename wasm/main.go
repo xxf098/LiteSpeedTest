@@ -25,9 +25,6 @@ type Item struct {
 }
 
 func wasmQRcode(this js.Value, inputs []js.Value) interface{} {
-	// eid := inputs[0].String()
-	// text := inputs[1].String()
-	// size := inputs[2].Int()
 	items := []Item{}
 	jsonItems := inputs[0].String()
 	log.Println(jsonItems)
@@ -63,5 +60,5 @@ func wasmQRcode(this js.Value, inputs []js.Value) interface{} {
 func main() {
 	js.Global().Set("printMessage", js.FuncOf(printMessage))
 	js.Global().Set("wasmQRcode", js.FuncOf(wasmQRcode))
-	<-make(chan bool)
+	select {}
 }

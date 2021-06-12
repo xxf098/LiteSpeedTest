@@ -10,9 +10,7 @@ import (
 )
 
 var (
-	// link = flag.String("link", "", "add subscription link")
 	port = flag.Int("p", 8090, "set port")
-	// test = flag.Bool("test", false, "start batch test")
 )
 
 func main() {
