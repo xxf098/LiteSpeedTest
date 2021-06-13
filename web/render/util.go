@@ -147,7 +147,7 @@ func LoadFontFace(path string, points float64) (font.Face, error) {
 }
 
 func LoadFontFaceByBytes(fontBytes []byte, fontPath string, points float64) (font.Face, error) {
-	if len(fontBytes) < 1 {
+	if fontBytes == nil || len(fontBytes) < 1 {
 		return LoadFontFace(fontPath, points)
 	}
 	f, err := truetype.Parse(fontBytes)
