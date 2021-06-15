@@ -216,9 +216,11 @@
 					<el-col v-for="(item, index) of multipleSelection" :key="index" :span="12">
 						<el-card :body-style="{ padding: '0px', height:'400px'}" shadow="hover"
 							style="width: 320px;height: 330px;text-align: center;">
-							<div :id="'qrcode_' + item.id" style="margin-left: 20px;"></div>
-							<div class="truncate_remark">{{ item.remark }}</div>
-							<div>{{ `${item.ping}ms ${item.speed} ${item.maxspeed}` }}</div>
+							<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 15px;">
+								<div :id="'qrcode_' + item.id" style="margin-left: 20px;"></div>
+								<div class="truncate_remark">{{ item.remark }}</div>
+								<div>{{ `${item.ping}ms ${item.speed} ${item.maxspeed}` }}</div>
+							</div>
 						</el-card>
 					</el-col>
 				</el-row>
