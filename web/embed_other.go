@@ -1,4 +1,4 @@
-// +build !android
+// +build !gomobile
 
 package web
 
