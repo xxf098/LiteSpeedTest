@@ -59,10 +59,10 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 		}
 		go p.testAll(ctx)
 		// err = c.WriteMessage(mt, getMsgByte(0, "gotspeed"))
-		if err != nil {
-			log.Println("write:", err)
-			break
-		}
+		// if err != nil {
+		// 	log.Println("write:", err)
+		// 	break
+		// }
 	}
 }
 
@@ -87,8 +87,7 @@ func generateResult(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Please send a request body", 400)
 		return
 	}
-	err = json.Unmarshal(data, &result)
-	if err != nil {
+	if err = json.Unmarshal(data, &result); err != nil {
 		http.Error(w, err.Error(), 400)
 		return
 	}
