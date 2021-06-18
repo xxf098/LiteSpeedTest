@@ -2,6 +2,8 @@
 
 LiteSpeedTest is a simple tool for batch test ss/ssr/v2ray/trojan servers. 
 
+ ![build](https://github.com/xxf098/LiteSpeedTest/workflows/test.yaml/badge.svg?branch=master&event=push) 
+
 ### Usage
 ```
 Run as speed test tool:
