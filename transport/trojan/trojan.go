@@ -11,7 +11,7 @@ import (
 	"net"
 	"sync"
 
-	"github.com/xxf098/lite-proxy/component/socks5"
+	"github.com/xxf098/lite-proxy/transport/socks5"
 )
 
 const (

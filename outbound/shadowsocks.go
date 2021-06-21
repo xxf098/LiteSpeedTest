@@ -8,9 +8,9 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/xxf098/lite-proxy/component/dialer"
-	"github.com/xxf098/lite-proxy/component/socks5"
 	"github.com/xxf098/lite-proxy/stats"
+	"github.com/xxf098/lite-proxy/transport/dialer"
+	"github.com/xxf098/lite-proxy/transport/socks5"
 
 	"github.com/Dreamacro/go-shadowsocks2/core"
 	"github.com/xxf098/lite-proxy/common/structure"

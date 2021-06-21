@@ -12,7 +12,7 @@ import (
 	"github.com/xxf098/lite-proxy/log"
 
 	"github.com/xxf098/lite-proxy/common/pool"
-	"github.com/xxf098/lite-proxy/component/ssr/tools"
+	"github.com/xxf098/lite-proxy/transport/ssr/tools"
 )
 
 type hmacMethod func(key, data []byte) []byte

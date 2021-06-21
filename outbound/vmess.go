@@ -10,12 +10,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/xxf098/lite-proxy/component/dialer"
-	"github.com/xxf098/lite-proxy/component/resolver"
-	"github.com/xxf098/lite-proxy/component/vmess"
 	C "github.com/xxf098/lite-proxy/constant"
 	"github.com/xxf098/lite-proxy/log"
 	"github.com/xxf098/lite-proxy/stats"
+	"github.com/xxf098/lite-proxy/transport/dialer"
+	"github.com/xxf098/lite-proxy/transport/resolver"
+	"github.com/xxf098/lite-proxy/transport/vmess"
 )
 
 type Vmess struct {

@@ -7,10 +7,10 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/xxf098/lite-proxy/component/dialer"
-	"github.com/xxf098/lite-proxy/component/trojan"
 	C "github.com/xxf098/lite-proxy/constant"
 	"github.com/xxf098/lite-proxy/stats"
+	"github.com/xxf098/lite-proxy/transport/dialer"
+	"github.com/xxf098/lite-proxy/transport/trojan"
 )
 
 type Trojan struct {
