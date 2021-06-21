@@ -15,7 +15,7 @@ import (
 
 	"github.com/Dreamacro/go-shadowsocks2/core"
 	"github.com/xxf098/lite-proxy/common/pool"
-	"github.com/xxf098/lite-proxy/component/ssr/tools"
+	"github.com/xxf098/lite-proxy/transport/ssr/tools"
 )
 
 func init() {

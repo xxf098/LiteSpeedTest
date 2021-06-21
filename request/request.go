@@ -12,11 +12,11 @@ import (
 	"time"
 
 	"github.com/xxf098/lite-proxy/common"
-	"github.com/xxf098/lite-proxy/component/resolver"
 	"github.com/xxf098/lite-proxy/config"
 	C "github.com/xxf098/lite-proxy/constant"
 	"github.com/xxf098/lite-proxy/dns"
 	"github.com/xxf098/lite-proxy/outbound"
+	"github.com/xxf098/lite-proxy/transport/resolver"
 	"github.com/xxf098/lite-proxy/utils"
 )
 
