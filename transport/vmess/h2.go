@@ -46,6 +46,7 @@ func (hc *h2Conn) establishConn() error {
 		},
 	}
 
+	// it will be close at :  `func (hc *h2Conn) Close() error`
 	res, err := hc.ClientConn.RoundTrip(&req)
 	if err != nil {
 		return err
@@ -89,10 +90,7 @@ func (hc *h2Conn) Close() error {
 	if err := hc.ClientConn.Shutdown(hc.res.Request.Context()); err != nil {
 		return err
 	}
-	if err := hc.Conn.Close(); err != nil {
-		return err
-	}
-	return nil
+	return hc.Conn.Close()
 }
 
 func StreamH2Conn(conn net.Conn, cfg *H2Config) (net.Conn, error) {
