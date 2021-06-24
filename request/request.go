@@ -226,7 +226,14 @@ func PingLinkInternal(link string, pingOption PingOption) (int64, error) {
 		tcpTimeout = pingOption.TimeOut
 	}
 	err = utils.ExponentialBackoff(pingOption.Attempts, 100).On(func() error {
+		start := time.Now()
 		if elp, err := Ping(option); err != nil {
+			elapse := time.Since(start)
+			// ignore timeout
+			if elapse > 2000*time.Second {
+				elapse = 0
+				return nil
+			}
 			return err
 		} else {
 			elapse = elp
