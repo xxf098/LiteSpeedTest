@@ -4,6 +4,8 @@ import (
 	"flag"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/xxf098/lite-proxy/utils"
 	webServer "github.com/xxf098/lite-proxy/web"
@@ -36,10 +38,16 @@ func main() {
 		LocalPort: *port,
 		Link:      link,
 	}
-	if p, err := startInstance(c); err != nil {
+	p, err := startInstance(c)
+	if err != nil {
 		log.Fatalln(err)
-	} else {
-		p.Run()
 	}
-
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(sigs)
+	go func() {
+		<-sigs
+		p.Close()
+	}()
+	p.Run()
 }
