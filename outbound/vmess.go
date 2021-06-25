@@ -165,6 +165,11 @@ func (v *Vmess) DialContext(ctx context.Context, metadata *C.Metadata) (net.Conn
 		return nil, fmt.Errorf("%s connect error: %s", v.addr, err.Error())
 	}
 	tcpKeepAlive(c)
+	if metadata.Type == C.TEST {
+		if tcpconn, ok := c.(*net.TCPConn); ok {
+			tcpconn.SetLinger(0)
+		}
+	}
 
 	log.I("start StreamConn from", v.addr, "to", metadata.RemoteAddress())
 	sc := stats.NewConn(c)

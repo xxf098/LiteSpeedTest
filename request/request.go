@@ -250,7 +250,7 @@ func Ping(option interface{}) (int64, error) {
 	defer cancel()
 	meta := &C.Metadata{
 		NetWork:  0,
-		Type:     0,
+		Type:     C.TEST,
 		SrcPort:  "",
 		DstPort:  "80",
 		AddrType: 3,

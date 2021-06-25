@@ -20,6 +20,7 @@ const (
 	SOCKS
 	REDIR
 	TPROXY
+	TEST
 )
 
 type NetWork int
@@ -49,6 +50,8 @@ func (t Type) String() string {
 		return "Redir"
 	case TPROXY:
 		return "TProxy"
+	case TEST:
+		return "Test"
 	default:
 		return "Unknown"
 	}
