@@ -13,6 +13,7 @@ import (
 
 var (
 	port = flag.Int("p", 8090, "set port")
+	test = flag.String("test", "", "test from command line with subscription link or file")
 )
 
 func main() {
