@@ -8,6 +8,7 @@ LiteSpeedTest is a simple tool for batch test ss/ssr/v2ray/trojan servers.
 ```
 Run as speed test tool:
     ./lite
+     # then open http://127.0.0.1:10888/ in your browser to start test
     ./lite -p 10889
 
 Run as http/socks5 proxy:
