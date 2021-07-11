@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/xxf098/lite-proxy/web/render"
@@ -64,6 +65,37 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 		// 	break
 		// }
 	}
+}
+
+func TestFromCMD(subscription string) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	options := ProfileTestOptions{
+		GroupName:     "Default",
+		SpeedTestMode: "all",
+		PingMethod:    "googleping",
+		SortMethod:    "rspeed",
+		Concurrency:   2,
+		TestMode:      2,
+		Subscription:  subscription,
+		Language:      "en",
+		FontSize:      24,
+		Theme:         "rainbow",
+		Timeout:       15 * time.Second,
+		GeneratePic:   true,
+	}
+	links, err := parseLinks(subscription)
+	if err != nil {
+		return err
+	}
+	outputMessageWriter := OutputMessageWriter{}
+	p := ProfileTest{
+		Writer:      &outputMessageWriter,
+		MessageType: 1,
+		Links:       links,
+		Options:     &options,
+	}
+	return p.testAll(ctx)
 }
 
 type TestResult struct {

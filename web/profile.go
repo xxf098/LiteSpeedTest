@@ -152,6 +152,7 @@ type ProfileTestOptions struct {
 	Language      string        `json:"language"`
 	FontSize      int           `json:"fontSize"`
 	Theme         string        `json:"theme"`
+	GeneratePic   bool          `json:"-"`
 }
 
 func parseMessage(message []byte) ([]string, *ProfileTestOptions, error) {
@@ -206,6 +207,14 @@ func parseRetestMessage(message []byte) ([]string, *ProfileTestOptions, error) {
 
 type MessageWriter interface {
 	WriteMessage(messageType int, data []byte) error
+}
+
+type OutputMessageWriter struct {
+}
+
+func (p *OutputMessageWriter) WriteMessage(messageType int, data []byte) error {
+	_, err := fmt.Println(string(data))
+	return err
 }
 
 type ProfileTest struct {
@@ -325,6 +334,11 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	}
 	// msg := fmt.Sprintf("Total Traffic : %s. Total Time : %s. Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
 	msg := table.FormatTraffic(download.ByteCountIECTrim(traffic), duration, fmt.Sprintf("%d/%d", successCount, linksCount))
+	if p.Options.GeneratePic {
+		table.Draw("out.png", msg)
+		p.WriteMessage(getMsgByte(-1, "picdata", "out.png"))
+		return nil
+	}
 	if picdata, err := table.EncodeB64(msg); err == nil {
 		p.WriteMessage(getMsgByte(-1, "picdata", picdata))
 	}

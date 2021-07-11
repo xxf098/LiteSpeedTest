@@ -25,6 +25,12 @@ func main() {
 			break
 		}
 	}
+	if *test != "" {
+		if err := webServer.TestFromCMD(*test); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 	if link == "" {
 		if len(os.Args) < 2 {
 			*port = 10888
