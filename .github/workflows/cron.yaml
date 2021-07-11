@@ -1,11 +1,11 @@
 name: job
 
 on:
-  push:
-    branches:
-    - develop
-  # schedule:
-  # - cron: "21 21 * * *"
+  # push:
+    # branches:
+    # - develop
+  schedule:
+  - cron: "21 21 * * *"
 
 
 jobs:
