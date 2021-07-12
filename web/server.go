@@ -72,7 +72,6 @@ func readConfig(configPath string) (*ProfileTestOptions, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println(string(data))
 	options := &ProfileTestOptions{}
 	if err = json.Unmarshal(data, options); err != nil {
 		return nil, err
@@ -83,9 +82,13 @@ func readConfig(configPath string) (*ProfileTestOptions, error) {
 	if options.Language == "" {
 		options.Language = "en"
 	}
-	if options.Timeout < 8 {
-		options.Timeout = 8 * time.Second
+	if options.Theme == "" {
+		options.Theme = "rainbow"
 	}
+	if options.Timeout < 8 {
+		options.Timeout = 8
+	}
+	options.Timeout = options.Timeout * time.Second
 	return options, nil
 }
 
@@ -111,6 +114,9 @@ func TestFromCMD(subscription string, configPath *string) error {
 			options = *opt
 			options.GeneratePic = true
 		}
+	}
+	if jsonOpt, err := json.Marshal(options); err == nil {
+		log.Printf("json options: %s\n", string(jsonOpt))
 	}
 	links, err := parseLinks(subscription)
 	if err != nil {

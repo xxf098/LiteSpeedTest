@@ -33,7 +33,7 @@ jobs:
     - name: test link
       run: |
         echo '{"group": "cronjob", "speedtestMode": "all", "pingMethod": "googleping", "sortMethod": "rspeed", "concurrency": 1, "testMode": 2, "subscription": "https://raw.githubusercontent.com/freefq/free/master/v2", "timeout": 16, "language": "en", "fontSize": 24, "theme": "rainbow"}' > config.json
-        ./lite  --test https://raw.githubusercontent.com/freefq/free/master/v2
+        ./lite --config config.json --test https://raw.githubusercontent.com/freefq/free/master/v2
 
     - name: Upload ZIP file to Artifacts
       uses: actions/upload-artifact@v2
