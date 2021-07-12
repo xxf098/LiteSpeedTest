@@ -14,6 +14,7 @@ import (
 var (
 	port = flag.Int("p", 8090, "set port")
 	test = flag.String("test", "", "test from command line with subscription link or file")
+	conf = flag.String("config", "", "command line options")
 )
 
 func main() {
@@ -26,7 +27,7 @@ func main() {
 		}
 	}
 	if *test != "" {
-		if err := webServer.TestFromCMD(*test); err != nil {
+		if err := webServer.TestFromCMD(*test, conf); err != nil {
 			log.Fatal(err)
 		}
 		return

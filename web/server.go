@@ -67,7 +67,25 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func TestFromCMD(subscription string) error {
+func readConfig(configPath string) (*ProfileTestOptions, error) {
+	data, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return nil, err
+	}
+	options := &ProfileTestOptions{}
+	if err = json.Unmarshal(data, options); err != nil {
+		return nil, err
+	}
+	if options.Concurrency < 1 {
+		options.Concurrency = 1
+	}
+	if options.Timeout < 8 {
+		options.Timeout = 8 * time.Second
+	}
+	return options, nil
+}
+
+func TestFromCMD(subscription string, configPath *string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	options := ProfileTestOptions{
@@ -83,6 +101,12 @@ func TestFromCMD(subscription string) error {
 		Theme:         "rainbow",
 		Timeout:       15 * time.Second,
 		GeneratePic:   true,
+	}
+	if configPath != nil {
+		if opt, err := readConfig(*configPath); err == nil {
+			options = *opt
+			options.GeneratePic = true
+		}
 	}
 	links, err := parseLinks(subscription)
 	if err != nil {
