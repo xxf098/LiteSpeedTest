@@ -72,12 +72,16 @@ func readConfig(configPath string) (*ProfileTestOptions, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Println(string(data))
 	options := &ProfileTestOptions{}
 	if err = json.Unmarshal(data, options); err != nil {
 		return nil, err
 	}
 	if options.Concurrency < 1 {
 		options.Concurrency = 1
+	}
+	if options.Language == "" {
+		options.Language = "en"
 	}
 	if options.Timeout < 8 {
 		options.Timeout = 8 * time.Second
