@@ -213,8 +213,8 @@ type OutputMessageWriter struct {
 }
 
 func (p *OutputMessageWriter) WriteMessage(messageType int, data []byte) error {
-	_, err := fmt.Println(string(data))
-	return err
+	log.Println(string(data))
+	return nil
 }
 
 type ProfileTest struct {
