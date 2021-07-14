@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/xxf098/lite-proxy/web/render"
@@ -64,6 +65,71 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 		// 	break
 		// }
 	}
+}
+
+func readConfig(configPath string) (*ProfileTestOptions, error) {
+	data, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return nil, err
+	}
+	options := &ProfileTestOptions{}
+	if err = json.Unmarshal(data, options); err != nil {
+		return nil, err
+	}
+	if options.Concurrency < 1 {
+		options.Concurrency = 1
+	}
+	if options.Language == "" {
+		options.Language = "en"
+	}
+	if options.Theme == "" {
+		options.Theme = "rainbow"
+	}
+	if options.Timeout < 8 {
+		options.Timeout = 8
+	}
+	options.Timeout = options.Timeout * time.Second
+	return options, nil
+}
+
+func TestFromCMD(subscription string, configPath *string) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	options := ProfileTestOptions{
+		GroupName:     "Default",
+		SpeedTestMode: "all",
+		PingMethod:    "googleping",
+		SortMethod:    "rspeed",
+		Concurrency:   2,
+		TestMode:      2,
+		Subscription:  subscription,
+		Language:      "en",
+		FontSize:      24,
+		Theme:         "rainbow",
+		Timeout:       15 * time.Second,
+		GeneratePic:   true,
+	}
+	if configPath != nil {
+		if opt, err := readConfig(*configPath); err == nil {
+			options = *opt
+			options.GeneratePic = true
+		}
+	}
+	if jsonOpt, err := json.Marshal(options); err == nil {
+		log.Printf("json options: %s\n", string(jsonOpt))
+	}
+	links, err := parseLinks(subscription)
+	if err != nil {
+		return err
+	}
+	outputMessageWriter := OutputMessageWriter{}
+	p := ProfileTest{
+		Writer:      &outputMessageWriter,
+		MessageType: 1,
+		Links:       links,
+		Options:     &options,
+	}
+	return p.testAll(ctx)
 }
 
 type TestResult struct {

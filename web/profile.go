@@ -11,7 +11,6 @@ import (
 	"log"
 	"net/http"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -153,6 +152,7 @@ type ProfileTestOptions struct {
 	Language      string        `json:"language"`
 	FontSize      int           `json:"fontSize"`
 	Theme         string        `json:"theme"`
+	GeneratePic   bool          `json:"-"`
 }
 
 func parseMessage(message []byte) ([]string, *ProfileTestOptions, error) {
@@ -207,6 +207,14 @@ func parseRetestMessage(message []byte) ([]string, *ProfileTestOptions, error) {
 
 type MessageWriter interface {
 	WriteMessage(messageType int, data []byte) error
+}
+
+type OutputMessageWriter struct {
+}
+
+func (p *OutputMessageWriter) WriteMessage(messageType int, data []byte) error {
+	log.Println(string(data))
+	return nil
 }
 
 type ProfileTest struct {
@@ -316,20 +324,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	close(nodeChan)
 
 	// sort nodes
-	sort.Slice(nodes[:], func(i, j int) bool {
-		switch p.Options.SortMethod {
-		case "speed":
-			return nodes[i].MaxSpeed < nodes[j].MaxSpeed
-		case "rspeed":
-			return nodes[i].MaxSpeed > nodes[j].MaxSpeed
-		case "ping":
-			return nodes[i].Ping < nodes[j].Ping
-		case "rping":
-			return nodes[i].Ping > nodes[j].Ping
-		default:
-			return true
-		}
-	})
+	nodes.Sort(p.Options.SortMethod)
 
 	fontPath := "WenQuanYiMicroHei-01.ttf"
 	options := render.NewTableOptions(40, 30, 0.5, 0.5, p.Options.FontSize, 0.5, fontPath, p.Options.Language, p.Options.Theme, "Asia/Shanghai", FontBytes)
@@ -339,6 +334,11 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	}
 	// msg := fmt.Sprintf("Total Traffic : %s. Total Time : %s. Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
 	msg := table.FormatTraffic(download.ByteCountIECTrim(traffic), duration, fmt.Sprintf("%d/%d", successCount, linksCount))
+	if p.Options.GeneratePic {
+		table.Draw("out.png", msg)
+		p.WriteMessage(getMsgByte(-1, "picdata", "out.png"))
+		return nil
+	}
 	if picdata, err := table.EncodeB64(msg); err == nil {
 		p.WriteMessage(getMsgByte(-1, "picdata", picdata))
 	}

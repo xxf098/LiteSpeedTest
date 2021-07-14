@@ -1,0 +1,43 @@
+name: Job
+
+# on:
+#   push:
+#     branches:
+#     - develop
+on:
+  schedule:
+  - cron: "40 20 * * *"
+
+
+jobs:
+  build_and_test:
+    name: LiteSpeedTest
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: develop
+    - name: Setup Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.16.5 # The Go version to download (if necessary) and use.
+
+    - name: Install dependencies
+      run: |
+        go version
+        GOOS=js GOARCH=wasm go get -u ./...
+        GOOS=js GOARCH=wasm go build -o ./web/main.wasm ./wasm
+
+    - name: Run build
+      run: go build -o lite
+
+    - name: test link
+      run: |
+        echo '{"group": "cronjob", "speedtestMode": "all", "pingMethod": "googleping", "sortMethod": "rspeed", "concurrency": 1, "testMode": 2, "subscription": "https://raw.githubusercontent.com/freefq/free/master/v2", "timeout": 16, "language": "en", "fontSize": 24, "theme": "rainbow"}' > config.json
+        ./lite --config config.json --test https://raw.githubusercontent.com/freefq/free/master/v2
+
+    - name: Upload ZIP file to Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: out.png
+        path: out.png   
