@@ -29,6 +29,7 @@ type DownloadOption struct {
 	URL              string
 	DownloadTimeout  time.Duration
 	HandshakeTimeout time.Duration
+	Ranges           []Range
 }
 
 type Discard struct {
@@ -126,7 +127,7 @@ func downloadInternal(ctx context.Context, option DownloadOption, resultChan cha
 		total += int64(nr)
 		pool.Put(buf)
 		now := time.Now()
-		if now.Sub(prev) >= time.Second || err != nil {
+		if now.Sub(prev) >= time.Second || er != nil {
 			prev = now
 			if resultChan != nil {
 				resultChan <- total
