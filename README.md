@@ -9,10 +9,13 @@ LiteSpeedTest is a simple tool for batch test ss/ssr/v2ray/trojan servers.
 Run as speed test tool:
     # run this command then open http://127.0.0.1:10888/ in your browser to start speed test
     ./lite
+    # start with another port
     ./lite -p 10889
+    
     # test in command line only mode
     ./lite --test https://raw.githubusercontent.com/freefq/free/master/v2
-    # test in command only line mode with custom config. details can find here https://github.com/xxf098/LiteSpeedTest/blob/master/config.json
+    # test in command only line mode with custom config.
+    # details can find here https://github.com/xxf098/LiteSpeedTest/blob/master/config.json
     ./lite --config config.json --test https://raw.githubusercontent.com/freefq/free/master/v2
 
 Run as http/socks5 proxy:
