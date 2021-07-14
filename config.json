@@ -1,0 +1,13 @@
+{
+    "group":"job",
+    "speedtestMode":"all",
+    "pingMethod":"googleping",
+    "sortMethod":"rspeed",
+    "concurrency":1,
+    "testMode":2,
+    "subscription":"https://raw.githubusercontent.com/freefq/free/master/v2",
+    "timeout":16,
+    "language":"en",
+    "fontSize":24,
+    "theme":"rainbow"
+}
