@@ -130,7 +130,9 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 			// init only once
 			if prev.IsZero() {
 				prev = start
-				startOuterChan <- start
+				if startOuterChan != nil {
+					startOuterChan <- start
+				}
 			}
 		case <-doneCh:
 			return max, errorResult

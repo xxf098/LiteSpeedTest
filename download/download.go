@@ -119,7 +119,9 @@ func downloadInternal(ctx context.Context, option DownloadOption, resultChan cha
 	}
 	defer response.Body.Close()
 	prev := time.Now()
-	startOuterChan <- prev
+	if startOuterChan != nil {
+		startOuterChan <- prev
+	}
 	var total int64
 	for {
 		buf := pool.Get(20 * 1024)
