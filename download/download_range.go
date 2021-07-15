@@ -15,7 +15,7 @@ var (
 	contentLength = 242743296
 )
 
-func DownloadRange(link string, part int, timeout time.Duration, handshakeTimeout time.Duration, resultChan chan<- int64) (int64, error) {
+func DownloadRange(link string, part int, timeout time.Duration, handshakeTimeout time.Duration, resultChan chan<- int64, startChan chan<- time.Time) (int64, error) {
 	ctx := context.Background()
 	client, err := createClient(ctx, link)
 	if err != nil {
@@ -28,18 +28,19 @@ func DownloadRange(link string, part int, timeout time.Duration, handshakeTimeou
 		URL:              downloadLink,
 		Ranges:           calcRange(int64(part), int64(contentLength), link),
 	}
-	return downloadRangeInternal(ctx, option, resultChan, client.Dial)
+	return downloadRangeInternal(ctx, option, resultChan, startChan, client.Dial)
 }
 
-func downloadRangeInternal(ctx context.Context, option DownloadOption, resultChan chan<- int64, dial func(network, addr string) (net.Conn, error)) (int64, error) {
+func downloadRangeInternal(ctx context.Context, option DownloadOption, resultChan chan<- int64, startOuterChan chan<- time.Time, dial func(network, addr string) (net.Conn, error)) (int64, error) {
 	var max int64 = 0
 	var wg sync.WaitGroup
 	totalCh := make(chan int64)
 	// remove
 	errorCh := make(chan error)
+	startCh := make(chan time.Time, 1)
 	for _, rng := range option.Ranges {
 		wg.Add(1)
-		go func(rng Range, totalChan chan<- int64, errorChan chan<- error) (int64, error) {
+		go func(rng Range, totalChan chan<- int64, errorChan chan<- error, startChan chan<- time.Time) (int64, error) {
 			defer wg.Done()
 			var max int64 = 0
 			httpTransport := &http.Transport{}
@@ -49,6 +50,7 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 			}
 			req, err := http.NewRequest("GET", option.URL, nil)
 			if err != nil {
+				errorChan <- err
 				return max, err
 			}
 			// add range
@@ -56,10 +58,12 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 			req.Header.Add("Range", ranges)
 			response, err := httpClient.Do(req)
 			if err != nil {
+				errorChan <- err
 				return max, err
 			}
 			defer response.Body.Close()
 			prev := time.Now()
+			startChan <- prev
 			var total int64
 			for {
 				buf := pool.Get(20 * 1024)
@@ -67,7 +71,7 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 				total += int64(nr)
 				pool.Put(buf)
 				now := time.Now()
-				if now.Sub(prev) >= 200*time.Millisecond || er != nil {
+				if now.Sub(prev) >= 100*time.Millisecond || er != nil {
 					prev = now
 					if totalChan != nil {
 						totalChan <- total
@@ -79,6 +83,7 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 				}
 				if er != nil {
 					if er != io.EOF {
+						errorChan <- err
 						err = er
 					}
 					break
@@ -86,7 +91,7 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 			}
 			return max, nil
 
-		}(rng, totalCh, errorCh)
+		}(rng, totalCh, errorCh, startCh)
 	}
 	var sum int64 = 0
 	var errorResult error = nil
@@ -96,18 +101,20 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 		wg.Wait()
 		doneChan <- true
 	}(doneCh)
-	prev := time.Now()
+	var prev time.Time
 	for {
-		now := time.Now()
-		if now.Sub(prev) >= time.Second {
-			prev = now
-			if resultChan != nil {
-				resultChan <- sum
+		if !prev.IsZero() {
+			now := time.Now()
+			if now.Sub(prev) >= time.Second {
+				prev = now
+				if resultChan != nil {
+					resultChan <- sum
+				}
+				if max < sum {
+					max = sum
+				}
+				sum = 0
 			}
-			if max < sum {
-				max = sum
-			}
-			sum = 0
 		}
 		select {
 		case total := <-totalCh:
@@ -118,6 +125,12 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 		case err := <-errorCh:
 			if err != nil {
 				errorResult = err
+			}
+		case start := <-startCh:
+			// init only once
+			if prev.IsZero() {
+				prev = start
+				startOuterChan <- start
 			}
 		case <-doneCh:
 			return max, errorResult
