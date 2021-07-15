@@ -2,7 +2,6 @@ package download
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -53,20 +52,14 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 				return max, err
 			}
 			// add range
-			var ranges string
-			if rng.RangeTo != int64(contentLength) {
-				ranges = fmt.Sprintf("bytes=%d-%d", rng.RangeFrom, rng.RangeTo)
-			} else {
-				ranges = fmt.Sprintf("bytes=%d-", rng.RangeFrom) //get all
-			}
+			ranges := rng.toHeader(int64(contentLength))
 			req.Header.Add("Range", ranges)
 			response, err := httpClient.Do(req)
 			if err != nil {
 				return max, err
 			}
 			defer response.Body.Close()
-			start := time.Now()
-			prev := start
+			prev := time.Now()
 			var total int64
 			for {
 				buf := pool.Get(20 * 1024)
@@ -74,7 +67,7 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 				total += int64(nr)
 				pool.Put(buf)
 				now := time.Now()
-				if now.Sub(prev) >= time.Second || er != nil {
+				if now.Sub(prev) >= 200*time.Millisecond || er != nil {
 					prev = now
 					if totalChan != nil {
 						totalChan <- total
@@ -97,16 +90,17 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 	}
 	var sum int64 = 0
 	var errorResult error = nil
-	start := time.Now()
-	prev := start
+
 	doneCh := make(chan bool, 1)
 	go func(doneChan chan<- bool) {
 		wg.Wait()
 		doneChan <- true
 	}(doneCh)
+	prev := time.Now()
 	for {
 		now := time.Now()
 		if now.Sub(prev) >= time.Second {
+			prev = now
 			if resultChan != nil {
 				resultChan <- sum
 			}
@@ -121,9 +115,10 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 				return max, nil
 			}
 			sum += total
-
 		case err := <-errorCh:
-			errorResult = err
+			if err != nil {
+				errorResult = err
+			}
 		case <-doneCh:
 			return max, errorResult
 		case <-ctx.Done():

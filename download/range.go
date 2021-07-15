@@ -1,9 +1,21 @@
 package download
 
+import "fmt"
+
 type Range struct {
 	Url       string
 	RangeFrom int64
 	RangeTo   int64
+}
+
+func (rng Range) toHeader(contentLength int64) string {
+	var ranges string
+	if rng.RangeTo != int64(contentLength) {
+		ranges = fmt.Sprintf("bytes=%d-%d", rng.RangeFrom, rng.RangeTo)
+	} else {
+		ranges = fmt.Sprintf("bytes=%d-", rng.RangeFrom) //get all
+	}
+	return ranges
 }
 
 func calcRange(part int64, len int64, url string) []Range {
