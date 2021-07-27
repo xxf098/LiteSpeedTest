@@ -266,9 +266,9 @@ func (p *ProfileTest) TestAll(ctx context.Context, links []string, max int, traf
 			}
 		}
 		p.wg.Wait()
-		if trafficChan != nil {
-			close(trafficChan)
-		}
+		// if trafficChan != nil {
+		// 	close(trafficChan)
+		// }
 	}(ctx)
 	return nodeChan, nil
 }
