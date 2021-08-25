@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/outbound"
+	"github.com/xxf098/lite-proxy/utils"
 )
 
 var (
@@ -30,7 +30,7 @@ func decodeB64SS(link string) (string, error) {
 	if b64 == "" {
 		return link, nil
 	}
-	uri, err := common.DecodeB64(b64)
+	uri, err := utils.DecodeB64(b64)
 	if err != nil {
 		return "", err
 	}
@@ -59,7 +59,7 @@ func SSLinkToSSOption(link1 string) (*outbound.ShadowSocksOption, error) {
 	if err != nil {
 		return nil, err
 	}
-	userinfo, err := common.DecodeB64(pass)
+	userinfo, err := utils.DecodeB64(pass)
 	if err != nil || !strings.Contains(userinfo, ":") {
 		pw, _ := u.User.Password()
 		if pw == "" {

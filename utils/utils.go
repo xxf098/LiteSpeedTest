@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"runtime"
+	"unsafe"
 
 	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/log"
@@ -43,3 +44,12 @@ func GetListens(ctx context.Context, network, address string) ([]net.Listener, e
 	}
 	return listens, nil
 }
+
+// nolint
+func B2s(b []byte) string { return *(*string)(unsafe.Pointer(&b)) } // tricks
+
+// fastrandn returns a pseudorandom uint32 in [0,n).
+//
+//go:noescape
+//go:linkname Fastrandn runtime.fastrandn
+func Fastrandn(x uint32) uint32

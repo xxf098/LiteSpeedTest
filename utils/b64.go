@@ -1,12 +1,10 @@
-package common
+package utils
 
 import (
 	"encoding/base64"
 	"strings"
-	"unsafe"
 )
 
-// unsafe
 func DecodeB64(s string) (string, error) {
 	// s = strings.ReplaceAll(s, "-", "+")
 	// s = strings.ReplaceAll(s, "_", "/")
@@ -21,11 +19,8 @@ func DecodeB64(s string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return b2s(data), nil
+	return B2s(data), nil
 }
-
-// nolint
-func b2s(b []byte) string { return *(*string)(unsafe.Pointer(&b)) } // tricks
 
 func DecodeB64Bytes(s string) ([]byte, error) {
 	s = strings.ReplaceAll(s, "-", "+")

@@ -15,6 +15,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/xxf098/lite-proxy/utils"
 	"golang.org/x/crypto/chacha20poly1305"
 )
 
@@ -76,7 +77,8 @@ func (vc *Conn) sendRequest() error {
 	buf.WriteByte(vc.respV)
 	buf.WriteByte(OptionChunkStream)
 
-	p := rand.Intn(16)
+	// p := rand.Intn(16)
+	p := int(utils.Fastrandn(16))
 	// P Sec Reserve Cmd
 	buf.WriteByte(byte(p<<4) | byte(vc.security))
 	buf.WriteByte(0)

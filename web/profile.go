@@ -16,10 +16,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/config"
 	"github.com/xxf098/lite-proxy/download"
 	"github.com/xxf098/lite-proxy/request"
+	"github.com/xxf098/lite-proxy/utils"
 	"github.com/xxf098/lite-proxy/web/render"
 )
 
@@ -42,7 +42,7 @@ func getSubscriptionLinks(link string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	msg, err := common.DecodeB64(string(data))
+	msg, err := utils.DecodeB64(string(data))
 	if err != nil {
 		return parseClash(string(data))
 	}
@@ -81,7 +81,7 @@ func parseProfiles(data string) ([]string, error) {
 }
 
 func parseBase64(data string) ([]string, error) {
-	msg, err := common.DecodeB64(data)
+	msg, err := utils.DecodeB64(data)
 	if err != nil {
 		return nil, err
 	}
