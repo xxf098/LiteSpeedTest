@@ -15,8 +15,7 @@ var (
 	contentLength = 242743296
 )
 
-func DownloadRange(link string, part int, timeout time.Duration, handshakeTimeout time.Duration, resultChan chan<- int64, startChan chan<- time.Time) (int64, error) {
-	ctx := context.Background()
+func DownloadRange(ctx context.Context, link string, part int, timeout time.Duration, handshakeTimeout time.Duration, resultChan chan<- int64, startChan chan<- time.Time) (int64, error) {
 	client, err := createClient(ctx, link)
 	if err != nil {
 		return 0, err
@@ -65,29 +64,36 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 			prev := time.Now()
 			startChan <- prev
 			var total int64
+		Loop:
 			for {
-				buf := pool.Get(20 * 1024)
-				nr, er := response.Body.Read(buf)
-				total += int64(nr)
-				pool.Put(buf)
-				now := time.Now()
-				if now.Sub(prev) >= 100*time.Millisecond || er != nil {
-					prev = now
-					if totalChan != nil {
-						totalChan <- total
+				select {
+				case <-ctx.Done():
+					return max, err
+				default:
+					buf := pool.Get(20 * 1024)
+					nr, er := response.Body.Read(buf)
+					total += int64(nr)
+					pool.Put(buf)
+					now := time.Now()
+					if now.Sub(prev) >= 100*time.Millisecond || er != nil {
+						prev = now
+						if totalChan != nil {
+							totalChan <- total
+						}
+						if max < total {
+							max = total
+						}
+						total = 0
 					}
-					if max < total {
-						max = total
+					if er != nil {
+						if er != io.EOF {
+							errorChan <- err
+							err = er
+						}
+						break Loop
 					}
-					total = 0
 				}
-				if er != nil {
-					if er != io.EOF {
-						errorChan <- err
-						err = er
-					}
-					break
-				}
+
 			}
 			return max, nil
 
@@ -137,7 +143,11 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 		case <-doneCh:
 			return max, errorResult
 		case <-ctx.Done():
-			return max, ctx.Err()
+			err := ctx.Err()
+			if max > 0 {
+				err = nil
+			}
+			return max, err
 		}
 	}
 }
