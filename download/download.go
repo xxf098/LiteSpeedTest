@@ -29,6 +29,7 @@ type DownloadOption struct {
 	URL              string
 	DownloadTimeout  time.Duration
 	HandshakeTimeout time.Duration
+	Ranges           []Range
 }
 
 type Discard struct {
@@ -87,7 +88,7 @@ func createClient(ctx context.Context, link string) (*proxy.Client, error) {
 	return nil, errors.New("not supported link")
 }
 
-func Download(link string, timeout time.Duration, handshakeTimeout time.Duration, resultChan chan<- int64) (int64, error) {
+func Download(link string, timeout time.Duration, handshakeTimeout time.Duration, resultChan chan<- int64, startChan chan<- time.Time) (int64, error) {
 	ctx := context.Background()
 	client, err := createClient(ctx, link)
 	if err != nil {
@@ -98,10 +99,10 @@ func Download(link string, timeout time.Duration, handshakeTimeout time.Duration
 		HandshakeTimeout: handshakeTimeout,
 		URL:              downloadLink,
 	}
-	return downloadInternal(ctx, option, resultChan, client.Dial)
+	return downloadInternal(ctx, option, resultChan, startChan, client.Dial)
 }
 
-func downloadInternal(ctx context.Context, option DownloadOption, resultChan chan<- int64, dial func(network, addr string) (net.Conn, error)) (int64, error) {
+func downloadInternal(ctx context.Context, option DownloadOption, resultChan chan<- int64, startOuterChan chan<- time.Time, dial func(network, addr string) (net.Conn, error)) (int64, error) {
 	var max int64 = 0
 	httpTransport := &http.Transport{}
 	httpClient := &http.Client{Transport: httpTransport, Timeout: option.HandshakeTimeout}
@@ -117,8 +118,10 @@ func downloadInternal(ctx context.Context, option DownloadOption, resultChan cha
 		return max, err
 	}
 	defer response.Body.Close()
-	start := time.Now()
-	prev := start
+	prev := time.Now()
+	if startOuterChan != nil {
+		startOuterChan <- prev
+	}
 	var total int64
 	for {
 		buf := pool.Get(20 * 1024)
@@ -126,7 +129,7 @@ func downloadInternal(ctx context.Context, option DownloadOption, resultChan cha
 		total += int64(nr)
 		pool.Put(buf)
 		now := time.Now()
-		if now.Sub(prev) >= time.Second || err != nil {
+		if now.Sub(prev) >= time.Second || er != nil {
 			prev = now
 			if resultChan != nil {
 				resultChan <- total

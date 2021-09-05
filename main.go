@@ -42,7 +42,7 @@ func main() {
 		return
 	}
 	c := Config{
-		LocalHost: "127.0.0.1",
+		LocalHost: "0.0.0.0",
 		LocalPort: *port,
 		Link:      link,
 	}

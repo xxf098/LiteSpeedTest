@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/outbound"
+	"github.com/xxf098/lite-proxy/utils"
 )
 
 var (
@@ -30,15 +30,15 @@ func decodeB64SS(link string) (string, error) {
 	if b64 == "" {
 		return link, nil
 	}
-	uri, err := common.DecodeB64(b64)
+	uri, err := utils.DecodeB64(b64)
 	if err != nil {
 		return "", err
 	}
 	return fmt.Sprintf("ss://%s", uri), nil
 }
 
-func SSLinkToSSOption(link string) (*outbound.ShadowSocksOption, error) {
-	link, err := decodeB64SS(link)
+func SSLinkToSSOption(link1 string) (*outbound.ShadowSocksOption, error) {
+	link, err := decodeB64SS(link1)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func SSLinkToSSOption(link string) (*outbound.ShadowSocksOption, error) {
 	if err != nil {
 		return nil, err
 	}
-	userinfo, err := common.DecodeB64(pass)
+	userinfo, err := utils.DecodeB64(pass)
 	if err != nil || !strings.Contains(userinfo, ":") {
 		pw, _ := u.User.Password()
 		if pw == "" {
@@ -73,6 +73,15 @@ func SSLinkToSSOption(link string) (*outbound.ShadowSocksOption, error) {
 	splits := strings.SplitN(userinfo, ":", 2)
 	method := splits[0]
 	pass = splits[1]
+	remarks := u.Fragment
+	if remarks == "" {
+		fmt.Println(link1)
+		if splits := strings.Split(link1, "#"); len(splits) > 1 {
+			if rmk, err := url.QueryUnescape(splits[1]); err == nil {
+				remarks = rmk
+			}
+		}
+	}
 
 	shadwosocksOption := &outbound.ShadowSocksOption{
 		Name:     "ss",
@@ -80,7 +89,7 @@ func SSLinkToSSOption(link string) (*outbound.ShadowSocksOption, error) {
 		Port:     port,
 		Password: pass,
 		Cipher:   method,
-		Remarks:  u.Fragment,
+		Remarks:  remarks,
 	}
 	return shadwosocksOption, nil
 }

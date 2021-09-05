@@ -1,4 +1,4 @@
-package common
+package utils
 
 import (
 	"encoding/base64"
@@ -19,7 +19,7 @@ func DecodeB64(s string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(data), nil
+	return B2s(data), nil
 }
 
 func DecodeB64Bytes(s string) ([]byte, error) {

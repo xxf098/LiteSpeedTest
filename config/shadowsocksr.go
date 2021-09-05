@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/outbound"
+	"github.com/xxf098/lite-proxy/utils"
 )
 
 var (
@@ -22,7 +22,7 @@ func SSRLinkToSSROption(link string) (*outbound.ShadowSocksROption, error) {
 	if len(res) > 0 && len(res[0]) > 1 {
 		b64 = res[0][1]
 	}
-	uri, err := common.DecodeB64(b64)
+	uri, err := utils.DecodeB64(b64)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func SSRLinkToSSROption(link string) (*outbound.ShadowSocksROption, error) {
 	if err != nil {
 		return nil, err
 	}
-	pass, err := common.DecodeB64(links[5])
+	pass, err := utils.DecodeB64(links[5])
 	if err != nil {
 		return nil, err
 	}
@@ -50,17 +50,17 @@ func SSRLinkToSSROption(link string) (*outbound.ShadowSocksROption, error) {
 		UDP:      false,
 	}
 	if rawQuery, err := url.ParseQuery(parts[1]); err == nil {
-		obfsparam, err := common.DecodeB64(rawQuery.Get("obfsparam"))
+		obfsparam, err := utils.DecodeB64(rawQuery.Get("obfsparam"))
 		if err != nil {
 			return nil, err
 		}
 		ssrOption.ObfsParam = obfsparam
-		protoparam, err := common.DecodeB64(rawQuery.Get("protoparam"))
+		protoparam, err := utils.DecodeB64(rawQuery.Get("protoparam"))
 		if err != nil {
 			return nil, err
 		}
 		ssrOption.ProtocolParam = protoparam
-		remarks, err := common.DecodeB64(rawQuery.Get("remarks"))
+		remarks, err := utils.DecodeB64(rawQuery.Get("remarks"))
 		if err == nil {
 			ssrOption.Remarks = remarks
 		}

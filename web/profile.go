@@ -16,10 +16,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/config"
 	"github.com/xxf098/lite-proxy/download"
 	"github.com/xxf098/lite-proxy/request"
+	"github.com/xxf098/lite-proxy/utils"
 	"github.com/xxf098/lite-proxy/web/render"
 )
 
@@ -42,7 +42,7 @@ func getSubscriptionLinks(link string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	msg, err := common.DecodeB64(string(data))
+	msg, err := utils.DecodeB64(string(data))
 	if err != nil {
 		return parseClash(string(data))
 	}
@@ -71,7 +71,7 @@ func parseLinks(message string) ([]string, error) {
 }
 
 func parseProfiles(data string) ([]string, error) {
-	reg := regexp.MustCompile(`((?i)(vmess|ssr)://[a-zA-Z0-9+_/=-]+)|((?i)(ss|trojan)://(.+?)@(.+?):([0-9]{2,5})([?#][^\s]+))`)
+	reg := regexp.MustCompile(`((?i)(vmess|ssr)://[a-zA-Z0-9+_/=-]+)|((?i)(ss|trojan)://(.+?)@(.+?):([0-9]{2,5})([?#][^\s]+))|((?i)(ss)://[a-zA-Z0-9+_/=-]+([?#][^\s]+))`)
 	matches := reg.FindAllStringSubmatch(data, -1)
 	links := make([]string, len(matches))
 	for index, match := range matches {
@@ -81,7 +81,7 @@ func parseProfiles(data string) ([]string, error) {
 }
 
 func parseBase64(data string) ([]string, error) {
-	msg, err := common.DecodeB64(data)
+	msg, err := utils.DecodeB64(data)
 	if err != nil {
 		return nil, err
 	}
@@ -266,9 +266,9 @@ func (p *ProfileTest) TestAll(ctx context.Context, links []string, max int, traf
 			}
 		}
 		p.wg.Wait()
-		if trafficChan != nil {
-			close(trafficChan)
-		}
+		// if trafficChan != nil {
+		// 	close(trafficChan)
+		// }
 	}(ctx)
 	return nodeChan, nil
 }
@@ -373,8 +373,9 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 	}
 	err = p.WriteMessage(getMsgByte(index, "startspeed"))
 	ch := make(chan int64, 1)
+	startCh := make(chan time.Time, 1)
 	defer close(ch)
-	go func(ch <-chan int64) {
+	go func(ch <-chan int64, startChan <-chan time.Time) {
 		var max int64
 		var sum int64
 		var avg int64
@@ -397,6 +398,8 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 				if trafficChan != nil {
 					trafficChan <- speed
 				}
+			case s := <-startChan:
+				start = s
 			case <-ctx.Done():
 				log.Printf("index %d done!", index)
 				break Loop
@@ -414,8 +417,9 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 			Traffic:  sum,
 		}
 		nodeChan <- node
-	}(ch)
-	speed, err := download.Download(link, p.Options.Timeout, p.Options.Timeout, ch)
+	}(ch, startCh)
+	speed, err := download.Download(link, p.Options.Timeout, p.Options.Timeout, ch, startCh)
+	// speed, err := download.DownloadRange(link, 2, p.Options.Timeout, p.Options.Timeout, ch, startCh)
 	if speed < 1 {
 		p.WriteMessage(getMsgByte(index, "gotspeed", -1, -1, 0))
 	}

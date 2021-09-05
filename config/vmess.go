@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/xxf098/lite-proxy/common"
 	"github.com/xxf098/lite-proxy/outbound"
+	"github.com/xxf098/lite-proxy/utils"
 )
 
 type User struct {
@@ -191,7 +191,7 @@ func VmessLinkToVmessOptionIP(link string, resolveip bool) (*outbound.VmessOptio
 	// 		return nil, err
 	// 	}
 	// }
-	data, err := common.DecodeB64Bytes(b64)
+	data, err := utils.DecodeB64Bytes(b64)
 	if err != nil {
 		return nil, err
 	}
