@@ -39,7 +39,7 @@ func GetListens(ctx context.Context, network, address string) ([]net.Listener, e
 		if err != nil {
 			return nil, err
 		}
-		log.D("server", i, "pid", os.Getpid(), "serving dns on", listen.Addr())
+		log.D("server", i, "pid", os.Getpid(), "serving on", listen.Addr())
 		listens[i] = listen
 	}
 	return listens, nil
