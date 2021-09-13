@@ -13,6 +13,7 @@ func TestNewID(t *testing.T) {
 		t.Error(err)
 	}
 	newid := newID(&uid)
+	fmt.Println(newid.CmdKey)
 	ids := newAlterIDs(newid, 1)
 	for _, id := range ids {
 		fmt.Println(id.UUID.String())

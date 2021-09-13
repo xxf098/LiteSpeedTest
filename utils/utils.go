@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"runtime"
+	"strconv"
 	"unsafe"
 
 	"github.com/xxf098/lite-proxy/common"
@@ -53,3 +54,7 @@ func B2s(b []byte) string { return *(*string)(unsafe.Pointer(&b)) } // tricks
 //go:noescape
 //go:linkname Fastrandn runtime.fastrandn
 func Fastrandn(x uint32) uint32
+
+func U16toa(i uint16) string {
+	return strconv.FormatUint(uint64(i), 10)
+}

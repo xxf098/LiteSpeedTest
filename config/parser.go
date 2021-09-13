@@ -8,6 +8,7 @@ import (
 
 	"github.com/xxf098/lite-proxy/common/structure"
 	"github.com/xxf098/lite-proxy/outbound"
+	"github.com/xxf098/lite-proxy/utils"
 )
 
 func ParseProxy(mapping map[string]interface{}) (string, error) {
@@ -58,7 +59,7 @@ func ParseProxy(mapping map[string]interface{}) (string, error) {
 		c := VmessConfig{
 			Ps:   vmessOption.Name,
 			Add:  vmessOption.Server,
-			Port: []byte(strconv.Itoa(vmessOption.Port)),
+			Port: []byte(utils.U16toa(vmessOption.Port)),
 			Aid:  []byte(strconv.Itoa(vmessOption.AlterID)),
 			ID:   vmessOption.UUID,
 			Type: vmessOption.Cipher,

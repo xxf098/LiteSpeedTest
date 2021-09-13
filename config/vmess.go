@@ -20,7 +20,7 @@ type User struct {
 
 type VNext struct {
 	Address string `json:"address"`
-	Port    int    `json:"port"`
+	Port    uint16 `json:"port"`
 	Users   []User `json:"users"`
 }
 
@@ -141,7 +141,7 @@ func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error
 		// },
 		Name:           "vmess",
 		Server:         config.Add,
-		Port:           port,
+		Port:           uint16(port),
 		UUID:           config.ID,
 		AlterID:        aid,
 		Cipher:         "none",
