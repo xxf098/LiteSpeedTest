@@ -63,6 +63,7 @@ type VmessConfig struct {
 	Type       string          `json:"type"`
 	V          json.RawMessage `json:"v,omitempty"`
 	Security   string          `json:"security,omitempty"`
+	Scy        string          `json:"scy,omitempty"`
 	ResolveIP  bool            `json:"resolve_ip,omitempty"`
 	ServerName string          `json:"-"`
 	PortInt    int             `json:"-"`
@@ -162,6 +163,8 @@ func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error
 	}
 	if config.Security != "" {
 		vmessOption.Cipher = config.Security
+	} else if config.Scy != "" {
+		vmessOption.Cipher = config.Scy
 	}
 	if config.Net == "ws" {
 		vmessOption.Network = "ws"
