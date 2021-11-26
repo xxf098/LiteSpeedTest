@@ -123,11 +123,13 @@ func downloadInternal(ctx context.Context, option DownloadOption, resultChan cha
 		startOuterChan <- prev
 	}
 	var total int64
+	buf := pool.Get(20 * 1024)
+	defer pool.Put(buf)
 	for {
-		buf := pool.Get(20 * 1024)
+		// buf := pool.Get(20 * 1024)
 		nr, er := response.Body.Read(buf)
 		total += int64(nr)
-		pool.Put(buf)
+		// pool.Put(buf)
 		now := time.Now()
 		if now.Sub(prev) >= time.Second || er != nil {
 			prev = now
@@ -179,6 +181,7 @@ func downloadCompleteInternal(ctx context.Context, url string, timeout time.Dura
 	start := time.Now()
 	var total int64
 	buf := pool.Get(20 * 1024)
+	defer pool.Put(buf)
 	for ctx.Err() == nil {
 		nr, er := response.Body.Read(buf)
 		total += int64(nr)
@@ -189,7 +192,7 @@ func downloadCompleteInternal(ctx context.Context, url string, timeout time.Dura
 			break
 		}
 	}
-	pool.Put(buf)
+
 	now := time.Now()
 	max = total * 1000 / now.Sub(start).Milliseconds()
 	return max, nil
