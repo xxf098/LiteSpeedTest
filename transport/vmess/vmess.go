@@ -68,7 +68,7 @@ type Config struct {
 	UUID     string
 	AlterID  uint16
 	Security string
-	Port     string
+	Port     uint16
 	HostName string
 	IsAead   bool
 }

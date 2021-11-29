@@ -19,8 +19,10 @@ Run as speed test tool:
     ./lite --config config.json --test https://raw.githubusercontent.com/freefq/free/master/v2
 
 Run as http/socks5 proxy:
+    # use default port 8090
     ./lite vmess://aHR0cHM6Ly9naXRodWIuY29tL3h4ZjA5OC9MaXRlU3BlZWRUZXN0
     ./lite ssr://aHR0cHM6Ly9naXRodWIuY29tL3h4ZjA5OC9MaXRlU3BlZWRUZXN0
+    # use another port
     ./lite -p 8091 vmess://aHR0cHM6Ly9naXRodWIuY29tL3h4ZjA5OC9MaXRlU3BlZWRUZXN0
 ```
 

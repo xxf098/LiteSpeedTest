@@ -43,14 +43,19 @@ func startInstance(c Config) (*proxy.Proxy, error) {
 		return nil, err
 	}
 	go func(link string) {
+		if c.Ping < 1 {
+			return
+		}
 		if cfg, err := config.Link2Config(c.Link); err == nil {
 			opt := request.PingOption{
-				Attempts: 1,
-				TimeOut:  1000 * time.Millisecond,
+				Attempts: c.Ping,
+				TimeOut:  1200 * time.Millisecond,
 			}
 			info := fmt.Sprintf("%s %s:%d", cfg.Remarks, cfg.Server, cfg.Port)
 			if elapse, err := request.PingLinkInternal(link, opt); err == nil {
 				info = fmt.Sprintf("%s \033[32m%dms\033[0m", info, elapse)
+			} else {
+				info = fmt.Sprintf("\033[31m%s\033[0m", err.Error())
 			}
 			log.Print(info)
 		}

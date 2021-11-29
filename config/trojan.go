@@ -43,6 +43,7 @@ func TrojanLinkToTrojanOption(link string) (*outbound.TrojanOption, error) {
 	}
 	if rawQuery, err := url.ParseQuery(u.RawQuery); err == nil {
 		trojanOption.SNI = rawQuery.Get("sni")
+		trojanOption.SkipCertVerify = rawQuery.Get("allowInsecure") == "1"
 	}
 	return &trojanOption, nil
 }

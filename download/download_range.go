@@ -64,16 +64,18 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 			prev := time.Now()
 			startChan <- prev
 			var total int64
+			buf := pool.Get(20 * 1024)
+			pool.Put(buf)
 		Loop:
 			for {
 				select {
 				case <-ctx.Done():
 					return max, err
 				default:
-					buf := pool.Get(20 * 1024)
+					// buf := pool.Get(20 * 1024)
 					nr, er := response.Body.Read(buf)
 					total += int64(nr)
-					pool.Put(buf)
+					// pool.Put(buf)
 					now := time.Now()
 					if now.Sub(prev) >= 100*time.Millisecond || er != nil {
 						prev = now

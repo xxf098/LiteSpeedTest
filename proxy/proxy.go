@@ -23,6 +23,7 @@ type Proxy struct {
 	sink    tunnel.Client
 	ctx     context.Context
 	cancel  context.CancelFunc
+	pool    *utils.WorkerPool
 }
 
 func (p *Proxy) Run() error {
@@ -37,6 +38,9 @@ func (p *Proxy) Close() error {
 	p.sink.Close()
 	for _, source := range p.sources {
 		source.Close()
+	}
+	if p.pool != nil {
+		p.pool.Stop()
 	}
 	return nil
 }
@@ -73,6 +77,7 @@ func (p *Proxy) relayConnLoop() {
 		LogAllErrors:          false,
 		MaxIdleWorkerDuration: 2 * time.Minute,
 	}
+	p.pool = &pool
 	pool.Start()
 	for _, source := range p.sources {
 		go func(source tunnel.Server) {

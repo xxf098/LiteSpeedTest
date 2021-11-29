@@ -16,6 +16,7 @@ import (
 	"github.com/xxf098/lite-proxy/transport/dialer"
 	"github.com/xxf098/lite-proxy/transport/resolver"
 	"github.com/xxf098/lite-proxy/transport/vmess"
+	"github.com/xxf098/lite-proxy/utils"
 )
 
 type Vmess struct {
@@ -27,7 +28,7 @@ type Vmess struct {
 type VmessOption struct {
 	Name           string            `proxy:"name"`
 	Server         string            `proxy:"server"`
-	Port           int               `proxy:"port"`
+	Port           uint16            `proxy:"port"`
 	UUID           string            `proxy:"uuid"`
 	AlterID        int               `proxy:"alterId"`
 	Cipher         string            `proxy:"cipher"`
@@ -214,7 +215,8 @@ func NewVmess(option *VmessOption) (*Vmess, error) {
 		AlterID:  uint16(option.AlterID),
 		Security: security,
 		HostName: option.Server,
-		Port:     strconv.Itoa(option.Port),
+		Port:     option.Port,
+		IsAead:   option.AlterID == 0, // VMess AEAD will be used when alterId is 0
 	})
 	if err != nil {
 		return nil, err
@@ -226,7 +228,7 @@ func NewVmess(option *VmessOption) (*Vmess, error) {
 	return &Vmess{
 		Base: &Base{
 			name: option.Name,
-			addr: net.JoinHostPort(option.Server, strconv.Itoa(option.Port)),
+			addr: net.JoinHostPort(option.Server, utils.U16toa(option.Port)),
 			udp:  option.UDP,
 		},
 		client: client,

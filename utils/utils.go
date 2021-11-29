@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"runtime"
+	"strconv"
 	"unsafe"
 
 	"github.com/xxf098/lite-proxy/common"
@@ -39,7 +40,7 @@ func GetListens(ctx context.Context, network, address string) ([]net.Listener, e
 		if err != nil {
 			return nil, err
 		}
-		log.D("server", i, "pid", os.Getpid(), "serving dns on", listen.Addr())
+		log.D("server", i, "pid", os.Getpid(), "serving on", listen.Addr())
 		listens[i] = listen
 	}
 	return listens, nil
@@ -53,3 +54,7 @@ func B2s(b []byte) string { return *(*string)(unsafe.Pointer(&b)) } // tricks
 //go:noescape
 //go:linkname Fastrandn runtime.fastrandn
 func Fastrandn(x uint32) uint32
+
+func U16toa(i uint16) string {
+	return strconv.FormatUint(uint64(i), 10)
+}
