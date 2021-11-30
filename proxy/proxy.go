@@ -54,6 +54,7 @@ func (p *Proxy) relayConnLoop() {
 			addr := inbound.Metadata().Address
 			var outbound net.Conn
 			var err error
+			start := time.Now()
 			if addr.IP != nil && N.IsPrivateAddress(addr.IP) {
 				networkType := addr.NetworkType
 				if networkType == "" {
@@ -68,7 +69,8 @@ func (p *Proxy) relayConnLoop() {
 				log.Error(common.NewError("proxy failed to dial connection").Base(err))
 				return err
 			}
-			log.D("connect to:", addr)
+			elapsed := fmt.Sprintf("%dms", time.Since(start).Milliseconds())
+			log.D("connect to:", addr, elapsed)
 			defer outbound.Close()
 			// relay
 			return relay(outbound, inbound)
