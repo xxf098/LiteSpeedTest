@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/xxf098/lite-proxy/common/pool"
 	"github.com/xxf098/lite-proxy/log"
 
 	"github.com/Dreamacro/go-shadowsocks2/core"
-	"github.com/xxf098/lite-proxy/common/pool"
 )
 
 type Base struct {

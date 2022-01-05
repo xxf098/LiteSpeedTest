@@ -5,7 +5,6 @@ import (
 	"net"
 
 	"github.com/xxf098/lite-proxy/common/pool"
-	"github.com/xxf098/lite-proxy/transport/ssr/tools"
 )
 
 type Conn struct {
@@ -37,9 +36,8 @@ func (c *Conn) Read(b []byte) (int, error) {
 
 func (c *Conn) Write(b []byte) (int, error) {
 	bLength := len(b)
-	buf := tools.BufPool.Get().(*bytes.Buffer)
-	defer tools.BufPool.Put(buf)
-	defer buf.Reset()
+	buf := pool.GetBuffer()
+	defer pool.PutBuffer(buf)
 	err := c.Encode(buf, b)
 	if err != nil {
 		return 0, err
