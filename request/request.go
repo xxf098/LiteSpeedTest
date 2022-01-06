@@ -300,6 +300,7 @@ func pingHTTPClient(ctx context.Context, url string, timeout time.Duration, dial
 	if dialCtx != nil {
 		httpTransport.DialContext = dialCtx
 	}
+	defer httpClient.CloseIdleConnections()
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return 0, err
