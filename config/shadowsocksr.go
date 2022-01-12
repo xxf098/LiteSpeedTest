@@ -59,6 +59,13 @@ func SSRLinkToSSROption(link string) (*outbound.ShadowSocksROption, error) {
 			return nil, err
 		}
 		ssrOption.ObfsParam = obfsparam
+		if obfsparam == "" {
+			obfsparam, err := utils.DecodeB64(rawQuery.Get("obfs-param"))
+			if err != nil {
+				return nil, err
+			}
+			ssrOption.ObfsParam = obfsparam
+		}
 		protoparam, err := utils.DecodeB64(rawQuery.Get("protoparam"))
 		if err != nil {
 			return nil, err
