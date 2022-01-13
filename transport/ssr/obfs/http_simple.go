@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/xxf098/lite-proxy/common/pool"
-	"github.com/xxf098/lite-proxy/transport/ssr/tools"
 )
 
 func init() {
@@ -102,9 +101,8 @@ func (c *httpConn) Write(b []byte) (int, error) {
 	hosts := strings.Split(host, ",")
 	host = hosts[rand.Intn(len(hosts))]
 
-	buf := tools.BufPool.Get().(*bytes.Buffer)
-	defer tools.BufPool.Put(buf)
-	defer buf.Reset()
+	buf := pool.GetBuffer()
+	defer pool.PutBuffer(buf)
 	if c.post {
 		buf.WriteString("POST /")
 	} else {

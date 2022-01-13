@@ -11,11 +11,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/xxf098/lite-proxy/common/pool"
 	"github.com/xxf098/lite-proxy/log"
+	"github.com/xxf098/lite-proxy/transport/ssr/tools"
 
 	"github.com/Dreamacro/go-shadowsocks2/core"
-	"github.com/xxf098/lite-proxy/common/pool"
-	"github.com/xxf098/lite-proxy/transport/ssr/tools"
 )
 
 func init() {
@@ -278,7 +278,7 @@ func getRandStartPos(length int, random *tools.XorShift128Plus) int {
 	if length == 0 {
 		return 0
 	}
-	return int(random.Next()%8589934609) % length
+	return int(int64(random.Next()%8589934609) % int64(length))
 }
 
 func (a *authChainA) getRandLength(length int, lastHash []byte, random *tools.XorShift128Plus) int {

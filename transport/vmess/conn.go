@@ -59,12 +59,12 @@ func (vc *Conn) Read(b []byte) (int, error) {
 func (vc *Conn) sendRequest() error {
 	timestamp := time.Now()
 
+	mbuf := &bytes.Buffer{}
+
 	if !vc.isAead {
 		h := hmac.New(md5.New, vc.id.UUID.Bytes())
 		binary.Write(h, binary.BigEndian, uint64(timestamp.Unix()))
-		if _, err := vc.Conn.Write(h.Sum(nil)); err != nil {
-			return err
-		}
+		mbuf.Write(h.Sum(nil))
 	}
 
 	buf := &bytes.Buffer{}
@@ -76,8 +76,7 @@ func (vc *Conn) sendRequest() error {
 	buf.WriteByte(vc.respV)
 	buf.WriteByte(OptionChunkStream)
 
-	// p := rand.Intn(16)
-	p := 0
+	p := rand.Intn(16)
 	// P Sec Reserve Cmd
 	buf.WriteByte(byte(p<<4) | byte(vc.security))
 	buf.WriteByte(0)
@@ -111,7 +110,8 @@ func (vc *Conn) sendRequest() error {
 
 		stream := cipher.NewCFBEncrypter(block, hashTimestamp(timestamp))
 		stream.XORKeyStream(buf.Bytes(), buf.Bytes())
-		_, err = vc.Conn.Write(buf.Bytes())
+		mbuf.Write(buf.Bytes())
+		_, err = vc.Conn.Write(mbuf.Bytes())
 		return err
 	}
 

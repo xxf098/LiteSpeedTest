@@ -2,6 +2,7 @@ package vmess
 
 import (
 	"fmt"
+	"math/rand"
 	"net"
 	"runtime"
 
@@ -75,8 +76,8 @@ type Config struct {
 
 // StreamConn return a Conn with net.Conn and DstAddr
 func (c *Client) StreamConn(conn net.Conn, dst *DstAddr) (net.Conn, error) {
-	// r := rand.Intn(len(c.user))
-	return newConn(conn, c.user[0], dst, c.security, c.isAead)
+	r := rand.Intn(len(c.user))
+	return newConn(conn, c.user[r], dst, c.security, c.isAead)
 }
 
 // NewClient return Client instance

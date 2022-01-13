@@ -152,6 +152,20 @@ func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error
 		SkipCertVerify: false,
 		Type:           config.Type,
 	}
+	// http network
+	if config.Type == "http" {
+		vmessOption.HTTPOpts = outbound.HTTPOptions{
+			Method: "GET",
+			Path:   []string{config.Path},
+		}
+		if config.Host != "" {
+			vmessOption.HTTPOpts.Headers = map[string][]string{
+				"Host":       {config.Host},
+				"Connection": {"keep-alive"},
+			}
+		}
+		vmessOption.Network = "http"
+	}
 	if config.ResolveIP {
 		if ipAddr, err := resolveIP(vmessOption.Server); err == nil && ipAddr != "" {
 			vmessOption.ServerName = vmessOption.Server

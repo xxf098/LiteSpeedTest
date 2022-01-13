@@ -39,12 +39,16 @@ func SSRLinkToSSROption(link string) (*outbound.ShadowSocksROption, error) {
 	if err != nil {
 		return nil, err
 	}
+	cipher := links[3]
+	if cipher == "none" {
+		cipher = "dummy"
+	}
 	ssrOption := &outbound.ShadowSocksROption{
 		Name:     "ssr",
 		Server:   links[0],
 		Port:     port,
 		Protocol: links[2],
-		Cipher:   links[3],
+		Cipher:   cipher,
 		Obfs:     links[4],
 		Password: pass,
 		UDP:      false,
@@ -55,6 +59,13 @@ func SSRLinkToSSROption(link string) (*outbound.ShadowSocksROption, error) {
 			return nil, err
 		}
 		ssrOption.ObfsParam = obfsparam
+		if obfsparam == "" {
+			obfsparam, err := utils.DecodeB64(rawQuery.Get("obfs-param"))
+			if err != nil {
+				return nil, err
+			}
+			ssrOption.ObfsParam = obfsparam
+		}
 		protoparam, err := utils.DecodeB64(rawQuery.Get("protoparam"))
 		if err != nil {
 			return nil, err
