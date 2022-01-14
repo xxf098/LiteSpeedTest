@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strconv"
 
 	"github.com/xxf098/lite-proxy/common/structure"
@@ -79,7 +80,13 @@ func ParseProxy(mapping map[string]interface{}) (string, error) {
 		if err != nil {
 			break
 		}
-
+		link = fmt.Sprintf("trojan://%s@%s:%d", trojanOption.Password, trojanOption.Server, trojanOption.Port)
+		if len(trojanOption.Remarks) > 0 {
+			link = fmt.Sprintf("%s#%s", link, url.QueryEscape(trojanOption.Remarks))
+		}
+		if len(trojanOption.Name) > 0 {
+			link = fmt.Sprintf("%s#%s", link, url.QueryEscape(trojanOption.Name))
+		}
 	default:
 		return "", fmt.Errorf("unsupport proxy type: %s", proxyType)
 	}
