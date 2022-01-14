@@ -31,7 +31,11 @@ func ParseProxy(mapping map[string]interface{}) (string, error) {
 		if err != nil {
 			break
 		}
-
+		auth := fmt.Sprintf("%s:%s", ssOption.Cipher, ssOption.Password)
+		link = fmt.Sprintf("ss://%s@%s:%d", base64.StdEncoding.EncodeToString([]byte(auth)), ssOption.Server, ssOption.Port)
+		if len(ssOption.Name) > 0 {
+			link = fmt.Sprintf("%s#%s", link, url.QueryEscape(ssOption.Name))
+		}
 	case "ssr":
 		ssrOption := &outbound.ShadowSocksROption{}
 		err = decoder.Decode(mapping, ssrOption)
@@ -80,6 +84,7 @@ func ParseProxy(mapping map[string]interface{}) (string, error) {
 		if err != nil {
 			break
 		}
+		// TODO: SNI
 		link = fmt.Sprintf("trojan://%s@%s:%d", trojanOption.Password, trojanOption.Server, trojanOption.Port)
 		if len(trojanOption.Remarks) > 0 {
 			link = fmt.Sprintf("%s#%s", link, url.QueryEscape(trojanOption.Remarks))
