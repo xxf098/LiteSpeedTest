@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -29,6 +30,7 @@ var ErrInvalidData = errors.New("invalid data")
 // concurrency setting
 // as subscription server
 // profiles filter
+// clash to vmess local subscription
 func getSubscriptionLinks(link string) ([]string, error) {
 	c := http.Client{
 		Timeout: 20 * time.Second,
@@ -61,7 +63,7 @@ func parseLinks(message string) ([]string, error) {
 		return getSubscriptionLinks(message)
 	}
 	var links []string
-	for _, fn := range []parseFunc{parseProfiles, parseBase64, parseClash} {
+	for _, fn := range []parseFunc{parseProfiles, parseBase64, parseClash, parseFile} {
 		links, err = fn(message)
 		if err == nil && len(links) > 0 {
 			break
@@ -94,6 +96,21 @@ func parseClash(data string) ([]string, error) {
 		return nil, err
 	}
 	return cc.Proxies, nil
+}
+
+func parseFile(filepath string) ([]string, error) {
+	if _, err := os.Stat(filepath); err != nil {
+		return nil, err
+	}
+	data, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		return nil, err
+	}
+	// clash
+	if strings.HasSuffix(filepath, ".yaml") {
+		return parseClash(string(data))
+	}
+	return parseBase64(string(data))
 }
 
 func parseOptions(message string) (*ProfileTestOptions, error) {
