@@ -98,6 +98,14 @@ func parseClash(data string) ([]string, error) {
 	return cc.Proxies, nil
 }
 
+func parseClashByte(data []byte) ([]string, error) {
+	cc, err := config.ParseClash(data)
+	if err != nil {
+		return nil, err
+	}
+	return cc.Proxies, nil
+}
+
 func parseFile(filepath string) ([]string, error) {
 	if _, err := os.Stat(filepath); err != nil {
 		return nil, err

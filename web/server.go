@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"crypto/md5"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -292,10 +293,17 @@ func getSubscription(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 400)
 		return
 	}
-	if strings.HasSuffix(filePath, ".txt") {
+	if strings.HasSuffix(filePath, ".yaml") {
+		links, err := parseClashByte(data)
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+		}
+		subscription := []byte(strings.Join(links, "\n"))
+		data := make([]byte, base64.StdEncoding.EncodedLen(len(subscription)))
+		base64.StdEncoding.Encode(data, subscription)
 		w.Write(data)
 		return
 	}
-	// TODO: yaml
-	fmt.Fprint(w, filePath)
+	w.Write(data)
 }
