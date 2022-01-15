@@ -447,7 +447,12 @@
 					const host = window.location.host;
 					if (host.startsWith("127.0.0.1")) {
 						const url = `${window.location.protocol}//${window.location.host}/getSubscriptionLink`
-						fetch(url, {method: "POST"})
+						const requestOptions = {
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({"filePath": this.subscription.trim()})
+						};
+						fetch(url, requestOptions)
 							.then(resp => resp.text())
 							.then(data => {
 								navigator.clipboard.writeText(data)
