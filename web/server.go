@@ -10,6 +10,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -269,17 +270,32 @@ func getSubscriptionLink(w http.ResponseWriter, r *http.Request) {
 	}
 	md5Hash := fmt.Sprintf("%x", md5.Sum([]byte(body.FilePath)))
 	subscriptionLinkMap[md5Hash] = body.FilePath
-	subscriptionLink := fmt.Sprintf("http://%s:10888/getSubscription?key=%s", ipAddr.String(), md5Hash)
+	subscriptionLink := fmt.Sprintf("http://%s:10888/getSubscription?key=%s&group=default", ipAddr.String(), md5Hash)
 	fmt.Fprint(w, subscriptionLink)
 }
 
 // POST
 func getSubscription(w http.ResponseWriter, r *http.Request) {
-	ipAddr, err := localIP()
+	queries := r.URL.Query()
+	key := queries.Get("key")
+	if len(key) < 1 {
+		http.Error(w, "Key not found", 400)
+		return
+	}
+	filePath, ok := subscriptionLinkMap[key]
+	if !ok {
+		http.Error(w, "Wrong key", 400)
+		return
+	}
+	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
 	}
-	subscriptionLink := fmt.Sprintf("http://%s:10888/", ipAddr.String())
-	fmt.Fprint(w, subscriptionLink)
+	if strings.HasSuffix(filePath, ".txt") {
+		w.Write(data)
+		return
+	}
+	// TODO: yaml
+	fmt.Fprint(w, filePath)
 }
