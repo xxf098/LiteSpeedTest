@@ -3,9 +3,11 @@ package web
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"time"
 
@@ -18,6 +20,8 @@ var upgrader = websocket.Upgrader{}
 func ServeFile(port int) error {
 	http.Handle("/", http.FileServer(http.FS(guiStatic)))
 	http.HandleFunc("/test", updateTest)
+	http.HandleFunc("/getSubscriptionLink", getSubscriptionLink)
+	http.HandleFunc("/getSubscription", getSubscription)
 	http.HandleFunc("/generateResult", generateResult)
 	log.Printf("Start server at http://127.0.0.1:%d", port)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
@@ -177,4 +181,78 @@ func generateResult(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, picdata)
 	}
 
+}
+
+func isPrivateIP(ip net.IP) bool {
+	var privateIPBlocks []*net.IPNet
+	for _, cidr := range []string{
+		// don't check loopback ips
+		//"127.0.0.0/8",    // IPv4 loopback
+		//"::1/128",        // IPv6 loopback
+		//"fe80::/10",      // IPv6 link-local
+		"10.0.0.0/8",     // RFC1918
+		"172.16.0.0/12",  // RFC1918
+		"192.168.0.0/16", // RFC1918
+	} {
+		_, block, _ := net.ParseCIDR(cidr)
+		privateIPBlocks = append(privateIPBlocks, block)
+	}
+
+	for _, block := range privateIPBlocks {
+		if block.Contains(ip) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func localIP() (net.IP, error) {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+	for _, i := range ifaces {
+		addrs, err := i.Addrs()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, addr := range addrs {
+			var ip net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ip = v.IP
+			case *net.IPAddr:
+				ip = v.IP
+			}
+
+			if isPrivateIP(ip) {
+				return ip, nil
+			}
+		}
+	}
+
+	return nil, errors.New("no IP")
+}
+
+func getSubscriptionLink(w http.ResponseWriter, r *http.Request) {
+	ipAddr, err := localIP()
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	subscriptionLink := fmt.Sprintf("http://%s:10888/", ipAddr.String())
+	fmt.Fprint(w, subscriptionLink)
+}
+
+// POST
+func getSubscription(w http.ResponseWriter, r *http.Request) {
+	ipAddr, err := localIP()
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	subscriptionLink := fmt.Sprintf("http://%s:10888/", ipAddr.String())
+	fmt.Fprint(w, subscriptionLink)
 }

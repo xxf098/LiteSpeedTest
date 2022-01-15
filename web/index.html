@@ -152,17 +152,18 @@
 						<el-col style="display: flex;align-items: center;" :span="1">
 							<div>结果</div>
 						</el-col>
-						<el-col v-if="multipleSelection.length" :span="8">
+						<el-col :span="8">
 							<el-dropdown trigger="click">
 								<el-button size="medium" type="primary">
 									Actions<i class="el-icon-arrow-down el-icon--right"></i>
 								</el-button>
 								<el-dropdown-menu slot="dropdown">
-									<el-dropdown-item @click.native="handleCopy()">复制节点</el-dropdown-item>
-									<el-dropdown-item @click.native="handleSave()">导出节点</el-dropdown-item>
+									<el-dropdown-item @click.native="handleCopySub()">复制订阅链接</el-dropdown-item>
+									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">复制节点</el-dropdown-item>
+									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleSave()">导出节点</el-dropdown-item>
 									<!-- <el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item> -->
-									<el-dropdown-item @click.native="handleQRCode()">显示二维码</el-dropdown-item>
-									<el-dropdown-item @click.native="handleExportResult()">导出结果</el-dropdown-item>
+									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleQRCode()">显示二维码</el-dropdown-item>
+									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleExportResult()">导出结果</el-dropdown-item>
 								</el-dropdown-menu>
 							</el-dropdown>
 						</el-col>
@@ -435,6 +436,22 @@
 				handleSelectionChange(val) {
 					// console.log(`select: ${JSON.stringify(val)}`)
 					this.multipleSelection = val;
+				},
+				handleCopySub: async function () {
+					const host = window.location.host;
+					if (host.startsWith("127.0.0.1")) {
+						const url = `${window.location.protocol}//${window.location.host}/getSubscriptionLink`
+						fetch(url, {method: "POST"})
+							.then(resp => resp.text())
+							.then(data => {
+								navigator.clipboard.writeText(data)
+								this.$message.success("Copy link succeed!");
+							})
+						return
+					}
+					const url = `${window.location.protocol}//${window.location.host}/subscription`
+					await navigator.clipboard.writeText(url)
+					this.$message.success("Copy link succeed!");
 				},
 				handleCopy: async function () {
 					try {
