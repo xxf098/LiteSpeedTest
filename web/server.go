@@ -269,7 +269,7 @@ func getSubscriptionLink(w http.ResponseWriter, r *http.Request) {
 	}
 	md5Hash := fmt.Sprintf("%x", md5.Sum([]byte(body.FilePath)))
 	subscriptionLinkMap[md5Hash] = body.FilePath
-	subscriptionLink := fmt.Sprintf("http://%s:10888/%s", ipAddr.String(), md5Hash)
+	subscriptionLink := fmt.Sprintf("http://%s:10888/getSubscription?key=%s", ipAddr.String(), md5Hash)
 	fmt.Fprint(w, subscriptionLink)
 }
 
