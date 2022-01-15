@@ -152,7 +152,7 @@
 						<el-col style="display: flex;align-items: center;" :span="1">
 							<div>结果</div>
 						</el-col>
-						<el-col :span="8">
+						<el-col v-if="result.length" :span="8">
 							<el-dropdown trigger="click">
 								<el-button size="medium" type="primary">
 									Actions<i class="el-icon-arrow-down el-icon--right"></i>
