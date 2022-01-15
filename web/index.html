@@ -438,6 +438,12 @@
 					this.multipleSelection = val;
 				},
 				handleCopySub: async function () {
+					// url
+					if (this.subscription.trim().startsWith("http")) {
+						await navigator.clipboard.writeText(this.subscription.trim())
+						this.$message.success("Copy Subscription succeed!");
+						return
+					}
 					const host = window.location.host;
 					if (host.startsWith("127.0.0.1")) {
 						const url = `${window.location.protocol}//${window.location.host}/getSubscriptionLink`
@@ -445,13 +451,11 @@
 							.then(resp => resp.text())
 							.then(data => {
 								navigator.clipboard.writeText(data)
-								this.$message.success("Copy link succeed!");
+								this.$message.success("Copy Subscription succeed!");
 							})
 						return
 					}
-					const url = `${window.location.protocol}//${window.location.host}/subscription`
-					await navigator.clipboard.writeText(url)
-					this.$message.success("Copy link succeed!");
+					this.$message.error("Copy Subscription failed!");
 				},
 				handleCopy: async function () {
 					try {
