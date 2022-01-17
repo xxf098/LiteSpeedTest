@@ -61,6 +61,9 @@ func ParseProxy(mapping map[string]interface{}) (string, error) {
 		if h, ok := vmessOption.WSHeaders["Host"]; ok {
 			host = h
 		}
+		if len(vmessOption.Network) < 1 {
+			vmessOption.Network = "tcp"
+		}
 		c := VmessConfig{
 			Ps:   vmessOption.Name,
 			Add:  vmessOption.Server,

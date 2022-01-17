@@ -90,8 +90,8 @@ type ClashRawConfig struct {
 	Experimental  Experimental                      `yaml:"experimental"`
 	Profile       Profile                           `yaml:"profile"`
 	Proxy         []map[string]interface{}          `yaml:"proxies"`
-	ProxyGroup    []map[string]interface{}          `yaml:"proxy-groups"`
-	Rule          []string                          `yaml:"rules"`
+	// ProxyGroup    []map[string]interface{}          `yaml:"proxy-groups"`
+	// Rule          []string                          `yaml:"rules"`
 }
 
 // Parse config
@@ -113,9 +113,9 @@ func UnmarshalRawConfig(buf []byte) (*ClashRawConfig, error) {
 		Authentication: []string{},
 		LogLevel:       "info",
 		Hosts:          map[string]string{},
-		Rule:           []string{},
-		Proxy:          []map[string]interface{}{},
-		ProxyGroup:     []map[string]interface{}{},
+		// Rule:           []string{},
+		Proxy: []map[string]interface{}{},
+		// ProxyGroup:     []map[string]interface{}{},
 		Profile: Profile{
 			StoreSelected: true,
 		},

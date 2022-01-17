@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bufio"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -98,6 +99,27 @@ func parseClash(data string) ([]string, error) {
 	return cc.Proxies, nil
 }
 
+func parseClashByLine(filepath string) ([]string, error) {
+	file, err := os.Open(filepath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	data := []byte{}
+	for scanner.Scan() {
+		b := scanner.Bytes()
+		line := string(b)
+		trimLine := strings.TrimSpace(line)
+		if trimLine == "proxy-groups:" || trimLine == "rules:" {
+			break
+		}
+		data = append(data, b...)
+		data = append(data, byte('\n'))
+	}
+	return parseClashByte(data)
+}
+
 func parseClashByte(data []byte) ([]string, error) {
 	cc, err := config.ParseClash(data)
 	if err != nil {
@@ -110,14 +132,15 @@ func parseFile(filepath string) ([]string, error) {
 	if _, err := os.Stat(filepath); err != nil {
 		return nil, err
 	}
+	// clash
+	if strings.HasSuffix(filepath, ".yaml") {
+		return parseClashByLine(filepath)
+	}
 	data, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		return nil, err
 	}
-	// clash
-	if strings.HasSuffix(filepath, ".yaml") {
-		return parseClash(string(data))
-	}
+
 	return parseBase64(string(data))
 }
 
