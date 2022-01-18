@@ -288,13 +288,8 @@ func getSubscription(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Wrong key", 400)
 		return
 	}
-	data, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		http.Error(w, err.Error(), 400)
-		return
-	}
 	if strings.HasSuffix(filePath, ".yaml") {
-		links, err := parseClashByte(data)
+		links, err := parseClashByLine(filePath)
 		if err != nil {
 			http.Error(w, err.Error(), 400)
 			return
@@ -303,6 +298,11 @@ func getSubscription(w http.ResponseWriter, r *http.Request) {
 		data := make([]byte, base64.StdEncoding.EncodedLen(len(subscription)))
 		base64.StdEncoding.Encode(data, subscription)
 		w.Write(data)
+		return
+	}
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
 		return
 	}
 	w.Write(data)

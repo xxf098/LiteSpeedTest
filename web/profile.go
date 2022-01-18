@@ -109,8 +109,7 @@ func parseClashByLine(filepath string) ([]string, error) {
 	data := []byte{}
 	for scanner.Scan() {
 		b := scanner.Bytes()
-		line := string(b)
-		trimLine := strings.TrimSpace(line)
+		trimLine := strings.TrimSpace(string(b))
 		if trimLine == "proxy-groups:" || trimLine == "rules:" {
 			break
 		}
