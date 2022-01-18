@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"net/url"
 	"strings"
@@ -178,7 +179,8 @@ func parseProxies(cfg *ClashRawConfig) ([]string, error) {
 	for idx, mapping := range cfg.Proxy {
 		link, err := ParseProxy(mapping)
 		if err != nil {
-			return nil, fmt.Errorf("proxy %d: %w", idx, err)
+			log.Printf("proxy %d: %s", idx, err.Error())
+			continue
 		}
 		proxyList = append(proxyList, link)
 	}
