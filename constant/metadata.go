@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net"
 	"strconv"
+	"time"
 )
 
 // Socks addr type
@@ -71,6 +72,7 @@ type Metadata struct {
 	DstPort  string  `json:"destinationPort"`
 	AddrType int     `json:"-"` // IPv4=1 DomainName=3 IPv6=4
 	Host     string  `json:"host"`
+	Timeout  time.Duration
 }
 
 func (m *Metadata) RemoteAddress() string {

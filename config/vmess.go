@@ -187,6 +187,16 @@ func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error
 			"Host": config.Host,
 		}
 	}
+	if config.Net == "h2" {
+		vmessOption.Network = "h2"
+		if vmessOption.TLS {
+			vmessOption.SkipCertVerify = false
+		}
+		vmessOption.HTTP2Opts = outbound.HTTP2Options{
+			Host: []string{config.Host},
+			Path: config.Path,
+		}
+	}
 	return &vmessOption, nil
 }
 

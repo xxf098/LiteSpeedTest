@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	C "github.com/xxf098/lite-proxy/constant"
 	"github.com/xxf098/lite-proxy/log"
@@ -164,6 +165,9 @@ func (v *Vmess) DialContext(ctx context.Context, metadata *C.Metadata) (net.Conn
 	c, err := dialer.DialContext(ctx, "tcp", v.addr)
 	if err != nil {
 		return nil, fmt.Errorf("%s connect error: %s", v.addr, err.Error())
+	}
+	if metadata.Timeout > 0 {
+		c.SetDeadline(time.Now().Add(metadata.Timeout))
 	}
 	tcpKeepAlive(c)
 	if metadata.Type == C.TEST {

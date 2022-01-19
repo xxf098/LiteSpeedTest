@@ -255,6 +255,7 @@ func Ping(option interface{}) (int64, error) {
 		DstPort:  "80",
 		AddrType: 3,
 		Host:     remoteHost,
+		Timeout:  tcpTimeout,
 	}
 	if ssOption, ok := option.(*outbound.ShadowSocksOption); ok {
 		d, err = outbound.NewShadowSocks(ssOption)
