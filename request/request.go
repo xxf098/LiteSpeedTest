@@ -27,7 +27,7 @@ const (
 
 var (
 	httpRequest = []byte("GET /generate_204 HTTP/1.1\r\nHost: clients3.google.com\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36\r\n\r\n")
-	tcpTimeout  = 2400 * time.Millisecond
+	tcpTimeout  = 2200 * time.Millisecond
 )
 
 type PingOption struct {

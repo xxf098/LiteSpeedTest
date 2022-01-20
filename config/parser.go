@@ -42,7 +42,16 @@ func ParseProxy(mapping map[string]interface{}) (string, error) {
 		if err != nil {
 			break
 		}
+		password := base64.StdEncoding.EncodeToString([]byte(ssrOption.Password))
+		link = fmt.Sprintf("%s:%d:%s:%s:%s:%s", ssrOption.Server, ssrOption.Port, ssrOption.Protocol, ssrOption.Cipher, ssrOption.Obfs, password)
+		remarks := base64.StdEncoding.EncodeToString([]byte(ssrOption.Name))
+
+		obfsParam := base64.StdEncoding.EncodeToString([]byte(ssrOption.ObfsParam))
+		protocolParam := base64.StdEncoding.EncodeToString([]byte(ssrOption.ProtocolParam))
+		link = fmt.Sprintf("%s/?obfsparam=%s&remarks=%s&protoparam=%s", link, url.QueryEscape(obfsParam), url.QueryEscape(remarks), url.QueryEscape(protocolParam))
+		link = fmt.Sprintf("ssr://%s", base64.StdEncoding.EncodeToString([]byte(link)))
 	case "vmess":
+		// TODO: h2
 		vmessOption := &outbound.VmessOption{
 			HTTPOpts: outbound.HTTPOptions{
 				Method: "GET",

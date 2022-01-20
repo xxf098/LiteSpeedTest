@@ -79,6 +79,7 @@ func SSRLinkToSSROption(link string) (*outbound.ShadowSocksROption, error) {
 				remarks = fmt.Sprintf("%s:%d", ssrOption.Server, ssrOption.Port)
 			}
 			ssrOption.Remarks = remarks
+			ssrOption.Name = remarks
 		}
 	}
 	return ssrOption, nil
