@@ -119,7 +119,7 @@ func TestFromCMD(subscription string, configPath *string) error {
 	if configPath != nil {
 		if opt, err := readConfig(*configPath); err == nil {
 			options = *opt
-			options.GeneratePic = true
+			// options.GeneratePic = true
 		}
 	}
 	if jsonOpt, err := json.Marshal(options); err == nil {

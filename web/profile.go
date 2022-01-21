@@ -201,7 +201,7 @@ type ProfileTestOptions struct {
 	PingMethod    string        `json:"pingMethod"` // googleping
 	SortMethod    string        `json:"sortMethod"` // speed rspeed ping rping
 	Concurrency   int           `json:"concurrency"`
-	TestMode      int           `json:"testMode"`
+	TestMode      int           `json:"testMode"` // 0: all 1: download 2: ping
 	TestIDs       []int         `json:"testids"`
 	Timeout       time.Duration `json:"timeout"`
 	Links         []string      `json:"links"`
@@ -209,7 +209,7 @@ type ProfileTestOptions struct {
 	Language      string        `json:"language"`
 	FontSize      int           `json:"fontSize"`
 	Theme         string        `json:"theme"`
-	GeneratePic   bool          `json:"-"`
+	GeneratePic   bool          `json:"generatePic"`
 }
 
 func parseMessage(message []byte) ([]string, *ProfileTestOptions, error) {
