@@ -197,11 +197,11 @@ const (
 
 type ProfileTestOptions struct {
 	GroupName     string        `json:"group"`
-	SpeedTestMode string        `json:"speedtestMode"`
-	PingMethod    string        `json:"pingMethod"` // googleping
-	SortMethod    string        `json:"sortMethod"` // speed rspeed ping rping
+	SpeedTestMode string        `json:"speedtestMode"` // speedonly pingonly all
+	PingMethod    string        `json:"pingMethod"`    // googleping
+	SortMethod    string        `json:"sortMethod"`    // speed rspeed ping rping
 	Concurrency   int           `json:"concurrency"`
-	TestMode      int           `json:"testMode"` // 0: all 1: download 2: ping
+	TestMode      int           `json:"testMode"` // 2: ALLTEST 3: RETEST
 	TestIDs       []int         `json:"testids"`
 	Timeout       time.Duration `json:"timeout"`
 	Links         []string      `json:"links"`
@@ -379,6 +379,10 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 		}
 	}
 	close(nodeChan)
+
+	if !p.Options.GeneratePic {
+		return nil
+	}
 
 	// sort nodes
 	nodes.Sort(p.Options.SortMethod)

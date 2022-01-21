@@ -125,6 +125,23 @@ func TestFromCMD(subscription string, configPath *string) error {
 	if jsonOpt, err := json.Marshal(options); err == nil {
 		log.Printf("json options: %s\n", string(jsonOpt))
 	}
+	// links, err := parseLinks(subscription)
+	// if err != nil {
+	// 	return err
+	// }
+	// outputMessageWriter := OutputMessageWriter{}
+	// p := ProfileTest{
+	// 	Writer:      &outputMessageWriter,
+	// 	MessageType: 1,
+	// 	Links:       links,
+	// 	Options:     &options,
+	// }
+	// return p.testAll(ctx)
+	return TestContext(ctx, subscription, options)
+}
+
+// use as golang api
+func TestContext(ctx context.Context, subscription string, options ProfileTestOptions) error {
 	links, err := parseLinks(subscription)
 	if err != nil {
 		return err
