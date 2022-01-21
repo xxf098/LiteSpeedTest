@@ -95,6 +95,27 @@ type ClashRawConfig struct {
 	// Rule          []string                          `yaml:"rules"`
 }
 
+type BaseProxy struct {
+	Name   string `yaml:"name"`
+	Server string `yaml:"server"`
+	Port   int    `yaml:"port"`
+	Type   string `yaml:"type"`
+}
+
+func ParseBaseProxy(profile string) (*BaseProxy, error) {
+	idx := strings.IndexByte(profile, byte('{'))
+	if idx < 0 {
+		return nil, fmt.Errorf("not found")
+	}
+	p := profile[idx:]
+	bp := &BaseProxy{}
+	err := yaml.Unmarshal([]byte(p), bp)
+	if err != nil {
+		return nil, err
+	}
+	return bp, nil
+}
+
 // Parse config
 func ParseClash(buf []byte) (*ClashConfig, error) {
 	rawCfg, err := UnmarshalRawConfig(buf)

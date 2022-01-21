@@ -107,11 +107,21 @@ func parseClashByLine(filepath string) ([]string, error) {
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	data := []byte{}
+	checkProfile := false
 	for scanner.Scan() {
 		b := scanner.Bytes()
 		trimLine := strings.TrimSpace(string(b))
 		if trimLine == "proxy-groups:" || trimLine == "rules:" {
 			break
+		}
+		if checkProfile {
+			if _, err := config.ParseBaseProxy(trimLine); err != nil {
+				continue
+			}
+		}
+		// check profile
+		if !checkProfile && trimLine == "proxies:" {
+			checkProfile = true
 		}
 		data = append(data, b...)
 		data = append(data, byte('\n'))
