@@ -274,6 +274,13 @@ func (p *OutputMessageWriter) WriteMessage(messageType int, data []byte) error {
 	return nil
 }
 
+type EmptyMessageWriter struct {
+}
+
+func (w *EmptyMessageWriter) WriteMessage(messageType int, data []byte) error {
+	return nil
+}
+
 type ProfileTest struct {
 	Writer      MessageWriter
 	Options     *ProfileTestOptions
@@ -330,11 +337,11 @@ func (p *ProfileTest) TestAll(ctx context.Context, links []string, max int, traf
 	return nodeChan, nil
 }
 
-func (p *ProfileTest) testAll(ctx context.Context) error {
+func (p *ProfileTest) testAll(ctx context.Context) (render.Nodes, error) {
 	linksCount := len(p.Links)
 	if linksCount < 1 {
 		p.WriteString(SPEEDTEST_ERROR_NONODES)
-		return fmt.Errorf("no profile found")
+		return nil, fmt.Errorf("no profile found")
 	}
 	start := time.Now()
 	p.WriteMessage(getMsgByte(-1, "started"))
@@ -361,7 +368,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 				<-c
 			}(id, link, guard, nodeChan)
 		case <-ctx.Done():
-			return nil
+			return nil, nil
 		}
 	}
 	p.wg.Wait()
@@ -381,7 +388,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	close(nodeChan)
 
 	if !p.Options.GeneratePic {
-		return nil
+		return nodes, nil
 	}
 
 	// sort nodes
@@ -391,19 +398,19 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	options := render.NewTableOptions(40, 30, 0.5, 0.5, p.Options.FontSize, 0.5, fontPath, p.Options.Language, p.Options.Theme, "Asia/Shanghai", FontBytes)
 	table, err := render.NewTableWithOption(nodes, &options)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// msg := fmt.Sprintf("Total Traffic : %s. Total Time : %s. Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
 	msg := table.FormatTraffic(download.ByteCountIECTrim(traffic), duration, fmt.Sprintf("%d/%d", successCount, linksCount))
 	if p.Options.GeneratePic {
 		table.Draw("out.png", msg)
 		p.WriteMessage(getMsgByte(-1, "picdata", "out.png"))
-		return nil
+		return nodes, nil
 	}
 	if picdata, err := table.EncodeB64(msg); err == nil {
 		p.WriteMessage(getMsgByte(-1, "picdata", picdata))
 	}
-	return nil
+	return nodes, nil
 }
 
 func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeChan chan<- render.Node, trafficChan chan<- int64) error {
