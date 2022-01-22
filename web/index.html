@@ -41,7 +41,7 @@
 								<el-form-item label="订阅链接：" v-if="option<2">
 									<el-input v-model="subscription" style="width: 800px" size="small"
 										@keyup.enter.native="submit" placeholder="支持 SSR/V2Ray/Trojan 订阅链接及多个节点链接批量测速"
-										:disabled="loading||upload"></el-input>
+										:disabled="loading||upload" clearable></el-input>
 									<el-upload :drag="checkUploadStatus('drag')" :v-if="checkUploadStatus('if')"
 										action="" :show-file-list="false" ref="upload" :http-request="handleFileChange"
 										:auto-upload="true" :before-upload="beforeUpload">
@@ -71,7 +71,7 @@
 								</el-form-item>
 								<el-form-item label="自定义组名：" v-if="option<2">
 									<el-input v-model="groupname" style="width: 215px" size="small"
-										@keyup.enter.native="submit" :disabled="loading"></el-input>
+										@keyup.enter.native="submit" :disabled="loading" clearable></el-input>
 									<el-button type="primary" @click="submit" style="margin-left: 20px" v-if="!option"
 										icon="el-icon-check" :disabled="loading" :loading="loading">提 交</el-button>
 									<el-button type="danger" @click="terminate" icon="el-icon-close" v-if="!option"
