@@ -258,6 +258,7 @@ func localIP() (net.IP, error) {
 
 type GetSubscriptionLink struct {
 	FilePath string `json:"filePath"`
+	Group    string `json:"group"`
 }
 
 var subscriptionLinkMap map[string]string = make(map[string]string)
@@ -265,20 +266,20 @@ var subscriptionLinkMap map[string]string = make(map[string]string)
 func getSubscriptionLink(w http.ResponseWriter, r *http.Request) {
 	body := GetSubscriptionLink{}
 	if r.Body == nil {
-		http.Error(w, "Please send a request body", 400)
+		http.Error(w, "Invalid Parameter", 400)
 		return
 	}
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, "Please send a request body", 400)
+		http.Error(w, "Invalid Parameter", 400)
 		return
 	}
 	if err = json.Unmarshal(data, &body); err != nil {
 		http.Error(w, err.Error(), 400)
 		return
 	}
-	if len(body.FilePath) == 0 {
-		http.Error(w, "Please send filepath", 400)
+	if len(body.FilePath) == 0 || len(body.Group) == 0 {
+		http.Error(w, "Invalid Parameter", 400)
 		return
 	}
 	ipAddr, err := localIP()
@@ -288,7 +289,7 @@ func getSubscriptionLink(w http.ResponseWriter, r *http.Request) {
 	}
 	md5Hash := fmt.Sprintf("%x", md5.Sum([]byte(body.FilePath)))
 	subscriptionLinkMap[md5Hash] = body.FilePath
-	subscriptionLink := fmt.Sprintf("http://%s:10888/getSubscription?key=%s&group=default", ipAddr.String(), md5Hash)
+	subscriptionLink := fmt.Sprintf("http://%s:10888/getSubscription?key=%s&group=%s", ipAddr.String(), md5Hash, body.Group)
 	fmt.Fprint(w, subscriptionLink)
 }
 
