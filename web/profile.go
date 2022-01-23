@@ -27,6 +27,12 @@ import (
 
 var ErrInvalidData = errors.New("invalid data")
 
+const (
+	PIC_BASE64 = iota
+	PIC_PATH
+	PIC_NONE
+)
+
 // support proxy
 // concurrency setting
 // as subscription server
@@ -387,7 +393,7 @@ func (p *ProfileTest) testAll(ctx context.Context) (render.Nodes, error) {
 	}
 	close(nodeChan)
 
-	if p.Options.GeneratePicMode == 2 {
+	if p.Options.GeneratePicMode == PIC_NONE {
 		return nodes, nil
 	}
 
@@ -402,7 +408,7 @@ func (p *ProfileTest) testAll(ctx context.Context) (render.Nodes, error) {
 	}
 	// msg := fmt.Sprintf("Total Traffic : %s. Total Time : %s. Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
 	msg := table.FormatTraffic(download.ByteCountIECTrim(traffic), duration, fmt.Sprintf("%d/%d", successCount, linksCount))
-	if p.Options.GeneratePicMode == 1 {
+	if p.Options.GeneratePicMode == PIC_PATH {
 		table.Draw("out.png", msg)
 		p.WriteMessage(getMsgByte(-1, "picdata", "out.png"))
 		return nodes, nil

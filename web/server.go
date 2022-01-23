@@ -114,7 +114,7 @@ func TestFromCMD(subscription string, configPath *string) error {
 		FontSize:        24,
 		Theme:           "rainbow",
 		Timeout:         15 * time.Second,
-		GeneratePicMode: 1,
+		GeneratePicMode: PIC_PATH,
 	}
 	if configPath != nil {
 		if opt, err := readConfig(*configPath); err == nil {
