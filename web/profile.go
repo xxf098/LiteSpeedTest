@@ -144,6 +144,7 @@ func parseClashByte(data []byte) ([]string, error) {
 }
 
 func parseFile(filepath string) ([]string, error) {
+	filepath = strings.TrimSpace(filepath)
 	if _, err := os.Stat(filepath); err != nil {
 		return nil, err
 	}
