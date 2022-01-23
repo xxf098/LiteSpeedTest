@@ -103,18 +103,18 @@ func TestFromCMD(subscription string, configPath *string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	options := ProfileTestOptions{
-		GroupName:     "Default",
-		SpeedTestMode: "all",
-		PingMethod:    "googleping",
-		SortMethod:    "rspeed",
-		Concurrency:   2,
-		TestMode:      2,
-		Subscription:  subscription,
-		Language:      "en",
-		FontSize:      24,
-		Theme:         "rainbow",
-		Timeout:       15 * time.Second,
-		GeneratePic:   true,
+		GroupName:       "Default",
+		SpeedTestMode:   "all",
+		PingMethod:      "googleping",
+		SortMethod:      "rspeed",
+		Concurrency:     2,
+		TestMode:        2,
+		Subscription:    subscription,
+		Language:        "en",
+		FontSize:        24,
+		Theme:           "rainbow",
+		Timeout:         15 * time.Second,
+		GeneratePicMode: 1,
 	}
 	if configPath != nil {
 		if opt, err := readConfig(*configPath); err == nil {

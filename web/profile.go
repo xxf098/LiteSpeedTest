@@ -196,20 +196,20 @@ const (
 )
 
 type ProfileTestOptions struct {
-	GroupName     string        `json:"group"`
-	SpeedTestMode string        `json:"speedtestMode"` // speedonly pingonly all
-	PingMethod    string        `json:"pingMethod"`    // googleping
-	SortMethod    string        `json:"sortMethod"`    // speed rspeed ping rping
-	Concurrency   int           `json:"concurrency"`
-	TestMode      int           `json:"testMode"` // 2: ALLTEST 3: RETEST
-	TestIDs       []int         `json:"testids"`
-	Timeout       time.Duration `json:"timeout"`
-	Links         []string      `json:"links"`
-	Subscription  string        `json:"subscription"`
-	Language      string        `json:"language"`
-	FontSize      int           `json:"fontSize"`
-	Theme         string        `json:"theme"`
-	GeneratePic   bool          `json:"generatePic"`
+	GroupName       string        `json:"group"`
+	SpeedTestMode   string        `json:"speedtestMode"` // speedonly pingonly all
+	PingMethod      string        `json:"pingMethod"`    // googleping
+	SortMethod      string        `json:"sortMethod"`    // speed rspeed ping rping
+	Concurrency     int           `json:"concurrency"`
+	TestMode        int           `json:"testMode"` // 2: ALLTEST 3: RETEST
+	TestIDs         []int         `json:"testids"`
+	Timeout         time.Duration `json:"timeout"`
+	Links           []string      `json:"links"`
+	Subscription    string        `json:"subscription"`
+	Language        string        `json:"language"`
+	FontSize        int           `json:"fontSize"`
+	Theme           string        `json:"theme"`
+	GeneratePicMode int           `json:"generatePicMode"` // 0: base64 1:file path 2: no pic
 }
 
 func parseMessage(message []byte) ([]string, *ProfileTestOptions, error) {
@@ -387,7 +387,7 @@ func (p *ProfileTest) testAll(ctx context.Context) (render.Nodes, error) {
 	}
 	close(nodeChan)
 
-	if !p.Options.GeneratePic {
+	if p.Options.GeneratePicMode == 2 {
 		return nodes, nil
 	}
 
@@ -402,7 +402,7 @@ func (p *ProfileTest) testAll(ctx context.Context) (render.Nodes, error) {
 	}
 	// msg := fmt.Sprintf("Total Traffic : %s. Total Time : %s. Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
 	msg := table.FormatTraffic(download.ByteCountIECTrim(traffic), duration, fmt.Sprintf("%d/%d", successCount, linksCount))
-	if p.Options.GeneratePic {
+	if p.Options.GeneratePicMode == 1 {
 		table.Draw("out.png", msg)
 		p.WriteMessage(getMsgByte(-1, "picdata", "out.png"))
 		return nodes, nil
