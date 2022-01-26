@@ -43,5 +43,35 @@ Run as http/socks5 proxy:
 
 ## Developer
 ```golang
-// TODO
+import (
+    "context"
+    "github.com/xxf098/lite-proxy/web"
+)
+
+func testPing() error {
+    ctx := context.Background()
+    link := "https://www.example.com/subscription/link"
+    opts := web.ProfileTestOptions{
+		GroupName:     "Default", 
+		SpeedTestMode: "pingonly",   //  pingonly speedonly all
+		PingMethod:    "googleping", // googleping
+		SortMethod:    "rspeed", // speed rspeed ping rping
+		Concurrency:   2,
+		TestMode:      2,
+		Subscription:  link,
+		Language:      "en",  // en cn
+		FontSize:      24,
+		Theme:         "rainbow",
+		Timeout:       10 * time.Second,
+		GeneratePicMode:  0,
+	}
+    nodes, err := web.TestContext(ctx, opts, &web.EmptyMessageWriter{})
+    if err != nil {
+        return err
+    }
+    for _, node := range nodes {
+        // process node info here
+	}
+    return nil
+}
 ```
