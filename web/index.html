@@ -447,7 +447,7 @@
 					const host = window.location.host;
 					if (host.startsWith("127.0.0.1")) {
 						const url = `${window.location.protocol}//${window.location.host}/getSubscriptionLink`
-						const groupname = this.groupname || "Default"
+						const groupname = this.groupname.trim() || "Default"
 						const requestOptions = {
 							method: "POST",
 							headers: { "Content-Type": "application/json" },
