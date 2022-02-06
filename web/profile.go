@@ -386,6 +386,7 @@ func (p *ProfileTest) testAll(ctx context.Context) (render.Nodes, error) {
 	var traffic int64 = 0
 	for i := 0; i < linksCount; i++ {
 		node := <-nodeChan
+		node.Link = p.Links[node.Id]
 		nodes[node.Id] = node
 		traffic += node.Traffic
 		if node.IsOk {

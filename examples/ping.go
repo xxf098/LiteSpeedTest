@@ -34,7 +34,7 @@ func main() {
 	for _, node := range nodes {
 		// process node info here
 		if node.IsOk {
-			fmt.Println(node.Remarks)
+			fmt.Println(node.Remarks, node.Link)
 		}
 	}
 }
