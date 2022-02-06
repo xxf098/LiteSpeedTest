@@ -45,6 +45,8 @@ Run as http/socks5 proxy:
 ```golang
 import (
     "context"
+    "fmt"
+	"time"
     "github.com/xxf098/lite-proxy/web"
 )
 
@@ -69,8 +71,11 @@ func testPing() error {
     if err != nil {
         return err
     }
+    // get all ok profile
     for _, node := range nodes {
-        // process node info here
+        if node.IsOk {
+			fmt.Println(node.Remarks)
+		}
 	}
     return nil
 }
