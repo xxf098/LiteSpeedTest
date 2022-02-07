@@ -177,6 +177,8 @@
 							</el-table-column> -->
 							<el-table-column label="Remark" align="center" prop="remark" min-width="400" sortable>
 							</el-table-column>
+							<el-table-column label="Server" align="center" prop="server" min-width="120" sortable>
+							</el-table-column>
 							<el-table-column label="Protocol" align="center" prop="protocol" width="100" sortable>
 							</el-table-column>
 							<!-- <el-table-column label="Loss" align="center" prop="loss" width="100" sortable>
@@ -766,6 +768,7 @@
 								id: id,
 								group: this.groupname == "" ? json.group : this.groupname,
 								remark: json.remarks,
+								server: json.server,
 								protocol: json.protocol,
 								link: json.link,
 								loss: "0.00%",

@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/xxf098/lite-proxy/config"
@@ -20,6 +21,7 @@ type Message struct {
 	ID       int    `json:"id"`
 	Info     string `json:"info"`
 	Remarks  string `json:"remarks"`
+	Server   string `json:"server"`
 	Group    string `json:"group"`
 	Ping     int64  `json:"ping"`
 	Lost     string `json:"lost"`
@@ -41,11 +43,12 @@ func GetRemarks(link string) (string, string, error) {
 
 func gotserverMsg(id int, link string, groupName string) []byte {
 	msg := Message{ID: id, Info: "gotserver"}
-	protocol, remarks, err := GetRemarks(link)
+	cfg, err := config.Link2Config(link)
 	if err == nil {
 		msg.Group = groupName
-		msg.Remarks = remarks
-		msg.Protocol = protocol
+		msg.Remarks = cfg.Remarks
+		msg.Server = fmt.Sprintf("%s:%d", cfg.Server, cfg.Port)
+		msg.Protocol = cfg.Protocol
 		msg.Link = link
 	}
 	b, _ := json.Marshal(msg)
