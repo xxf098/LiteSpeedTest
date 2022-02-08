@@ -55,12 +55,13 @@ func getSubscriptionLinks(link string) ([]string, error) {
 	if err != nil {
 		return parseClash(string(data))
 	}
-	return parseLinks(msg)
+	return ParseLinks(msg)
 }
 
 type parseFunc func(string) ([]string, error)
 
-func parseLinks(message string) ([]string, error) {
+// api
+func ParseLinks(message string) ([]string, error) {
 	// splits := strings.SplitN(string(message), "^", 2)
 	// if len(splits) < 1 {
 	// 	return nil, errors.New("Invalid Data")
@@ -239,7 +240,7 @@ func parseMessage(message []byte) ([]string, *ProfileTestOptions, error) {
 		return options.Links, options, nil
 	}
 	options.TestMode = ALLTEST
-	links, err := parseLinks(options.Subscription)
+	links, err := ParseLinks(options.Subscription)
 	if err != nil {
 		return nil, nil, err
 	}
