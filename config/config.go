@@ -49,6 +49,7 @@ type Config struct {
 	Protocol string
 	Remarks  string
 	Server   string
+	Net      string // vmess net type
 	Port     int
 }
 
@@ -73,6 +74,7 @@ func Link2Config(link string) (*Config, error) {
 				Remarks:  cfgVmess.Ps,
 				Server:   cfgVmess.Add,
 				Port:     cfgVmess.PortInt,
+				Net:      cfgVmess.Net,
 			}
 		}
 	case "trojan":

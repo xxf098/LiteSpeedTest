@@ -49,6 +49,9 @@ func gotserverMsg(id int, link string, groupName string) []byte {
 		msg.Remarks = cfg.Remarks
 		msg.Server = fmt.Sprintf("%s:%d", cfg.Server, cfg.Port)
 		msg.Protocol = cfg.Protocol
+		if cfg.Protocol == "vmess" && cfg.Net != "" {
+			msg.Protocol = fmt.Sprintf("%s/%s", cfg.Protocol, cfg.Net)
+		}
 		msg.Link = link
 	}
 	b, _ := json.Marshal(msg)

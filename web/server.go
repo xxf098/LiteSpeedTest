@@ -131,7 +131,7 @@ func TestFromCMD(subscription string, configPath *string) error {
 
 // use as golang api
 func TestContext(ctx context.Context, options ProfileTestOptions, w MessageWriter) (render.Nodes, error) {
-	links, err := parseLinks(options.Subscription)
+	links, err := ParseLinks(options.Subscription)
 	if err != nil {
 		return nil, err
 	}
