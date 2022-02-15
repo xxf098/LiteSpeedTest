@@ -118,7 +118,7 @@ func parseClashByLine(filepath string) ([]string, error) {
 	for scanner.Scan() {
 		b := scanner.Bytes()
 		trimLine := strings.TrimSpace(string(b))
-		if trimLine == "proxy-groups:" || trimLine == "rules:" {
+		if trimLine == "proxy-groups:" || trimLine == "rules:" || trimLine == "Proxy Group:" {
 			break
 		}
 		if checkProfile {
@@ -127,8 +127,9 @@ func parseClashByLine(filepath string) ([]string, error) {
 			}
 		}
 		// check profile
-		if !checkProfile && trimLine == "proxies:" {
+		if !checkProfile && (trimLine == "proxies:" || trimLine == "Proxy:") {
 			checkProfile = true
+			b = []byte("proxies:")
 		}
 		data = append(data, b...)
 		data = append(data, byte('\n'))
