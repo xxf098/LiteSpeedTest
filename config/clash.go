@@ -105,7 +105,8 @@ type BaseProxy struct {
 func ParseBaseProxy(profile string) (*BaseProxy, error) {
 	idx := strings.IndexByte(profile, byte('{'))
 	if idx < 0 {
-		return nil, fmt.Errorf("not found")
+		// multiple lines form
+		return nil, nil
 	}
 	p := profile[idx:]
 	bp := &BaseProxy{}
