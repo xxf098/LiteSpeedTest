@@ -2,11 +2,16 @@ package web
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -18,6 +23,8 @@ var upgrader = websocket.Upgrader{}
 func ServeFile(port int) error {
 	http.Handle("/", http.FileServer(http.FS(guiStatic)))
 	http.HandleFunc("/test", updateTest)
+	http.HandleFunc("/getSubscriptionLink", getSubscriptionLink)
+	http.HandleFunc("/getSubscription", getSubscription)
 	http.HandleFunc("/generateResult", generateResult)
 	log.Printf("Start server at http://127.0.0.1:%d", port)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
@@ -96,35 +103,41 @@ func TestFromCMD(subscription string, configPath *string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	options := ProfileTestOptions{
-		GroupName:     "Default",
-		SpeedTestMode: "all",
-		PingMethod:    "googleping",
-		SortMethod:    "rspeed",
-		Concurrency:   2,
-		TestMode:      2,
-		Subscription:  subscription,
-		Language:      "en",
-		FontSize:      24,
-		Theme:         "rainbow",
-		Timeout:       15 * time.Second,
-		GeneratePic:   true,
+		GroupName:       "Default",
+		SpeedTestMode:   "all",
+		PingMethod:      "googleping",
+		SortMethod:      "rspeed",
+		Concurrency:     2,
+		TestMode:        2,
+		Subscription:    subscription,
+		Language:        "en",
+		FontSize:        24,
+		Theme:           "rainbow",
+		Timeout:         15 * time.Second,
+		GeneratePicMode: PIC_PATH,
 	}
 	if configPath != nil {
 		if opt, err := readConfig(*configPath); err == nil {
 			options = *opt
-			options.GeneratePic = true
+			// options.GeneratePic = true
 		}
 	}
 	if jsonOpt, err := json.Marshal(options); err == nil {
 		log.Printf("json options: %s\n", string(jsonOpt))
 	}
-	links, err := parseLinks(subscription)
+	_, err := TestContext(ctx, options, &OutputMessageWriter{})
+	return err
+}
+
+// use as golang api
+func TestContext(ctx context.Context, options ProfileTestOptions, w MessageWriter) (render.Nodes, error) {
+	links, err := ParseLinks(options.Subscription)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	outputMessageWriter := OutputMessageWriter{}
+	// outputMessageWriter := OutputMessageWriter{}
 	p := ProfileTest{
-		Writer:      &outputMessageWriter,
+		Writer:      w,
 		MessageType: 1,
 		Links:       links,
 		Options:     &options,
@@ -177,4 +190,127 @@ func generateResult(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, picdata)
 	}
 
+}
+
+func isPrivateIP(ip net.IP) bool {
+	var privateIPBlocks []*net.IPNet
+	for _, cidr := range []string{
+		// don't check loopback ips
+		//"127.0.0.0/8",    // IPv4 loopback
+		//"::1/128",        // IPv6 loopback
+		//"fe80::/10",      // IPv6 link-local
+		"10.0.0.0/8",     // RFC1918
+		"172.16.0.0/12",  // RFC1918
+		"192.168.0.0/16", // RFC1918
+	} {
+		_, block, _ := net.ParseCIDR(cidr)
+		privateIPBlocks = append(privateIPBlocks, block)
+	}
+
+	for _, block := range privateIPBlocks {
+		if block.Contains(ip) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func localIP() (net.IP, error) {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+	for _, i := range ifaces {
+		addrs, err := i.Addrs()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, addr := range addrs {
+			var ip net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ip = v.IP
+			case *net.IPAddr:
+				ip = v.IP
+			}
+
+			if isPrivateIP(ip) {
+				return ip, nil
+			}
+		}
+	}
+
+	return nil, errors.New("no IP")
+}
+
+type GetSubscriptionLink struct {
+	FilePath string `json:"filePath"`
+	Group    string `json:"group"`
+}
+
+var subscriptionLinkMap map[string]string = make(map[string]string)
+
+func getSubscriptionLink(w http.ResponseWriter, r *http.Request) {
+	body := GetSubscriptionLink{}
+	if r.Body == nil {
+		http.Error(w, "Invalid Parameter", 400)
+		return
+	}
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Invalid Parameter", 400)
+		return
+	}
+	if err = json.Unmarshal(data, &body); err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	if len(body.FilePath) == 0 || len(body.Group) == 0 {
+		http.Error(w, "Invalid Parameter", 400)
+		return
+	}
+	ipAddr, err := localIP()
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	md5Hash := fmt.Sprintf("%x", md5.Sum([]byte(body.FilePath)))
+	subscriptionLinkMap[md5Hash] = body.FilePath
+	subscriptionLink := fmt.Sprintf("http://%s:10888/getSubscription?key=%s&group=%s", ipAddr.String(), md5Hash, body.Group)
+	fmt.Fprint(w, subscriptionLink)
+}
+
+// POST
+func getSubscription(w http.ResponseWriter, r *http.Request) {
+	queries := r.URL.Query()
+	key := queries.Get("key")
+	if len(key) < 1 {
+		http.Error(w, "Key not found", 400)
+		return
+	}
+	filePath, ok := subscriptionLinkMap[key]
+	if !ok {
+		http.Error(w, "Wrong key", 400)
+		return
+	}
+	if strings.HasSuffix(filePath, ".yaml") {
+		links, err := parseClashByLine(filePath)
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+		}
+		subscription := []byte(strings.Join(links, "\n"))
+		data := make([]byte, base64.StdEncoding.EncodedLen(len(subscription)))
+		base64.StdEncoding.Encode(data, subscription)
+		w.Write(data)
+		return
+	}
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	w.Write(data)
 }

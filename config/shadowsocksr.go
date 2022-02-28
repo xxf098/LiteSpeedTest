@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -52,6 +53,7 @@ func SSRLinkToSSROption(link string) (*outbound.ShadowSocksROption, error) {
 		Obfs:     links[4],
 		Password: pass,
 		UDP:      false,
+		Remarks:  "",
 	}
 	if rawQuery, err := url.ParseQuery(parts[1]); err == nil {
 		obfsparam, err := utils.DecodeB64(rawQuery.Get("obfsparam"))
@@ -73,7 +75,11 @@ func SSRLinkToSSROption(link string) (*outbound.ShadowSocksROption, error) {
 		ssrOption.ProtocolParam = protoparam
 		remarks, err := utils.DecodeB64(rawQuery.Get("remarks"))
 		if err == nil {
+			if remarks == "" {
+				remarks = fmt.Sprintf("%s:%d", ssrOption.Server, ssrOption.Port)
+			}
 			ssrOption.Remarks = remarks
+			ssrOption.Name = remarks
 		}
 	}
 	return ssrOption, nil

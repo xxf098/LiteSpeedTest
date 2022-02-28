@@ -64,6 +64,8 @@ func (d *Decoder) decode(name string, data interface{}, val reflect.Value) error
 	switch val.Kind() {
 	case reflect.Int:
 		return d.decodeInt(name, data, val)
+	case reflect.Uint16:
+		return d.decodeUint16(name, data, val)
 	case reflect.String:
 		return d.decodeString(name, data, val)
 	case reflect.Bool:
@@ -92,6 +94,29 @@ func (d *Decoder) decodeInt(name string, data interface{}, val reflect.Value) (e
 		i, err = strconv.ParseInt(dataVal.String(), 0, val.Type().Bits())
 		if err == nil {
 			val.SetInt(i)
+		} else {
+			err = fmt.Errorf("cannot parse '%s' as int: %s", name, err)
+		}
+	default:
+		err = fmt.Errorf(
+			"'%s' expected type '%s', got unconvertible type '%s'",
+			name, val.Type(), dataVal.Type(),
+		)
+	}
+	return err
+}
+
+func (d *Decoder) decodeUint16(name string, data interface{}, val reflect.Value) (err error) {
+	dataVal := reflect.ValueOf(data)
+	kind := dataVal.Kind()
+	switch {
+	case kind == reflect.Int:
+		val.SetUint(uint64(dataVal.Int()))
+	case kind == reflect.String && d.option.WeaklyTypedInput:
+		var i uint64
+		i, err = strconv.ParseUint(dataVal.String(), 0, val.Type().Bits())
+		if err == nil {
+			val.SetUint(i)
 		} else {
 			err = fmt.Errorf("cannot parse '%s' as int: %s", name, err)
 		}

@@ -6,15 +6,15 @@
 </head>
 <meta charset="utf-8" />
 <!-- 引入 vue -->
-<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.11/vue.min.js"></script>
+<script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/vue/2.6.11/vue.min.js"></script>
 
 <!-- 引入样式 -->
 <!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
-<link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/theme-chalk/index.css" rel="stylesheet">
+<link href="https://cdn.staticfile.org/element-ui/2.15.7/theme-chalk/index.min.css" rel="stylesheet">
 
 <!-- 引入组件库 -->
 <!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
-<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/index.js"></script>
+<script src="https://cdn.staticfile.org/element-ui/2.15.7/index.min.js"></script>
 <!-- qrcode -->
 <!-- <script src="https://cdn.jsdelivr.net/npm/qrcodejs2@0.0.2/qrcode.min.js"></script> -->
 <script src="wasm_exec.js"></script>
@@ -41,7 +41,7 @@
 								<el-form-item label="订阅链接：" v-if="option<2">
 									<el-input v-model="subscription" style="width: 800px" size="small"
 										@keyup.enter.native="submit" placeholder="支持 SSR/V2Ray/Trojan 订阅链接及多个节点链接批量测速"
-										:disabled="loading||upload"></el-input>
+										:disabled="loading||upload" clearable></el-input>
 									<el-upload :drag="checkUploadStatus('drag')" :v-if="checkUploadStatus('if')"
 										action="" :show-file-list="false" ref="upload" :http-request="handleFileChange"
 										:auto-upload="true" :before-upload="beforeUpload">
@@ -71,7 +71,7 @@
 								</el-form-item>
 								<el-form-item label="自定义组名：" v-if="option<2">
 									<el-input v-model="groupname" style="width: 215px" size="small"
-										@keyup.enter.native="submit" :disabled="loading"></el-input>
+										@keyup.enter.native="submit" :disabled="loading" clearable></el-input>
 									<el-button type="primary" @click="submit" style="margin-left: 20px" v-if="!option"
 										icon="el-icon-check" :disabled="loading" :loading="loading">提 交</el-button>
 									<el-button type="danger" @click="terminate" icon="el-icon-close" v-if="!option"
@@ -152,17 +152,18 @@
 						<el-col style="display: flex;align-items: center;" :span="1">
 							<div>结果</div>
 						</el-col>
-						<el-col v-if="multipleSelection.length" :span="8">
+						<el-col v-if="result.length" :span="8">
 							<el-dropdown trigger="click">
 								<el-button size="medium" type="primary">
 									Actions<i class="el-icon-arrow-down el-icon--right"></i>
 								</el-button>
 								<el-dropdown-menu slot="dropdown">
-									<el-dropdown-item @click.native="handleCopy()">复制节点</el-dropdown-item>
-									<el-dropdown-item @click.native="handleSave()">导出节点</el-dropdown-item>
+									<el-dropdown-item @click.native="handleCopySub()">复制订阅链接</el-dropdown-item>
+									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">复制节点</el-dropdown-item>
+									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleSave()">导出节点</el-dropdown-item>
 									<!-- <el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item> -->
-									<el-dropdown-item @click.native="handleQRCode()">显示二维码</el-dropdown-item>
-									<el-dropdown-item @click.native="handleExportResult()">导出结果</el-dropdown-item>
+									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleQRCode()">显示二维码</el-dropdown-item>
+									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleExportResult()">导出结果</el-dropdown-item>
 								</el-dropdown-menu>
 							</el-dropdown>
 						</el-col>
@@ -175,6 +176,8 @@
 							<!-- <el-table-column label="Group" align="center" prop="group" width="300" sortable>
 							</el-table-column> -->
 							<el-table-column label="Remark" align="center" prop="remark" min-width="400" sortable>
+							</el-table-column>
+							<el-table-column label="Server" align="center" prop="server" min-width="120" sortable>
 							</el-table-column>
 							<el-table-column label="Protocol" align="center" prop="protocol" width="100" sortable>
 							</el-table-column>
@@ -193,7 +196,7 @@
 						</el-table>
 					</el-container>
 					<br>
-					<div>Total Traffic: {{ bytesToSize(totalTraffic) }}&nbsp;&nbsp;Total Time: {{
+					<div v-if="result.length">Total Profiles: {{ result.length }}&nbsp;&nbsp;Total Traffic: {{ bytesToSize(totalTraffic) }}&nbsp;&nbsp;Total Time: {{
 						formatSeconds(totalTime) }}</div>
 				</el-card>
 
@@ -436,6 +439,32 @@
 					// console.log(`select: ${JSON.stringify(val)}`)
 					this.multipleSelection = val;
 				},
+				handleCopySub: async function () {
+					// url
+					if (this.subscription.trim().startsWith("http")) {
+						await navigator.clipboard.writeText(this.subscription.trim())
+						this.$message.success("Copy Subscription succeed!");
+						return
+					}
+					const host = window.location.host;
+					if (host.startsWith("127.0.0.1")) {
+						const url = `${window.location.protocol}//${window.location.host}/getSubscriptionLink`
+						const groupname = this.groupname.trim() || "Default"
+						const requestOptions = {
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({"filePath": this.subscription.trim(), "group": groupname})
+						};
+						fetch(url, requestOptions)
+							.then(resp => resp.text())
+							.then(data => {
+								navigator.clipboard.writeText(data)
+								this.$message.success("Copy Subscription succeed!");
+							})
+						return
+					}
+					this.$message.error("Copy Subscription failed!");
+				},
 				handleCopy: async function () {
 					try {
 						links = this.multipleSelection.map(elem => elem.link).join("\n")
@@ -558,10 +587,10 @@
 					let style = "color: black; font-weight: 600;";
 					let speed = 0;
 					switch (columnIndex) {
-						case 4:
+						case 5:
 							speed = this.getSpeed(row.speed);
 							break;
-						case 5:
+						case 6:
 							speed = this.getSpeed(row.maxspeed);
 							break;
 						default:
@@ -739,6 +768,7 @@
 								id: id,
 								group: this.groupname == "" ? json.group : this.groupname,
 								remark: json.remarks,
+								server: json.server,
 								protocol: json.protocol,
 								link: json.link,
 								loss: "0.00%",

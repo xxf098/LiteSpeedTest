@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"net/url"
 	"strings"
@@ -90,8 +91,30 @@ type ClashRawConfig struct {
 	Experimental  Experimental                      `yaml:"experimental"`
 	Profile       Profile                           `yaml:"profile"`
 	Proxy         []map[string]interface{}          `yaml:"proxies"`
-	ProxyGroup    []map[string]interface{}          `yaml:"proxy-groups"`
-	Rule          []string                          `yaml:"rules"`
+	// ProxyGroup    []map[string]interface{}          `yaml:"proxy-groups"`
+	// Rule          []string                          `yaml:"rules"`
+}
+
+type BaseProxy struct {
+	Name   string `yaml:"name"`
+	Server string `yaml:"server"`
+	Port   int    `yaml:"port"`
+	Type   string `yaml:"type"`
+}
+
+func ParseBaseProxy(profile string) (*BaseProxy, error) {
+	idx := strings.IndexByte(profile, byte('{'))
+	if idx < 0 {
+		// multiple lines form
+		return nil, nil
+	}
+	p := profile[idx:]
+	bp := &BaseProxy{}
+	err := yaml.Unmarshal([]byte(p), bp)
+	if err != nil {
+		return nil, err
+	}
+	return bp, nil
 }
 
 // Parse config
@@ -113,9 +136,9 @@ func UnmarshalRawConfig(buf []byte) (*ClashRawConfig, error) {
 		Authentication: []string{},
 		LogLevel:       "info",
 		Hosts:          map[string]string{},
-		Rule:           []string{},
-		Proxy:          []map[string]interface{}{},
-		ProxyGroup:     []map[string]interface{}{},
+		// Rule:           []string{},
+		Proxy: []map[string]interface{}{},
+		// ProxyGroup:     []map[string]interface{}{},
 		Profile: Profile{
 			StoreSelected: true,
 		},
@@ -178,7 +201,8 @@ func parseProxies(cfg *ClashRawConfig) ([]string, error) {
 	for idx, mapping := range cfg.Proxy {
 		link, err := ParseProxy(mapping)
 		if err != nil {
-			return nil, fmt.Errorf("proxy %d: %w", idx, err)
+			log.Printf("proxy %d: %s", idx, err.Error())
+			continue
 		}
 		proxyList = append(proxyList, link)
 	}

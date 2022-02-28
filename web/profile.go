@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bufio"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -10,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -25,10 +27,17 @@ import (
 
 var ErrInvalidData = errors.New("invalid data")
 
+const (
+	PIC_BASE64 = iota
+	PIC_PATH
+	PIC_NONE
+)
+
 // support proxy
 // concurrency setting
 // as subscription server
 // profiles filter
+// clash to vmess local subscription
 func getSubscriptionLinks(link string) ([]string, error) {
 	c := http.Client{
 		Timeout: 20 * time.Second,
@@ -46,12 +55,13 @@ func getSubscriptionLinks(link string) ([]string, error) {
 	if err != nil {
 		return parseClash(string(data))
 	}
-	return parseLinks(msg)
+	return ParseLinks(msg)
 }
 
 type parseFunc func(string) ([]string, error)
 
-func parseLinks(message string) ([]string, error) {
+// api
+func ParseLinks(message string) ([]string, error) {
 	// splits := strings.SplitN(string(message), "^", 2)
 	// if len(splits) < 1 {
 	// 	return nil, errors.New("Invalid Data")
@@ -61,7 +71,7 @@ func parseLinks(message string) ([]string, error) {
 		return getSubscriptionLinks(message)
 	}
 	var links []string
-	for _, fn := range []parseFunc{parseProfiles, parseBase64, parseClash} {
+	for _, fn := range []parseFunc{parseProfiles, parseBase64, parseClash, parseFile} {
 		links, err = fn(message)
 		if err == nil && len(links) > 0 {
 			break
@@ -94,6 +104,62 @@ func parseClash(data string) ([]string, error) {
 		return nil, err
 	}
 	return cc.Proxies, nil
+}
+
+func parseClashByLine(filepath string) ([]string, error) {
+	file, err := os.Open(filepath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	data := []byte{}
+	checkProfile := false
+	for scanner.Scan() {
+		b := scanner.Bytes()
+		trimLine := strings.TrimSpace(string(b))
+		if trimLine == "proxy-groups:" || trimLine == "rules:" || trimLine == "Proxy Group:" {
+			break
+		}
+		if checkProfile {
+			if _, err := config.ParseBaseProxy(trimLine); err != nil {
+				continue
+			}
+		}
+		// check profile
+		if !checkProfile && (trimLine == "proxies:" || trimLine == "Proxy:") {
+			checkProfile = true
+			b = []byte("proxies:")
+		}
+		data = append(data, b...)
+		data = append(data, byte('\n'))
+	}
+	return parseClashByte(data)
+}
+
+func parseClashByte(data []byte) ([]string, error) {
+	cc, err := config.ParseClash(data)
+	if err != nil {
+		return nil, err
+	}
+	return cc.Proxies, nil
+}
+
+func parseFile(filepath string) ([]string, error) {
+	filepath = strings.TrimSpace(filepath)
+	if _, err := os.Stat(filepath); err != nil {
+		return nil, err
+	}
+	// clash
+	if strings.HasSuffix(filepath, ".yaml") {
+		return parseClashByLine(filepath)
+	}
+	data, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		return nil, err
+	}
+
+	return parseBase64(string(data))
 }
 
 func parseOptions(message string) (*ProfileTestOptions, error) {
@@ -139,20 +205,20 @@ const (
 )
 
 type ProfileTestOptions struct {
-	GroupName     string        `json:"group"`
-	SpeedTestMode string        `json:"speedtestMode"`
-	PingMethod    string        `json:"pingMethod"` // googleping
-	SortMethod    string        `json:"sortMethod"` // speed rspeed ping rping
-	Concurrency   int           `json:"concurrency"`
-	TestMode      int           `json:"testMode"`
-	TestIDs       []int         `json:"testids"`
-	Timeout       time.Duration `json:"timeout"`
-	Links         []string      `json:"links"`
-	Subscription  string        `json:"subscription"`
-	Language      string        `json:"language"`
-	FontSize      int           `json:"fontSize"`
-	Theme         string        `json:"theme"`
-	GeneratePic   bool          `json:"-"`
+	GroupName       string        `json:"group"`
+	SpeedTestMode   string        `json:"speedtestMode"` // speedonly pingonly all
+	PingMethod      string        `json:"pingMethod"`    // googleping
+	SortMethod      string        `json:"sortMethod"`    // speed rspeed ping rping
+	Concurrency     int           `json:"concurrency"`
+	TestMode        int           `json:"testMode"` // 2: ALLTEST 3: RETEST
+	TestIDs         []int         `json:"testids"`
+	Timeout         time.Duration `json:"timeout"`
+	Links           []string      `json:"links"`
+	Subscription    string        `json:"subscription"`
+	Language        string        `json:"language"`
+	FontSize        int           `json:"fontSize"`
+	Theme           string        `json:"theme"`
+	GeneratePicMode int           `json:"generatePicMode"` // 0: base64 1:file path 2: no pic
 }
 
 func parseMessage(message []byte) ([]string, *ProfileTestOptions, error) {
@@ -175,7 +241,7 @@ func parseMessage(message []byte) ([]string, *ProfileTestOptions, error) {
 		return options.Links, options, nil
 	}
 	options.TestMode = ALLTEST
-	links, err := parseLinks(options.Subscription)
+	links, err := ParseLinks(options.Subscription)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -214,6 +280,13 @@ type OutputMessageWriter struct {
 
 func (p *OutputMessageWriter) WriteMessage(messageType int, data []byte) error {
 	log.Println(string(data))
+	return nil
+}
+
+type EmptyMessageWriter struct {
+}
+
+func (w *EmptyMessageWriter) WriteMessage(messageType int, data []byte) error {
 	return nil
 }
 
@@ -265,7 +338,7 @@ func (p *ProfileTest) TestAll(ctx context.Context, links []string, max int, traf
 				return
 			}
 		}
-		p.wg.Wait()
+		// p.wg.Wait()
 		// if trafficChan != nil {
 		// 	close(trafficChan)
 		// }
@@ -273,11 +346,11 @@ func (p *ProfileTest) TestAll(ctx context.Context, links []string, max int, traf
 	return nodeChan, nil
 }
 
-func (p *ProfileTest) testAll(ctx context.Context) error {
+func (p *ProfileTest) testAll(ctx context.Context) (render.Nodes, error) {
 	linksCount := len(p.Links)
 	if linksCount < 1 {
 		p.WriteString(SPEEDTEST_ERROR_NONODES)
-		return fmt.Errorf("no profile found")
+		return nil, fmt.Errorf("no profile found")
 	}
 	start := time.Now()
 	p.WriteMessage(getMsgByte(-1, "started"))
@@ -304,7 +377,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 				<-c
 			}(id, link, guard, nodeChan)
 		case <-ctx.Done():
-			return nil
+			return nil, nil
 		}
 	}
 	p.wg.Wait()
@@ -315,6 +388,7 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	var traffic int64 = 0
 	for i := 0; i < linksCount; i++ {
 		node := <-nodeChan
+		node.Link = p.Links[node.Id]
 		nodes[node.Id] = node
 		traffic += node.Traffic
 		if node.IsOk {
@@ -323,6 +397,10 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	}
 	close(nodeChan)
 
+	if p.Options.GeneratePicMode == PIC_NONE {
+		return nodes, nil
+	}
+
 	// sort nodes
 	nodes.Sort(p.Options.SortMethod)
 
@@ -330,19 +408,19 @@ func (p *ProfileTest) testAll(ctx context.Context) error {
 	options := render.NewTableOptions(40, 30, 0.5, 0.5, p.Options.FontSize, 0.5, fontPath, p.Options.Language, p.Options.Theme, "Asia/Shanghai", FontBytes)
 	table, err := render.NewTableWithOption(nodes, &options)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// msg := fmt.Sprintf("Total Traffic : %s. Total Time : %s. Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
 	msg := table.FormatTraffic(download.ByteCountIECTrim(traffic), duration, fmt.Sprintf("%d/%d", successCount, linksCount))
-	if p.Options.GeneratePic {
+	if p.Options.GeneratePicMode == PIC_PATH {
 		table.Draw("out.png", msg)
 		p.WriteMessage(getMsgByte(-1, "picdata", "out.png"))
-		return nil
+		return nodes, nil
 	}
 	if picdata, err := table.EncodeB64(msg); err == nil {
 		p.WriteMessage(getMsgByte(-1, "picdata", picdata))
 	}
-	return nil
+	return nodes, nil
 }
 
 func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeChan chan<- render.Node, trafficChan chan<- int64) error {

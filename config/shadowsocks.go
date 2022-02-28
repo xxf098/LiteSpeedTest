@@ -75,7 +75,7 @@ func SSLinkToSSOption(link1 string) (*outbound.ShadowSocksOption, error) {
 	pass = splits[1]
 	remarks := u.Fragment
 	if remarks == "" {
-		fmt.Println(link1)
+		// fmt.Println(link1)
 		if splits := strings.Split(link1, "#"); len(splits) > 1 {
 			if rmk, err := url.QueryUnescape(splits[1]); err == nil {
 				remarks = rmk

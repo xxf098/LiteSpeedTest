@@ -27,7 +27,7 @@ const (
 
 var (
 	httpRequest = []byte("GET /generate_204 HTTP/1.1\r\nHost: clients3.google.com\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36\r\n\r\n")
-	tcpTimeout  = 2400 * time.Millisecond
+	tcpTimeout  = 2200 * time.Millisecond
 )
 
 type PingOption struct {
@@ -192,6 +192,11 @@ func PingSSR(ssrOption *outbound.ShadowSocksROption) (int64, error) {
 	return pingInternal(remoteConn)
 }
 
+type PingResult struct {
+	elapse int64
+	err    error
+}
+
 func PingLink(link string, attempts int) (int64, error) {
 	opt := PingOption{
 		Attempts: attempts,
@@ -226,28 +231,38 @@ func PingLinkInternal(link string, pingOption PingOption) (int64, error) {
 		tcpTimeout = pingOption.TimeOut
 	}
 	err = utils.ExponentialBackoff(pingOption.Attempts, 100).On(func() error {
-		start := time.Now()
-		if elp, err := Ping(option); err != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
+		defer cancel()
+		pingChan := make(chan PingResult, 1)
+		go func(pingChan chan<- PingResult) {
+			start := time.Now()
+			elp, err := Ping(option)
 			elapse := time.Since(start)
-			// ignore timeout
 			if elapse > 2000*time.Second {
-				elapse = 0
-				return nil
+				elp = 0
 			}
-			return err
-		} else {
-			elapse = elp
-			return nil
+			pingResult := PingResult{elapse: elp, err: err}
+			pingChan <- pingResult
+		}(pingChan)
+		for {
+			select {
+			case pingResult := <-pingChan:
+				{
+					elapse = pingResult.elapse
+					return pingResult.err
+				}
+			case <-ctx.Done():
+				return fmt.Errorf("ping time out")
+			}
 		}
+
 	})
 	return elapse, err
 }
 
-func Ping(option interface{}) (int64, error) {
+func PingContext(ctx context.Context, option interface{}) (int64, error) {
 	var d outbound.ContextDialer
 	var err error
-	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
-	defer cancel()
 	meta := &C.Metadata{
 		NetWork:  0,
 		Type:     C.TEST,
@@ -255,6 +270,7 @@ func Ping(option interface{}) (int64, error) {
 		DstPort:  "80",
 		AddrType: 3,
 		Host:     remoteHost,
+		Timeout:  tcpTimeout,
 	}
 	if ssOption, ok := option.(*outbound.ShadowSocksOption); ok {
 		d, err = outbound.NewShadowSocks(ssOption)
@@ -292,6 +308,12 @@ func Ping(option interface{}) (int64, error) {
 		return 0, err
 	}
 	return pingInternal(remoteConn)
+}
+
+func Ping(option interface{}) (int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
+	defer cancel()
+	return PingContext(ctx, option)
 }
 
 func pingHTTPClient(ctx context.Context, url string, timeout time.Duration, dialCtx func(ctx context.Context, network, addr string) (net.Conn, error)) (int64, error) {

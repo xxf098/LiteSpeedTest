@@ -9,5 +9,6 @@
     "timeout":16,
     "language":"en",
     "fontSize":24,
-    "theme":"rainbow"
+    "theme":"rainbow",
+    "generatePicMode": 1
 }

@@ -30,6 +30,7 @@ Run as http/socks5 proxy:
 ```bash
     #require go>=1.16
     GOOS=js GOARCH=wasm go get -u ./...
+    cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./web/wasm_exec.js
     GOOS=js GOARCH=wasm go build -o ./web/main.wasm ./wasm
     go build -o lite
 ```
@@ -42,5 +43,40 @@ Run as http/socks5 proxy:
 
 ## Developer
 ```golang
-// TODO
+import (
+    "context"
+    "fmt"
+	"time"
+    "github.com/xxf098/lite-proxy/web"
+)
+
+func testPing() error {
+    ctx := context.Background()
+    link := "https://www.example.com/subscription/link"
+    opts := web.ProfileTestOptions{
+		GroupName:     "Default", 
+		SpeedTestMode: "pingonly",   //  pingonly speedonly all
+		PingMethod:    "googleping", // googleping
+		SortMethod:    "rspeed", // speed rspeed ping rping
+		Concurrency:   2,
+		TestMode:      2,
+		Subscription:  link,
+		Language:      "en",  // en cn
+		FontSize:      24,
+		Theme:         "rainbow",
+		Timeout:       10 * time.Second,
+		GeneratePicMode:  0,
+	}
+    nodes, err := web.TestContext(ctx, opts, &web.EmptyMessageWriter{})
+    if err != nil {
+        return err
+    }
+    // get all ok profile
+    for _, node := range nodes {
+        if node.IsOk {
+			fmt.Println(node.Remarks)
+		}
+	}
+    return nil
+}
 ```
