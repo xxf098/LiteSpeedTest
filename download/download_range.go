@@ -109,6 +109,11 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 		wg.Wait()
 		doneChan <- true
 	}(doneCh)
+	defer func() {
+		if resultChan != nil {
+			resultChan <- -1
+		}
+	}()
 	var prev time.Time
 	for {
 		if !prev.IsZero() {

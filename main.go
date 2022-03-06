@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/xxf098/lite-proxy/core"
 	"github.com/xxf098/lite-proxy/utils"
 	webServer "github.com/xxf098/lite-proxy/web"
 )
@@ -42,13 +43,13 @@ func main() {
 		}
 		return
 	}
-	c := Config{
+	c := core.Config{
 		LocalHost: "0.0.0.0",
 		LocalPort: *port,
 		Link:      link,
 		Ping:      *ping,
 	}
-	p, err := startInstance(c)
+	p, err := core.StartInstance(c)
 	if err != nil {
 		log.Fatalln(err)
 	}
