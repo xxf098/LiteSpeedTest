@@ -170,7 +170,7 @@
 					</el-row>
 					<el-container>
 						<el-table :data="result" :cell-style="colorCell" size="small" ref="result"
-							@selection-change="handleSelectionChange">
+							@selection-change="handleSelectionChange" @sort-change="handleSortChange">
 							<el-table-column type="selection" width="55" :selectable="checkSelectable">
 							</el-table-column>
 							<!-- <el-table-column label="Group" align="center" prop="group" width="300" sortable>
@@ -183,8 +183,8 @@
 							</el-table-column>
 							<!-- <el-table-column label="Loss" align="center" prop="loss" width="100" sortable>
 							</el-table-column> -->
-							<el-table-column label="Ping" align="center" prop="ping" width="100" sortable
-								:sort-method="floatSort" :filters="[{ text: 'Available ', value: 'available' }]"
+							<el-table-column label="Ping" align="center" prop="ping" width="100" sortable="custom"
+								:filters="[{ text: 'Available ', value: 'available' }]"
 								:filter-method="filterPing">
 							</el-table-column>
 							<el-table-column label="AvgSpeed" align="center" prop="speed" min-width="150" sortable
@@ -432,12 +432,30 @@
 				terminate: function () {
 					this.loading = false;
 					this.loadingContent = "等待后端响应……";
-					this.result = {};
+					this.result = [];
 					this.disconnect();
 				},
 				handleSelectionChange(val) {
 					// console.log(`select: ${JSON.stringify(val)}`)
 					this.multipleSelection = val;
+				},
+				handleSortChange(val) {
+					// console.log(`handleSortChange: ${JSON.stringify(val)}`)
+					if (val.prop === "ping") { 
+						if (val.order === "ascending") {
+							this.result.sort((obj1, obj2) => {
+								let ping1 = parseFloat(obj1.ping);
+								if (ping1 < 1) { ping1 = 99999 }
+								let ping2 = parseFloat(obj2.ping);
+								if (ping2 < 1) { ping2 = 99999 }
+								return ping1 - ping2
+							})
+						} else if (val.order === "descending") {
+							this.result.sort((obj1, obj2) => parseFloat(obj2.ping) - parseFloat(obj1.ping))
+						} else {
+							this.result.sort((obj1, obj2) => obj1.id - obj2.id)
+						}
+					 }
 				},
 				handleCopySub: async function () {
 					// url
