@@ -196,7 +196,7 @@
 						</el-table>
 					</el-container>
 					<br>
-					<div v-if="result.length">Total Profiles: {{ result.length }}&nbsp;&nbsp;Total Traffic: {{ bytesToSize(totalTraffic) }}&nbsp;&nbsp;Total Time: {{
+					<div v-if="result.length">Profiles: {{ result.filter(item => item.ping > 0).length }}/{{ result.length }}&nbsp;&nbsp;Total Traffic: {{ bytesToSize(totalTraffic) }}&nbsp;&nbsp;Total Time: {{
 						formatSeconds(totalTime) }}</div>
 				</el-card>
 
