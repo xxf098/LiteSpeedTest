@@ -1,7 +1,6 @@
 package config
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -213,18 +212,21 @@ func VmessLinkToVmessOption(link string) (*outbound.VmessOption, error) {
 
 // TODO: safe base64
 func VmessLinkToVmessOptionIP(link string, resolveip bool) (*outbound.VmessOption, error) {
+	config, err := VmessLinkToVmessConfig(link, resolveip)
+	if err != nil {
+		return nil, err
+	}
+	return VmessConfigToVmessOption(config)
+}
+
+func VmessLinkToVmessConfig(link string, resolveip bool) (*VmessConfig, error) {
+	// FIXME:
 	regex := regexp.MustCompile(`^vmess://([A-Za-z0-9+-=/_]+)`)
 	res := regex.FindAllStringSubmatch(link, 1)
 	b64 := ""
 	if len(res) > 0 && len(res[0]) > 1 {
 		b64 = res[0][1]
 	}
-	// data, err := base64.StdEncoding.DecodeString(b64)
-	// if err != nil {
-	// 	if data, err = base64.RawStdEncoding.DecodeString(b64); err != nil {
-	// 		return nil, err
-	// 	}
-	// }
 	data, err := utils.DecodeB64Bytes(b64)
 	if err != nil {
 		return nil, err
@@ -235,7 +237,7 @@ func VmessLinkToVmessOptionIP(link string, resolveip bool) (*outbound.VmessOptio
 		return nil, err
 	}
 	config.ResolveIP = resolveip
-	return VmessConfigToVmessOption(&config)
+	return &config, nil
 }
 
 // parse shadowrocket link
@@ -309,21 +311,12 @@ func ShadowrocketVmessLinkToVmessConfig(link string, resolveip bool) (*VmessConf
 }
 
 func VmessLinkToVmessConfigIP(link string, resolveip bool) (*VmessConfig, error) {
-	regex := regexp.MustCompile(`^vmess://([A-Za-z0-9+-=/]+)`)
-	res := regex.FindAllStringSubmatch(link, 1)
-	b64 := ""
-	if len(res) > 0 && len(res[0]) > 1 {
-		b64 = res[0][1]
-	}
-	data, err := base64.StdEncoding.DecodeString(b64)
-	// fmt.Println(string(data))
+	config, err := VmessLinkToVmessConfig(link, resolveip)
 	if err != nil {
-		return nil, err
-	}
-	config := VmessConfig{}
-	err = json.Unmarshal(data, &config)
-	if err != nil {
-		return nil, err
+		config, err = ShadowrocketVmessLinkToVmessConfig(link, resolveip)
+		if err != nil {
+			return nil, err
+		}
 	}
 	port, err := rawMessageToInt(config.Port)
 	if err != nil {
@@ -348,7 +341,7 @@ func VmessLinkToVmessConfigIP(link string, resolveip bool) (*VmessConfig, error)
 
 		}
 	}
-	return &config, nil
+	return config, nil
 }
 
 func ToVmessOption(path string) (*outbound.VmessOption, error) {
