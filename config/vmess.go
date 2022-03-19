@@ -3,9 +3,12 @@ package config
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/xxf098/lite-proxy/outbound"
 	"github.com/xxf098/lite-proxy/utils"
@@ -201,7 +204,11 @@ func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error
 }
 
 func VmessLinkToVmessOption(link string) (*outbound.VmessOption, error) {
-	return VmessLinkToVmessOptionIP(link, false)
+	opt, err := VmessLinkToVmessOptionIP(link, false)
+	if err != nil {
+		return ShadowrocketVmessLinkToVmessOptionIP(link, false)
+	}
+	return opt, nil
 }
 
 // TODO: safe base64
@@ -229,6 +236,76 @@ func VmessLinkToVmessOptionIP(link string, resolveip bool) (*outbound.VmessOptio
 	}
 	config.ResolveIP = resolveip
 	return VmessConfigToVmessOption(&config)
+}
+
+// parse shadowrocket link
+func ShadowrocketVmessLinkToVmessOptionIP(link string, resolveip bool) (*outbound.VmessOption, error) {
+	config, err := ShadowrocketVmessLinkToVmessConfig(link, resolveip)
+	if err != nil {
+		return nil, err
+	}
+	return VmessConfigToVmessOption(config)
+}
+
+func ShadowrocketVmessLinkToVmessConfig(link string, resolveip bool) (*VmessConfig, error) {
+	if !strings.HasPrefix(link, "vmess://") {
+		return nil, fmt.Errorf("vmess unreconized: %s", link)
+	}
+	url, err := url.Parse(link)
+	if err != nil {
+		return nil, err
+	}
+	config := VmessConfig{}
+	config.V = []byte("2")
+
+	b64 := url.Host
+	b, err := utils.DecodeB64Bytes(b64)
+	if err != nil {
+		return nil, err
+	}
+
+	mhp := strings.SplitN(string(b), ":", 3)
+	if len(mhp) != 3 {
+		return nil, fmt.Errorf("vmess unreconized: method:host:port -- %v", mhp)
+	}
+	// mhp[0] is the encryption method
+	config.Port = []byte(mhp[2])
+	idadd := strings.SplitN(mhp[1], "@", 2)
+	if len(idadd) != 2 {
+		return nil, fmt.Errorf("vmess unreconized: id@addr -- %v", idadd)
+	}
+	config.ID = idadd[0]
+	config.Add = idadd[1]
+	config.Aid = []byte("0")
+
+	vals := url.Query()
+	if v := vals.Get("remarks"); v != "" {
+		config.Ps = v
+	}
+	if v := vals.Get("path"); v != "" {
+		config.Path = v
+	}
+	if v := vals.Get("tls"); v == "1" {
+		config.TLS = "tls"
+	}
+	if v := vals.Get("alterId"); v != "" {
+		config.Aid = []byte(v)
+		config.AlterId = []byte(v)
+	}
+	if v := vals.Get("obfs"); v != "" {
+		switch v {
+		case "websocket":
+			config.Net = "ws"
+		case "none":
+			config.Net = "tcp"
+			config.Type = "none"
+		}
+	}
+	if v := vals.Get("obfsParam"); v != "" {
+		config.Host = v
+	}
+	config.ResolveIP = resolveip
+	return &config, nil
 }
 
 func VmessLinkToVmessConfigIP(link string, resolveip bool) (*VmessConfig, error) {
