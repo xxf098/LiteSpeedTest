@@ -70,9 +70,13 @@ func Link2Config(link string) (*Config, error) {
 		if cfgVmess, err1 := VmessLinkToVmessConfigIP(link, false); err1 != nil {
 			return nil, err1
 		} else {
+			remarks := cfgVmess.Ps
+			if len(remarks) < 1 {
+				remarks = cfgVmess.Add
+			}
 			cfg = &Config{
 				Protocol: "vmess",
-				Remarks:  cfgVmess.Ps,
+				Remarks:  remarks,
 				Server:   cfgVmess.Add,
 				Port:     cfgVmess.PortInt,
 				Net:      cfgVmess.Net,
