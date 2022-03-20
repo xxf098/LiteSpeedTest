@@ -68,6 +68,9 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 			pool.Put(buf)
 		Loop:
 			for {
+				if ctx.Err() != nil {
+					break
+				}
 				select {
 				case <-ctx.Done():
 					return max, err
@@ -109,11 +112,6 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 		wg.Wait()
 		doneChan <- true
 	}(doneCh)
-	defer func() {
-		if resultChan != nil {
-			resultChan <- -1
-		}
-	}()
 	var prev time.Time
 	for {
 		if !prev.IsZero() {
