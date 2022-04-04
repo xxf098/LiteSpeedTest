@@ -270,6 +270,7 @@ func ShadowrocketVmessLinkToVmessConfig(link string, resolveip bool) (*VmessConf
 	if len(mhp) != 3 {
 		return nil, fmt.Errorf("vmess unreconized: method:host:port -- %v", mhp)
 	}
+	config.Security = mhp[0]
 	// mhp[0] is the encryption method
 	config.Port = []byte(mhp[2])
 	idadd := strings.SplitN(mhp[1], "@", 2)
