@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/xxf098/lite-proxy/common/structure"
 	"github.com/xxf098/lite-proxy/outbound"
@@ -98,6 +99,17 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 		}
 		// TODO: SNI
 		link = fmt.Sprintf("trojan://%s@%s:%d", trojanOption.Password, trojanOption.Server, trojanOption.Port)
+		query := []string{}
+		// allowInsecure
+		if trojanOption.SkipCertVerify {
+			query = append(query, "allowInsecure=1")
+		}
+		if len(trojanOption.SNI) > 0 {
+			query = append(query, fmt.Sprintf("sni=%s", trojanOption.SNI))
+		}
+		if len(query) > 0 {
+			link = fmt.Sprintf("%s?%s", link, strings.Join(query, "&"))
+		}
 		if len(trojanOption.Remarks) > 0 {
 			link = fmt.Sprintf("%s#%s%s", link, namePrefix, url.QueryEscape(trojanOption.Remarks))
 		}
