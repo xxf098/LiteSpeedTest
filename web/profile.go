@@ -159,7 +159,11 @@ func parseFile(filepath string) ([]string, error) {
 		return nil, err
 	}
 
-	return parseBase64(string(data))
+	links, err := parseBase64(string(data))
+	if err != nil {
+		return parseClashByLine(filepath)
+	}
+	return links, err
 }
 
 func parseOptions(message string) (*ProfileTestOptions, error) {
