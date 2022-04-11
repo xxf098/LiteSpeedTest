@@ -75,16 +75,18 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 			vmessOption.Network = "tcp"
 		}
 		c := VmessConfig{
-			Ps:   namePrefix + vmessOption.Name,
-			Add:  vmessOption.Server,
-			Port: []byte(utils.U16toa(vmessOption.Port)),
-			Aid:  []byte(strconv.Itoa(vmessOption.AlterID)),
-			ID:   vmessOption.UUID,
-			Type: vmessOption.Cipher,
-			TLS:  tls,
-			Net:  vmessOption.Network,
-			Path: vmessOption.WSPath,
-			Host: host,
+			Ps:             namePrefix + vmessOption.Name,
+			Add:            vmessOption.Server,
+			Port:           []byte(utils.U16toa(vmessOption.Port)),
+			Aid:            []byte(strconv.Itoa(vmessOption.AlterID)),
+			ID:             vmessOption.UUID,
+			Type:           vmessOption.Cipher,
+			TLS:            tls,
+			Net:            vmessOption.Network,
+			Path:           vmessOption.WSPath,
+			Host:           host,
+			SkipCertVerify: vmessOption.SkipCertVerify,
+			ServerName:     vmessOption.ServerName,
 		}
 		data, err := json.MarshalIndent(&c, "", "    ")
 		if err != nil {

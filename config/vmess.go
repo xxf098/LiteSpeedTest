@@ -52,24 +52,25 @@ type RawConfig struct {
 }
 
 type VmessConfig struct {
-	Add        string          `json:"add"`
-	Aid        json.RawMessage `json:"aid"`
-	AlterId    json.RawMessage `json:"alterId,omitempty"`
-	Host       string          `json:"host"`
-	ID         string          `json:"id"`
-	Net        string          `json:"net"`
-	Path       string          `json:"path"`
-	Port       json.RawMessage `json:"port"`
-	Ps         string          `json:"ps"`
-	TLS        string          `json:"tls"`
-	Type       string          `json:"type"`
-	V          json.RawMessage `json:"v,omitempty"`
-	Security   string          `json:"security,omitempty"`
-	Scy        string          `json:"scy,omitempty"`
-	ResolveIP  bool            `json:"resolve_ip,omitempty"`
-	ServerName string          `json:"-"`
-	PortInt    int             `json:"-"`
-	AidInt     int             `json:"-"`
+	Add            string          `json:"add"`
+	Aid            json.RawMessage `json:"aid"`
+	AlterId        json.RawMessage `json:"alterId,omitempty"`
+	Host           string          `json:"host"`
+	ID             string          `json:"id"`
+	Net            string          `json:"net"`
+	Path           string          `json:"path"`
+	Port           json.RawMessage `json:"port"`
+	Ps             string          `json:"ps"`
+	TLS            string          `json:"tls"`
+	Type           string          `json:"type"`
+	V              json.RawMessage `json:"v,omitempty"`
+	Security       string          `json:"security,omitempty"`
+	Scy            string          `json:"scy,omitempty"`
+	ResolveIP      bool            `json:"resolve_ip,omitempty"`
+	SkipCertVerify bool            `json:"skip-cert-verify"`
+	ServerName     string          `json:"sni"`
+	PortInt        int             `json:"-"`
+	AidInt         int             `json:"-"`
 }
 
 func RawConfigToVmessOption(config *RawConfig) (*outbound.VmessOption, error) {
@@ -151,7 +152,7 @@ func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error
 		TLS:            false,
 		UDP:            false,
 		Network:        "tcp",
-		SkipCertVerify: false,
+		SkipCertVerify: config.SkipCertVerify,
 		Type:           config.Type,
 	}
 	// http network
@@ -176,6 +177,9 @@ func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error
 	}
 	if config.TLS == "tls" {
 		vmessOption.TLS = true
+		if len(config.ServerName) > 0 && config.ServerName != config.Add {
+			config.SkipCertVerify = true
+		}
 	}
 	if config.Security != "" {
 		vmessOption.Cipher = config.Security
