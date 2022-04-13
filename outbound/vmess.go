@@ -30,7 +30,7 @@ type VmessOption struct {
 	Server         string            `proxy:"server"`
 	Port           uint16            `proxy:"port"`
 	UUID           string            `proxy:"uuid"`
-	AlterID        int               `proxy:"alterId"`
+	AlterID        int               `proxy:"alterId,omitempty"`
 	Cipher         string            `proxy:"cipher"`
 	TLS            bool              `proxy:"tls,omitempty"`
 	UDP            bool              `proxy:"udp,omitempty"`
