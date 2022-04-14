@@ -21,6 +21,7 @@ import (
 var upgrader = websocket.Upgrader{}
 
 func ServeFile(port int) error {
+	// TODO: Mobile UI
 	http.Handle("/", http.FileServer(http.FS(guiStatic)))
 	http.HandleFunc("/test", updateTest)
 	http.HandleFunc("/getSubscriptionLink", getSubscriptionLink)
@@ -298,15 +299,13 @@ func getSubscription(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Wrong key", 400)
 		return
 	}
+	// FIXME
 	if strings.HasSuffix(filePath, ".yaml") {
-		links, err := parseClashByLine(filePath)
+		data, err := writeClash(filePath)
 		if err != nil {
 			http.Error(w, err.Error(), 400)
 			return
 		}
-		subscription := []byte(strings.Join(links, "\n"))
-		data := make([]byte, base64.StdEncoding.EncodedLen(len(subscription)))
-		base64.StdEncoding.Encode(data, subscription)
 		w.Write(data)
 		return
 	}
@@ -315,5 +314,24 @@ func getSubscription(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 400)
 		return
 	}
+
+	if len(data) > 128 && strings.Contains(string(data[:128]), "proxies:") {
+		if dataClash, err := writeClash(filePath); err == nil && len(dataClash) > 0 {
+			data = dataClash
+		}
+	}
+
 	w.Write(data)
+}
+
+func writeClash(filePath string) ([]byte, error) {
+	links, err := parseClashByLine(filePath)
+	if err != nil {
+		//
+		return nil, err
+	}
+	subscription := []byte(strings.Join(links, "\n"))
+	data := make([]byte, base64.StdEncoding.EncodedLen(len(subscription)))
+	base64.StdEncoding.Encode(data, subscription)
+	return data, nil
 }
