@@ -91,7 +91,11 @@ func (d *Decoder) decodeInt(name string, data interface{}, val reflect.Value) (e
 		val.SetInt(dataVal.Int())
 	case kind == reflect.String && d.option.WeaklyTypedInput:
 		var i int64
-		i, err = strconv.ParseInt(dataVal.String(), 0, val.Type().Bits())
+		v := dataVal.String()
+		if v == "undefined" {
+			v = "0"
+		}
+		i, err = strconv.ParseInt(v, 0, val.Type().Bits())
 		if err == nil {
 			val.SetInt(i)
 		} else {
@@ -114,7 +118,11 @@ func (d *Decoder) decodeUint16(name string, data interface{}, val reflect.Value)
 		val.SetUint(uint64(dataVal.Int()))
 	case kind == reflect.String && d.option.WeaklyTypedInput:
 		var i uint64
-		i, err = strconv.ParseUint(dataVal.String(), 0, val.Type().Bits())
+		v := dataVal.String()
+		if v == "undefined" {
+			v = "0"
+		}
+		i, err = strconv.ParseUint(v, 0, val.Type().Bits())
 		if err == nil {
 			val.SetUint(i)
 		} else {
