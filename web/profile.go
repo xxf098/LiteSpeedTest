@@ -160,8 +160,17 @@ func parseFile(filepath string) ([]string, error) {
 	}
 
 	links, err := parseBase64(string(data))
-	if err != nil && len(data) > 128 && strings.Contains(string(data[:128]), "proxies:") {
-		return parseClashByLine(filepath)
+	if err != nil && len(data) > 128 {
+		preview := string(data[:128])
+		if strings.Contains(preview, "proxies:") {
+			return parseClashByLine(filepath)
+		}
+		if strings.Contains(preview, "vmess://") ||
+			strings.Contains(preview, "trojan://") ||
+			strings.Contains(preview, "ssr://") ||
+			strings.Contains(preview, "ss://") {
+			return parseProfiles(string(data))
+		}
 	}
 	return links, err
 }
