@@ -60,7 +60,8 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 		// log.Printf("recv: %s", message)
 		links, options, err := parseMessage(message)
 		if err != nil {
-			log.Println("parseMessage:", err)
+			msg := `{"info": "error", "reason": "invalidsub"}`
+			c.WriteMessage(mt, []byte(msg))
 			continue
 		}
 		p := ProfileTest{

@@ -885,6 +885,7 @@
 									break;
 								case "invalidsub":
 									this.$alert("订阅获取异常。请检查订阅链接。", "错误");
+									this.terminate()
 									break;
 								case "norecoglink":
 									this.$alert("找不到任何链接。请检查提供的链接格式。", "错误");
