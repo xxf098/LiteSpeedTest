@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -251,6 +252,18 @@ func ShadowrocketVmessLinkToVmessOptionIP(link string, resolveip bool) (*outboun
 		return nil, err
 	}
 	return VmessConfigToVmessOption(config)
+}
+
+func ShadowrocketLinkToVmessLink(link string) (string, error) {
+	config, err := ShadowrocketVmessLinkToVmessConfig(link, false)
+	if err != nil {
+		return "", err
+	}
+	src, err := json.Marshal(config)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("vmess://%s", base64.StdEncoding.EncodeToString(src)), nil
 }
 
 func ShadowrocketVmessLinkToVmessConfig(link string, resolveip bool) (*VmessConfig, error) {
