@@ -132,11 +132,11 @@ func rawMessageToInt(raw json.RawMessage) (int, error) {
 func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error) {
 	port, err := rawMessageToInt(config.Port)
 	if err != nil {
-		return nil, err
+		port = 443
 	}
 	aid, err := rawMessageToInt(config.Aid)
 	if err != nil {
-		return nil, err
+		aid = 0
 	}
 
 	vmessOption := outbound.VmessOption{
@@ -338,14 +338,14 @@ func VmessLinkToVmessConfigIP(link string, resolveip bool) (*VmessConfig, error)
 	}
 	port, err := rawMessageToInt(config.Port)
 	if err != nil {
-		return nil, err
+		port = 443
 	}
 	config.PortInt = port
 	aid, err := rawMessageToInt(config.Aid)
 	if err != nil {
 		aid, err = rawMessageToInt(config.AlterId)
 		if err != nil {
-			return nil, err
+			aid = 0
 		}
 	}
 	config.AidInt = aid
