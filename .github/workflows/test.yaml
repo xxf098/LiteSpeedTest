@@ -43,7 +43,7 @@ jobs:
     - name: Setup Go
       uses: actions/setup-go@v2
       with:
-        go-version: ^1.17.1 # The Go version to download (if necessary) and use.
+        go-version: ^1.18.1 # The Go version to download (if necessary) and use.
     
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2

@@ -29,7 +29,7 @@ Run as http/socks5 proxy:
 
 ### Build
 ```bash
-    #require go>=1.16
+    #require go>=1.18.1
     GOOS=js GOARCH=wasm go get -u ./...
     cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./web/wasm_exec.js
     GOOS=js GOARCH=wasm go build -o ./web/main.wasm ./wasm
