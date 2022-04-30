@@ -81,7 +81,7 @@ func ParseLinks(message string) ([]string, error) {
 }
 
 func parseProfiles(data string) ([]string, error) {
-	reg := regexp.MustCompile(`((?i)(vmess|ssr)://[a-zA-Z0-9+_/=-]+)|((?i)(ss|trojan)://(.+?)@(.+?):([0-9]{2,5})([?#][^\s]+))|((?i)(ss)://[a-zA-Z0-9+_/=-]+([?#][^\s]+))`)
+	reg := regexp.MustCompile(`((?i)vmess://[a-zA-Z0-9+_/=-]+([?#][^\s]+)?)|((?i)ssr://[a-zA-Z0-9+_/=-]+)|((?i)(ss|trojan)://(\S+?)@(\S+?):([0-9]{2,5})([?#][^\s]+))|((?i)(ss)://[a-zA-Z0-9+_/=-]+([?#][^\s]+))`)
 	matches := reg.FindAllStringSubmatch(data, -1)
 	links := make([]string, len(matches))
 	for index, match := range matches {
@@ -159,7 +159,20 @@ func parseFile(filepath string) ([]string, error) {
 		return nil, err
 	}
 
-	return parseBase64(string(data))
+	links, err := parseBase64(string(data))
+	if err != nil && len(data) > 128 {
+		preview := string(data[:128])
+		if strings.Contains(preview, "proxies:") {
+			return parseClashByLine(filepath)
+		}
+		if strings.Contains(preview, "vmess://") ||
+			strings.Contains(preview, "trojan://") ||
+			strings.Contains(preview, "ssr://") ||
+			strings.Contains(preview, "ss://") {
+			return parseProfiles(string(data))
+		}
+	}
+	return links, err
 }
 
 func parseOptions(message string) (*ProfileTestOptions, error) {

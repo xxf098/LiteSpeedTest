@@ -68,6 +68,9 @@ func downloadRangeInternal(ctx context.Context, option DownloadOption, resultCha
 			pool.Put(buf)
 		Loop:
 			for {
+				if ctx.Err() != nil {
+					break
+				}
 				select {
 				case <-ctx.Done():
 					return max, err

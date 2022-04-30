@@ -80,6 +80,7 @@ type ClashRawConfig struct {
 	BindAddress        string   `yaml:"bind-address"`
 	Mode               string   `yaml:"mode"`
 	LogLevel           string   `yaml:"log-level"`
+	NamePrefix         string   `yaml:"name-prefix"`
 	IPv6               bool     `yaml:"ipv6"`
 	ExternalController string   `yaml:"external-controller"`
 	ExternalUI         string   `yaml:"external-ui"`
@@ -199,7 +200,7 @@ func parseProxies(cfg *ClashRawConfig) ([]string, error) {
 	proxyList := []string{}
 	// parse proxy
 	for idx, mapping := range cfg.Proxy {
-		link, err := ParseProxy(mapping)
+		link, err := ParseProxy(mapping, cfg.NamePrefix)
 		if err != nil {
 			log.Printf("proxy %d: %s", idx, err.Error())
 			continue

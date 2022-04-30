@@ -15,18 +15,23 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/xxf098/lite-proxy/config"
 	"github.com/xxf098/lite-proxy/web/render"
 )
 
 var upgrader = websocket.Upgrader{}
 
 func ServeFile(port int) error {
+	// TODO: Mobile UI
 	http.Handle("/", http.FileServer(http.FS(guiStatic)))
 	http.HandleFunc("/test", updateTest)
 	http.HandleFunc("/getSubscriptionLink", getSubscriptionLink)
 	http.HandleFunc("/getSubscription", getSubscription)
 	http.HandleFunc("/generateResult", generateResult)
-	log.Printf("Start server at http://127.0.0.1:%d", port)
+	log.Printf("Start server at http://127.0.0.1:%d\n", port)
+	if ipAddr, err := localIP(); err == nil {
+		log.Printf("Start server at http://%s:%d", ipAddr.String(), port)
+	}
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	return err
 }
@@ -56,7 +61,8 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 		// log.Printf("recv: %s", message)
 		links, options, err := parseMessage(message)
 		if err != nil {
-			log.Println("parseMessage:", err)
+			msg := `{"info": "error", "reason": "invalidsub"}`
+			c.WriteMessage(mt, []byte(msg))
 			continue
 		}
 		p := ProfileTest{
@@ -290,20 +296,20 @@ func getSubscription(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Key not found", 400)
 		return
 	}
+	// sub format
+	sub := queries.Get("sub")
 	filePath, ok := subscriptionLinkMap[key]
 	if !ok {
 		http.Error(w, "Wrong key", 400)
 		return
 	}
+	// FIXME
 	if strings.HasSuffix(filePath, ".yaml") {
-		links, err := parseClashByLine(filePath)
+		data, err := writeClash(filePath)
 		if err != nil {
 			http.Error(w, err.Error(), 400)
 			return
 		}
-		subscription := []byte(strings.Join(links, "\n"))
-		data := make([]byte, base64.StdEncoding.EncodedLen(len(subscription)))
-		base64.StdEncoding.Encode(data, subscription)
 		w.Write(data)
 		return
 	}
@@ -312,5 +318,51 @@ func getSubscription(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 400)
 		return
 	}
+
+	if len(data) > 128 && strings.Contains(string(data[:128]), "proxies:") {
+		if dataClash, err := writeClash(filePath); err == nil && len(dataClash) > 0 {
+			data = dataClash
+		}
+	}
+	// convert shadowrocket to v2ray
+	if sub == "v2ray" {
+		if dataShadowrocket, err := writeShadowrocket(data); err == nil && len(dataShadowrocket) > 0 {
+			data = dataShadowrocket
+		}
+	}
+
 	w.Write(data)
+}
+
+func writeClash(filePath string) ([]byte, error) {
+	links, err := parseClashByLine(filePath)
+	if err != nil {
+		//
+		return nil, err
+	}
+	subscription := []byte(strings.Join(links, "\n"))
+	data := make([]byte, base64.StdEncoding.EncodedLen(len(subscription)))
+	base64.StdEncoding.Encode(data, subscription)
+	return data, nil
+}
+
+func writeShadowrocket(data []byte) ([]byte, error) {
+	links, err := ParseLinks(string(data))
+	if err != nil {
+		return nil, err
+	}
+	newLinks := []string{}
+	for _, link := range links {
+		if strings.HasPrefix(link, "vmess://") && strings.Contains(link, "&") {
+			if newLink, err := config.ShadowrocketLinkToVmessLink(link); err == nil {
+				newLinks = append(newLinks, newLink)
+			}
+		} else {
+			newLinks = append(newLinks, link)
+		}
+	}
+	subscription := []byte(strings.Join(newLinks, "\n"))
+	data = make([]byte, base64.StdEncoding.EncodedLen(len(subscription)))
+	base64.StdEncoding.Encode(data, subscription)
+	return data, nil
 }

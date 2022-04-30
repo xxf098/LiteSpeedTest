@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"context"
@@ -21,8 +21,8 @@ import (
 	"github.com/xxf098/lite-proxy/utils"
 )
 
-func startInstance(c Config) (*proxy.Proxy, error) {
-	ctx, cancel := context.WithCancel(context.Background())
+func StartInstance(c Config) (*proxy.Proxy, error) {
+	ctx := context.Background()
 	ctx = context.WithValue(ctx, "LocalHost", c.LocalHost)
 	ctx = context.WithValue(ctx, "LocalPort", c.LocalPort)
 	adapterServer, err := adapter.NewServer(ctx, nil)
@@ -42,6 +42,7 @@ func startInstance(c Config) (*proxy.Proxy, error) {
 	if err != nil {
 		return nil, err
 	}
+	ctx, cancel := context.WithCancel(context.Background())
 	go func(link string) {
 		if c.Ping < 1 {
 			return

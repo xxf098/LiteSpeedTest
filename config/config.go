@@ -51,6 +51,7 @@ type Config struct {
 	Server   string
 	Net      string // vmess net type
 	Port     int
+	Password string
 }
 
 func Link2Config(link string) (*Config, error) {
@@ -69,12 +70,17 @@ func Link2Config(link string) (*Config, error) {
 		if cfgVmess, err1 := VmessLinkToVmessConfigIP(link, false); err1 != nil {
 			return nil, err1
 		} else {
+			remarks := cfgVmess.Ps
+			if len(remarks) < 1 {
+				remarks = cfgVmess.Add
+			}
 			cfg = &Config{
 				Protocol: "vmess",
-				Remarks:  cfgVmess.Ps,
+				Remarks:  remarks,
 				Server:   cfgVmess.Add,
 				Port:     cfgVmess.PortInt,
 				Net:      cfgVmess.Net,
+				Password: cfgVmess.ID,
 			}
 		}
 	case "trojan":
@@ -86,6 +92,7 @@ func Link2Config(link string) (*Config, error) {
 				Remarks:  cfgTrojan.Remarks,
 				Server:   cfgTrojan.Server,
 				Port:     cfgTrojan.Port,
+				Password: cfgTrojan.Password,
 			}
 		}
 	case "ss":
@@ -97,6 +104,7 @@ func Link2Config(link string) (*Config, error) {
 				Remarks:  cfgSS.Remarks,
 				Server:   cfgSS.Server,
 				Port:     cfgSS.Port,
+				Password: cfgSS.Password,
 			}
 		}
 	case "ssr":
@@ -108,6 +116,7 @@ func Link2Config(link string) (*Config, error) {
 				Remarks:  cfgSSR.Remarks,
 				Server:   cfgSSR.Server,
 				Port:     cfgSSR.Port,
+				Password: cfgSSR.Password,
 			}
 		}
 	default:

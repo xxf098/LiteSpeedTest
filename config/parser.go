@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/xxf098/lite-proxy/common/structure"
 	"github.com/xxf098/lite-proxy/outbound"
 	"github.com/xxf098/lite-proxy/utils"
 )
 
-func ParseProxy(mapping map[string]interface{}) (string, error) {
+func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, error) {
 	decoder := structure.NewDecoder(structure.Option{TagName: "proxy", WeaklyTypedInput: true})
 	proxyType, existType := mapping["type"].(string)
 	if !existType {
@@ -74,16 +75,18 @@ func ParseProxy(mapping map[string]interface{}) (string, error) {
 			vmessOption.Network = "tcp"
 		}
 		c := VmessConfig{
-			Ps:   vmessOption.Name,
-			Add:  vmessOption.Server,
-			Port: []byte(utils.U16toa(vmessOption.Port)),
-			Aid:  []byte(strconv.Itoa(vmessOption.AlterID)),
-			ID:   vmessOption.UUID,
-			Type: vmessOption.Cipher,
-			TLS:  tls,
-			Net:  vmessOption.Network,
-			Path: vmessOption.WSPath,
-			Host: host,
+			Ps:             namePrefix + vmessOption.Name,
+			Add:            vmessOption.Server,
+			Port:           []byte(utils.U16toa(vmessOption.Port)),
+			Aid:            []byte(strconv.Itoa(vmessOption.AlterID)),
+			ID:             vmessOption.UUID,
+			Type:           vmessOption.Cipher,
+			TLS:            tls,
+			Net:            vmessOption.Network,
+			Path:           vmessOption.WSPath,
+			Host:           host,
+			SkipCertVerify: vmessOption.SkipCertVerify,
+			ServerName:     vmessOption.ServerName,
 		}
 		data, err := json.MarshalIndent(&c, "", "    ")
 		if err != nil {
@@ -98,11 +101,22 @@ func ParseProxy(mapping map[string]interface{}) (string, error) {
 		}
 		// TODO: SNI
 		link = fmt.Sprintf("trojan://%s@%s:%d", trojanOption.Password, trojanOption.Server, trojanOption.Port)
+		query := []string{}
+		// allowInsecure
+		if trojanOption.SkipCertVerify {
+			query = append(query, "allowInsecure=1")
+		}
+		if len(trojanOption.SNI) > 0 {
+			query = append(query, fmt.Sprintf("sni=%s", trojanOption.SNI))
+		}
+		if len(query) > 0 {
+			link = fmt.Sprintf("%s?%s", link, strings.Join(query, "&"))
+		}
 		if len(trojanOption.Remarks) > 0 {
-			link = fmt.Sprintf("%s#%s", link, url.QueryEscape(trojanOption.Remarks))
+			link = fmt.Sprintf("%s#%s%s", link, namePrefix, url.QueryEscape(trojanOption.Remarks))
 		}
 		if len(trojanOption.Name) > 0 {
-			link = fmt.Sprintf("%s#%s", link, url.QueryEscape(trojanOption.Name))
+			link = fmt.Sprintf("%s#%s%s", link, namePrefix, url.QueryEscape(trojanOption.Name))
 		}
 	default:
 		return "", fmt.Errorf("unsupport proxy type: %s", proxyType)

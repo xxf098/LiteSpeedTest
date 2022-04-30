@@ -55,7 +55,8 @@ func SSRLinkToSSROption(link string) (*outbound.ShadowSocksROption, error) {
 		UDP:      false,
 		Remarks:  "",
 	}
-	if rawQuery, err := url.ParseQuery(parts[1]); err == nil {
+	query := strings.ReplaceAll(parts[1], "+", "%2B")
+	if rawQuery, err := url.ParseQuery(query); err == nil {
 		obfsparam, err := utils.DecodeB64(rawQuery.Get("obfsparam"))
 		if err != nil {
 			return nil, err

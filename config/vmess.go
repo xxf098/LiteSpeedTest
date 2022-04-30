@@ -3,9 +3,12 @@ package config
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/xxf098/lite-proxy/outbound"
 	"github.com/xxf098/lite-proxy/utils"
@@ -50,24 +53,25 @@ type RawConfig struct {
 }
 
 type VmessConfig struct {
-	Add        string          `json:"add"`
-	Aid        json.RawMessage `json:"aid"`
-	AlterId    json.RawMessage `json:"alterId,omitempty"`
-	Host       string          `json:"host"`
-	ID         string          `json:"id"`
-	Net        string          `json:"net"`
-	Path       string          `json:"path"`
-	Port       json.RawMessage `json:"port"`
-	Ps         string          `json:"ps"`
-	TLS        string          `json:"tls"`
-	Type       string          `json:"type"`
-	V          json.RawMessage `json:"v,omitempty"`
-	Security   string          `json:"security,omitempty"`
-	Scy        string          `json:"scy,omitempty"`
-	ResolveIP  bool            `json:"resolve_ip,omitempty"`
-	ServerName string          `json:"-"`
-	PortInt    int             `json:"-"`
-	AidInt     int             `json:"-"`
+	Add            string          `json:"add"`
+	Aid            json.RawMessage `json:"aid"`
+	AlterId        json.RawMessage `json:"alterId,omitempty"`
+	Host           string          `json:"host"`
+	ID             string          `json:"id"`
+	Net            string          `json:"net"`
+	Path           string          `json:"path"`
+	Port           json.RawMessage `json:"port"`
+	Ps             string          `json:"ps"`
+	TLS            string          `json:"tls"`
+	Type           string          `json:"type"`
+	V              json.RawMessage `json:"v,omitempty"`
+	Security       string          `json:"security,omitempty"`
+	Scy            string          `json:"scy,omitempty"`
+	ResolveIP      bool            `json:"resolve_ip,omitempty"`
+	SkipCertVerify bool            `json:"skip-cert-verify"`
+	ServerName     string          `json:"sni"`
+	PortInt        int             `json:"-"`
+	AidInt         int             `json:"-"`
 }
 
 func RawConfigToVmessOption(config *RawConfig) (*outbound.VmessOption, error) {
@@ -128,11 +132,11 @@ func rawMessageToInt(raw json.RawMessage) (int, error) {
 func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error) {
 	port, err := rawMessageToInt(config.Port)
 	if err != nil {
-		return nil, err
+		port = 443
 	}
 	aid, err := rawMessageToInt(config.Aid)
 	if err != nil {
-		return nil, err
+		aid = 0
 	}
 
 	vmessOption := outbound.VmessOption{
@@ -149,7 +153,7 @@ func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error
 		TLS:            false,
 		UDP:            false,
 		Network:        "tcp",
-		SkipCertVerify: false,
+		SkipCertVerify: config.SkipCertVerify,
 		Type:           config.Type,
 	}
 	// http network
@@ -174,6 +178,9 @@ func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error
 	}
 	if config.TLS == "tls" {
 		vmessOption.TLS = true
+		if len(config.ServerName) > 0 && config.ServerName != config.Add {
+			config.SkipCertVerify = true
+		}
 	}
 	if config.Security != "" {
 		vmessOption.Cipher = config.Security
@@ -201,23 +208,30 @@ func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error
 }
 
 func VmessLinkToVmessOption(link string) (*outbound.VmessOption, error) {
-	return VmessLinkToVmessOptionIP(link, false)
+	opt, err := VmessLinkToVmessOptionIP(link, false)
+	if err != nil {
+		return ShadowrocketVmessLinkToVmessOptionIP(link, false)
+	}
+	return opt, nil
 }
 
 // TODO: safe base64
 func VmessLinkToVmessOptionIP(link string, resolveip bool) (*outbound.VmessOption, error) {
+	config, err := VmessLinkToVmessConfig(link, resolveip)
+	if err != nil {
+		return nil, err
+	}
+	return VmessConfigToVmessOption(config)
+}
+
+func VmessLinkToVmessConfig(link string, resolveip bool) (*VmessConfig, error) {
+	// FIXME:
 	regex := regexp.MustCompile(`^vmess://([A-Za-z0-9+-=/_]+)`)
 	res := regex.FindAllStringSubmatch(link, 1)
 	b64 := ""
 	if len(res) > 0 && len(res[0]) > 1 {
 		b64 = res[0][1]
 	}
-	// data, err := base64.StdEncoding.DecodeString(b64)
-	// if err != nil {
-	// 	if data, err = base64.RawStdEncoding.DecodeString(b64); err != nil {
-	// 		return nil, err
-	// 	}
-	// }
 	data, err := utils.DecodeB64Bytes(b64)
 	if err != nil {
 		return nil, err
@@ -228,36 +242,110 @@ func VmessLinkToVmessOptionIP(link string, resolveip bool) (*outbound.VmessOptio
 		return nil, err
 	}
 	config.ResolveIP = resolveip
-	return VmessConfigToVmessOption(&config)
+	return &config, nil
 }
 
-func VmessLinkToVmessConfigIP(link string, resolveip bool) (*VmessConfig, error) {
-	regex := regexp.MustCompile(`^vmess://([A-Za-z0-9+-=/]+)`)
-	res := regex.FindAllStringSubmatch(link, 1)
-	b64 := ""
-	if len(res) > 0 && len(res[0]) > 1 {
-		b64 = res[0][1]
+// parse shadowrocket link
+func ShadowrocketVmessLinkToVmessOptionIP(link string, resolveip bool) (*outbound.VmessOption, error) {
+	config, err := ShadowrocketVmessLinkToVmessConfig(link, resolveip)
+	if err != nil {
+		return nil, err
 	}
-	data, err := base64.StdEncoding.DecodeString(b64)
-	// fmt.Println(string(data))
+	return VmessConfigToVmessOption(config)
+}
+
+func ShadowrocketLinkToVmessLink(link string) (string, error) {
+	config, err := ShadowrocketVmessLinkToVmessConfig(link, false)
+	if err != nil {
+		return "", err
+	}
+	src, err := json.Marshal(config)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("vmess://%s", base64.StdEncoding.EncodeToString(src)), nil
+}
+
+func ShadowrocketVmessLinkToVmessConfig(link string, resolveip bool) (*VmessConfig, error) {
+	if !strings.HasPrefix(link, "vmess://") {
+		return nil, fmt.Errorf("vmess unreconized: %s", link)
+	}
+	url, err := url.Parse(link)
 	if err != nil {
 		return nil, err
 	}
 	config := VmessConfig{}
-	err = json.Unmarshal(data, &config)
+	config.V = []byte("2")
+
+	b64 := url.Host
+	b, err := utils.DecodeB64Bytes(b64)
 	if err != nil {
 		return nil, err
 	}
+
+	mhp := strings.SplitN(string(b), ":", 3)
+	if len(mhp) != 3 {
+		return nil, fmt.Errorf("vmess unreconized: method:host:port -- %v", mhp)
+	}
+	config.Security = mhp[0]
+	// mhp[0] is the encryption method
+	config.Port = []byte(mhp[2])
+	idadd := strings.SplitN(mhp[1], "@", 2)
+	if len(idadd) != 2 {
+		return nil, fmt.Errorf("vmess unreconized: id@addr -- %v", idadd)
+	}
+	config.ID = idadd[0]
+	config.Add = idadd[1]
+	config.Aid = []byte("0")
+
+	vals := url.Query()
+	if v := vals.Get("remarks"); v != "" {
+		config.Ps = v
+	}
+	if v := vals.Get("path"); v != "" {
+		config.Path = v
+	}
+	if v := vals.Get("tls"); v == "1" {
+		config.TLS = "tls"
+	}
+	if v := vals.Get("alterId"); v != "" {
+		config.Aid = []byte(v)
+		config.AlterId = []byte(v)
+	}
+	if v := vals.Get("obfs"); v != "" {
+		switch v {
+		case "websocket":
+			config.Net = "ws"
+		case "none":
+			config.Net = "tcp"
+			config.Type = "none"
+		}
+	}
+	if v := vals.Get("obfsParam"); v != "" {
+		config.Host = v
+	}
+	config.ResolveIP = resolveip
+	return &config, nil
+}
+
+func VmessLinkToVmessConfigIP(link string, resolveip bool) (*VmessConfig, error) {
+	config, err := VmessLinkToVmessConfig(link, resolveip)
+	if err != nil {
+		config, err = ShadowrocketVmessLinkToVmessConfig(link, resolveip)
+		if err != nil {
+			return nil, err
+		}
+	}
 	port, err := rawMessageToInt(config.Port)
 	if err != nil {
-		return nil, err
+		port = 443
 	}
 	config.PortInt = port
 	aid, err := rawMessageToInt(config.Aid)
 	if err != nil {
 		aid, err = rawMessageToInt(config.AlterId)
 		if err != nil {
-			return nil, err
+			aid = 0
 		}
 	}
 	config.AidInt = aid
@@ -271,7 +359,7 @@ func VmessLinkToVmessConfigIP(link string, resolveip bool) (*VmessConfig, error)
 
 		}
 	}
-	return &config, nil
+	return config, nil
 }
 
 func ToVmessOption(path string) (*outbound.VmessOption, error) {
