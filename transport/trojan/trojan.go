@@ -2,6 +2,7 @@ package trojan
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"crypto/tls"
 	"encoding/binary"
@@ -11,6 +12,7 @@ import (
 	"net"
 	"sync"
 
+	C "github.com/xxf098/lite-proxy/constant"
 	"github.com/xxf098/lite-proxy/transport/socks5"
 )
 
@@ -61,7 +63,9 @@ func (t *Trojan) StreamConn(conn net.Conn) (net.Conn, error) {
 	}
 
 	tlsConn := tls.Client(conn, tlsConfig)
-	if err := tlsConn.Handshake(); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), C.DefaultTLSTimeout)
+	defer cancel()
+	if err := tlsConn.HandshakeContext(ctx); err != nil {
 		return nil, err
 	}
 
