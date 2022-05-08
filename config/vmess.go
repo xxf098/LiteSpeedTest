@@ -62,7 +62,7 @@ type VmessConfig struct {
 	Path           string          `json:"path"`
 	Port           json.RawMessage `json:"port"`
 	Ps             string          `json:"ps"`
-	TLS            string          `json:"tls"`
+	TLSRaw         json.RawMessage `json:"tls"`
 	Type           string          `json:"type"`
 	V              json.RawMessage `json:"v,omitempty"`
 	Security       string          `json:"security,omitempty"`
@@ -72,6 +72,7 @@ type VmessConfig struct {
 	ServerName     string          `json:"sni"`
 	PortInt        int             `json:"-"`
 	AidInt         int             `json:"-"`
+	TLS            string          `json:"-"`
 }
 
 func RawConfigToVmessOption(config *RawConfig) (*outbound.VmessOption, error) {
@@ -127,6 +128,22 @@ func rawMessageToInt(raw json.RawMessage) (int, error) {
 		return strconv.Atoi(s)
 	}
 	return i, nil
+}
+
+func rawMessageToTLS(raw json.RawMessage) (string, error) {
+	var s string
+	err := json.Unmarshal(raw, &s)
+	if err != nil {
+		var b bool
+		err := json.Unmarshal(raw, &b)
+		if err != nil {
+			return "", err
+		}
+		if b {
+			s = "tls"
+		}
+	}
+	return s, nil
 }
 
 func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error) {
@@ -242,6 +259,10 @@ func VmessLinkToVmessConfig(link string, resolveip bool) (*VmessConfig, error) {
 		return nil, err
 	}
 	config.ResolveIP = resolveip
+	// parse raw message
+	if tls, err := rawMessageToTLS(config.TLSRaw); err == nil {
+		config.TLS = tls
+	}
 	return &config, nil
 }
 
