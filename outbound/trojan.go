@@ -19,7 +19,7 @@ type Trojan struct {
 }
 
 type TrojanOption struct {
-	Name           string   `proxy:"name"`
+	Name           string   `proxy:"name,omitempty"`
 	Server         string   `proxy:"server"`
 	Port           int      `proxy:"port"`
 	Password       string   `proxy:"password"`
