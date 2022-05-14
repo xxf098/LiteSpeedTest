@@ -97,10 +97,10 @@ type ClashRawConfig struct {
 }
 
 type BaseProxy struct {
-	Name   string `yaml:"name"`
-	Server string `yaml:"server"`
-	Port   int    `yaml:"port"`
-	Type   string `yaml:"type"`
+	Name   string      `yaml:"name"`
+	Server string      `yaml:"server"`
+	Port   interface{} `yaml:"port"` // int, string
+	Type   string      `yaml:"type"`
 }
 
 func ParseBaseProxy(profile string) (*BaseProxy, error) {
