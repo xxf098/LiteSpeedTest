@@ -179,7 +179,9 @@
 							</el-table-column>
 							<el-table-column label="Server" align="center" prop="server" min-width="120" sortable>
 							</el-table-column>
-							<el-table-column label="Protocol" align="center" prop="protocol" width="100" sortable>
+							<el-table-column label="Protocol" align="center" prop="protocol" width="100" sortable
+								:filters="[{ text: 'V2Ray', value: 'vmess' }, { text: 'Trojan', value: 'trojan' }, { text: 'ShadowsocksR', value: 'ssr' }, { text: 'Shadowsocks', value: 'ss' }]"
+								:filter-method="filterProtocol">
 							</el-table-column>
 							<!-- <el-table-column label="Loss" align="center" prop="loss" width="100" sortable>
 							</el-table-column> -->
@@ -196,7 +198,7 @@
 						</el-table>
 					</el-container>
 					<br>
-					<div v-if="result.length">Profiles: {{ result.filter(item => item.ping > 0).length }}/{{ result.length }}&nbsp;&nbsp;Total Traffic: {{ bytesToSize(totalTraffic) }}&nbsp;&nbsp;Total Time: {{
+					<div v-if="result.length">Progress: {{ Math.floor(result.filter(item => item.ping !== '0.00' && item.ping != "测试中...").length/result.length*100) }}%&nbsp;&nbsp;Available: {{ result.filter(item => item.ping > 0).length }}/{{ result.length }}&nbsp;&nbsp;Total Traffic: {{ bytesToSize(totalTraffic) }}&nbsp;&nbsp;Total Time: {{
 						formatSeconds(totalTime) }}</div>
 				</el-card>
 
@@ -920,6 +922,12 @@
 				},
 				filterPing: function (value, row) {
 					return value === "available" ? row.ping > 0 : true;
+				},
+				filterProtocol: function (value, row) {
+					if (value === "vmess") {
+						return row.protocol.startsWith("vmess")
+					}
+					return value === row.protocol
 				},
 				checkSelectable: function (row, index) {
 					return !!row.link && row.hasOwnProperty("id") && row.testing !== true
