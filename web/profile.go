@@ -62,15 +62,12 @@ type parseFunc func(string) ([]string, error)
 
 // api
 func ParseLinks(message string) ([]string, error) {
-	// splits := strings.SplitN(string(message), "^", 2)
-	// if len(splits) < 1 {
-	// 	return nil, errors.New("Invalid Data")
-	// }
-	matched, err := regexp.MatchString(`^(?:https?:\/\/)(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)`, message)
-	if matched && err == nil {
+	// matched, err := regexp.MatchString(`^(?:https?:\/\/)(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)`, message)
+	if utils.IsUrl(message) {
 		return getSubscriptionLinks(message)
 	}
 	var links []string
+	var err error
 	for _, fn := range []parseFunc{parseProfiles, parseBase64, parseClash, parseFile} {
 		links, err = fn(message)
 		if err == nil && len(links) > 0 {

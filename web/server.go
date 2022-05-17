@@ -16,6 +16,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/xxf098/lite-proxy/config"
+	"github.com/xxf098/lite-proxy/utils"
 	"github.com/xxf098/lite-proxy/web/render"
 )
 
@@ -301,6 +302,17 @@ func getSubscription(w http.ResponseWriter, r *http.Request) {
 	filePath, ok := subscriptionLinkMap[key]
 	if !ok {
 		http.Error(w, "Wrong key", 400)
+		return
+	}
+	// convert yaml link
+	if strings.HasSuffix(filePath, ".yaml") && utils.IsUrl(filePath) {
+		links, err := getSubscriptionLinks(filePath)
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+		}
+		b64Data := base64.StdEncoding.EncodeToString([]byte(strings.Join(links, "\n")))
+		w.Write([]byte(b64Data))
 		return
 	}
 	// FIXME
