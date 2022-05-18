@@ -103,6 +103,41 @@ func parseClash(data string) ([]string, error) {
 	return cc.Proxies, nil
 }
 
+func parseClashProxies(input string) ([]string, error) {
+	// split to new line
+	if !strings.Contains(input, "{") {
+		return []string{}, nil
+	}
+	scanner := bufio.NewScanner(strings.NewReader(input))
+	return scanClashProxies(scanner, true)
+}
+
+//
+func scanClashProxies(scanner *bufio.Scanner, greedy bool) ([]string, error) {
+	proxiesStart := false
+	data := []byte{}
+	for scanner.Scan() {
+		b := scanner.Bytes()
+		trimLine := strings.TrimSpace(string(b))
+		if trimLine == "proxy-groups:" || trimLine == "rules:" || trimLine == "Proxy Group:" {
+			break
+		}
+		if proxiesStart {
+			if _, err := config.ParseBaseProxy(trimLine); err != nil {
+				continue
+			}
+		}
+		if !proxiesStart && (trimLine == "proxies:" || trimLine == "Proxy:") {
+			proxiesStart = true
+			b = []byte("proxies:")
+		}
+		data = append(data, b...)
+		data = append(data, byte('\n'))
+	}
+	fmt.Println(string(data))
+	return parseClashByte(data)
+}
+
 func parseClashByLine(filepath string) ([]string, error) {
 	file, err := os.Open(filepath)
 	if err != nil {
@@ -110,28 +145,7 @@ func parseClashByLine(filepath string) ([]string, error) {
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
-	data := []byte{}
-	checkProfile := false
-	for scanner.Scan() {
-		b := scanner.Bytes()
-		trimLine := strings.TrimSpace(string(b))
-		if trimLine == "proxy-groups:" || trimLine == "rules:" || trimLine == "Proxy Group:" {
-			break
-		}
-		if checkProfile {
-			if _, err := config.ParseBaseProxy(trimLine); err != nil {
-				continue
-			}
-		}
-		// check profile
-		if !checkProfile && (trimLine == "proxies:" || trimLine == "Proxy:") {
-			checkProfile = true
-			b = []byte("proxies:")
-		}
-		data = append(data, b...)
-		data = append(data, byte('\n'))
-	}
-	return parseClashByte(data)
+	return scanClashProxies(scanner, false)
 }
 
 func parseClashByte(data []byte) ([]string, error) {

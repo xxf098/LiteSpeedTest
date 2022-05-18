@@ -465,7 +465,7 @@
 				},
 				handleCopySub: async function () {
 					// url
-					if (this.subscription.trim().startsWith("http")) {
+					if (this.subscription.trim().startsWith("http") && !this.subscription.trim().endsWith("yaml")) {
 						await navigator.clipboard.writeText(this.subscription.trim())
 						this.$message.success("Copy Subscription succeed!");
 						return
