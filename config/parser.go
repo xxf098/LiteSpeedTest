@@ -86,6 +86,7 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 			ID:             vmessOption.UUID,
 			Type:           vmessOption.Cipher,
 			TLS:            tls,
+			TLSRaw:         []byte(tls),
 			Net:            vmessOption.Network,
 			Path:           vmessOption.WSPath,
 			Host:           host,
