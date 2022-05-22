@@ -103,8 +103,9 @@ func parseClash(data string) ([]string, error) {
 	return cc.Proxies, nil
 }
 
+// split to new line
 func parseClashProxies(input string) ([]string, error) {
-	// split to new line
+
 	if !strings.Contains(input, "{") {
 		return []string{}, nil
 	}
@@ -134,7 +135,7 @@ func scanClashProxies(scanner *bufio.Scanner, greedy bool) ([]string, error) {
 		data = append(data, b...)
 		data = append(data, byte('\n'))
 	}
-	fmt.Println(string(data))
+	// fmt.Println(string(data))
 	return parseClashByte(data)
 }
 
