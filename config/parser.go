@@ -5,12 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/xxf098/lite-proxy/common/structure"
 	"github.com/xxf098/lite-proxy/outbound"
-	"github.com/xxf098/lite-proxy/utils"
 )
 
 func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, error) {
@@ -78,15 +76,14 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 		if len(vmessOption.ServerName) < 1 {
 			skipCertVerify = true
 		}
-		c := VmessConfig{
+		c := VmessConfigMarshal{
 			Ps:             namePrefix + vmessOption.Name,
 			Add:            vmessOption.Server,
-			Port:           []byte(utils.U16toa(vmessOption.Port)),
-			Aid:            []byte(strconv.Itoa(vmessOption.AlterID)),
+			Port:           vmessOption.Port,
+			Aid:            vmessOption.AlterID,
 			ID:             vmessOption.UUID,
 			Type:           vmessOption.Cipher,
 			TLS:            tls,
-			TLSRaw:         []byte(tls),
 			Net:            vmessOption.Network,
 			Path:           vmessOption.WSPath,
 			Host:           host,

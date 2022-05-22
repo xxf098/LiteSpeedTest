@@ -75,6 +75,25 @@ type VmessConfig struct {
 	TLS            string          `json:"-"`
 }
 
+type VmessConfigMarshal struct {
+	Add            string `json:"add"`
+	Aid            int    `json:"aid"`
+	Host           string `json:"host"`
+	ID             string `json:"id"`
+	Net            string `json:"net"`
+	Path           string `json:"path"`
+	Port           uint16 `json:"port"`
+	Ps             string `json:"ps"`
+	TLS            string `json:"tls"`
+	Type           string `json:"type"`
+	V              string `json:"v,omitempty"`
+	Security       string `json:"security,omitempty"`
+	Scy            string `json:"scy,omitempty"`
+	ResolveIP      bool   `json:"resolve_ip,omitempty"`
+	SkipCertVerify bool   `json:"skip-cert-verify"`
+	ServerName     string `json:"sni"`
+}
+
 func RawConfigToVmessOption(config *RawConfig) (*outbound.VmessOption, error) {
 	var ob Outbound
 	for _, outbound := range config.Outbounds {
