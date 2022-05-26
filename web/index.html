@@ -159,6 +159,7 @@
 								</el-button>
 								<el-dropdown-menu slot="dropdown">
 									<el-dropdown-item @click.native="handleCopySub()">复制订阅链接</el-dropdown-item>
+									<el-dropdown-item v-if="!loading && result.length" @click.native="handleCopyAvailable()">复制可用节点</el-dropdown-item>
 									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">复制节点</el-dropdown-item>
 									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleSave()">导出节点</el-dropdown-item>
 									<!-- <el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item> -->
@@ -463,6 +464,23 @@
 						}
 					 }
 				},
+				copyToClipboard: async function (data) {
+					if (navigator.clipboard) {
+							await navigator.clipboard.writeText(data)
+						} else {
+							let textArea = document.createElement("textarea");
+							textArea.value = data;
+							// make the textarea out of viewport
+							textArea.style.position = "fixed";
+							textArea.style.left = "-999999px";
+							textArea.style.top = "-999999px";
+							document.body.appendChild(textArea);
+							textArea.focus();
+							textArea.select();
+							document.execCommand('copy');
+							textArea.remove();
+						}
+				},
 				handleCopySub: async function () {
 					// url
 					if (this.subscription.trim().startsWith("http") && !this.subscription.trim().endsWith("yaml")) {
@@ -492,22 +510,17 @@
 				handleCopy: async function () {
 					try {
 						links = this.multipleSelection.map(elem => elem.link).join("\n")
-						if (navigator.clipboard) {
-							await navigator.clipboard.writeText(links)
-						} else {
-							let textArea = document.createElement("textarea");
-							textArea.value = links;
-							// make the textarea out of viewport
-							textArea.style.position = "fixed";
-							textArea.style.left = "-999999px";
-							textArea.style.top = "-999999px";
-							document.body.appendChild(textArea);
-							textArea.focus();
-							textArea.select();
-							document.execCommand('copy');
-							textArea.remove();
-						}
+						await this.copyToClipboard(links)
 						this.$message.success("Copy link succeed!");
+					} catch (err) {
+						this.$message.error("Copy link failed!");
+					}
+				},
+				handleCopyAvailable: async function () {
+					try {
+						links = this.result.filter(elem => elem.ping > 0).map(elem => elem.link)
+						await this.copyToClipboard(links.join("\n"))
+						this.$message.success(`Copy ${links.length} link${links.length>1 ? "s" : ""} succeed!`);
 					} catch (err) {
 						this.$message.error("Copy link failed!");
 					}
