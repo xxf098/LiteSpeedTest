@@ -89,6 +89,8 @@ func (d *Decoder) decodeInt(name string, data interface{}, val reflect.Value) (e
 	switch {
 	case kind == reflect.Int:
 		val.SetInt(dataVal.Int())
+	case kind == reflect.Float64 && d.option.WeaklyTypedInput:
+		val.SetInt(int64(dataVal.Float()))
 	case kind == reflect.String && d.option.WeaklyTypedInput:
 		var i int64
 		v := dataVal.String()

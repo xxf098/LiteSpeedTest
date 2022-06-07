@@ -97,10 +97,10 @@ type ClashRawConfig struct {
 }
 
 type BaseProxy struct {
-	Name   string `yaml:"name"`
-	Server string `yaml:"server"`
-	Port   int    `yaml:"port"`
-	Type   string `yaml:"type"`
+	Name   string      `yaml:"name"`
+	Server string      `yaml:"server"`
+	Port   interface{} `yaml:"port"` // int, string
+	Type   string      `yaml:"type"`
 }
 
 func ParseBaseProxy(profile string) (*BaseProxy, error) {
@@ -202,7 +202,7 @@ func parseProxies(cfg *ClashRawConfig) ([]string, error) {
 	for idx, mapping := range cfg.Proxy {
 		link, err := ParseProxy(mapping, cfg.NamePrefix)
 		if err != nil {
-			log.Printf("proxy %d: %s", idx, err.Error())
+			log.Printf("parseProxies %d: %s", idx, err.Error())
 			continue
 		}
 		proxyList = append(proxyList, link)

@@ -24,7 +24,7 @@ type ShadowSocksR struct {
 }
 
 type ShadowSocksROption struct {
-	Name          string `proxy:"name"`
+	Name          string `proxy:"name,omitempty"`
 	Server        string `proxy:"server"`
 	Port          int    `proxy:"port"`
 	Password      string `proxy:"password"`
@@ -92,6 +92,9 @@ func (ssr *ShadowSocksR) MarshalJSON() ([]byte, error) {
 
 func NewShadowSocksR(option *ShadowSocksROption) (*ShadowSocksR, error) {
 	addr := net.JoinHostPort(option.Server, strconv.Itoa(option.Port))
+	if option.Cipher == "none" {
+		option.Cipher = "dummy"
+	}
 	cipher := option.Cipher
 	password := option.Password
 	coreCiph, err := core.PickCipher(cipher, nil, password)

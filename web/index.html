@@ -159,6 +159,7 @@
 								</el-button>
 								<el-dropdown-menu slot="dropdown">
 									<el-dropdown-item @click.native="handleCopySub()">复制订阅链接</el-dropdown-item>
+									<el-dropdown-item v-if="!loading && result.length" @click.native="handleCopyAvailable()">复制可用节点</el-dropdown-item>
 									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">复制节点</el-dropdown-item>
 									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleSave()">导出节点</el-dropdown-item>
 									<!-- <el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item> -->
@@ -179,7 +180,9 @@
 							</el-table-column>
 							<el-table-column label="Server" align="center" prop="server" min-width="120" sortable>
 							</el-table-column>
-							<el-table-column label="Protocol" align="center" prop="protocol" width="100" sortable>
+							<el-table-column label="Protocol" align="center" prop="protocol" width="100" sortable
+								:filters="[{ text: 'V2Ray', value: 'vmess' }, { text: 'Trojan', value: 'trojan' }, { text: 'ShadowsocksR', value: 'ssr' }, { text: 'Shadowsocks', value: 'ss' }]"
+								:filter-method="filterProtocol">
 							</el-table-column>
 							<!-- <el-table-column label="Loss" align="center" prop="loss" width="100" sortable>
 							</el-table-column> -->
@@ -196,7 +199,7 @@
 						</el-table>
 					</el-container>
 					<br>
-					<div v-if="result.length">Profiles: {{ result.filter(item => item.ping > 0).length }}/{{ result.length }}&nbsp;&nbsp;Total Traffic: {{ bytesToSize(totalTraffic) }}&nbsp;&nbsp;Total Time: {{
+					<div v-if="result.length">Progress: {{ Math.floor(result.filter(item => item.ping !== '0.00' && item.ping != "测试中...").length/result.length*100) }}%&nbsp;&nbsp;Available: {{ result.filter(item => item.ping > 0).length }}/{{ result.length }}&nbsp;&nbsp;Total Traffic: {{ bytesToSize(totalTraffic) }}&nbsp;&nbsp;Total Time: {{
 						formatSeconds(totalTime) }}</div>
 				</el-card>
 
@@ -404,10 +407,14 @@
 							type: "error",
 						});
 					} else {
+						this.$refs.result.clearSelection();
+						this.$refs.result.clearFilter();
+						this.$refs.result.clearSort();
 						this.loading = true;
 						this.totalTraffic = 0;
 						this.totalTime = 0;
 						this.picdata = "";
+						this.result = [];
 						this.incrTotalTime()
 						this.loadingContent = "等待后端响应……";
 						this.starttest();
@@ -457,9 +464,26 @@
 						}
 					 }
 				},
+				copyToClipboard: async function (data) {
+					if (navigator.clipboard) {
+							await navigator.clipboard.writeText(data)
+						} else {
+							let textArea = document.createElement("textarea");
+							textArea.value = data;
+							// make the textarea out of viewport
+							textArea.style.position = "fixed";
+							textArea.style.left = "-999999px";
+							textArea.style.top = "-999999px";
+							document.body.appendChild(textArea);
+							textArea.focus();
+							textArea.select();
+							document.execCommand('copy');
+							textArea.remove();
+						}
+				},
 				handleCopySub: async function () {
 					// url
-					if (this.subscription.trim().startsWith("http")) {
+					if (this.subscription.trim().startsWith("http") && !this.subscription.trim().endsWith("yaml")) {
 						await navigator.clipboard.writeText(this.subscription.trim())
 						this.$message.success("Copy Subscription succeed!");
 						return
@@ -486,22 +510,17 @@
 				handleCopy: async function () {
 					try {
 						links = this.multipleSelection.map(elem => elem.link).join("\n")
-						if (navigator.clipboard) {
-							await navigator.clipboard.writeText(links)
-						} else {
-							let textArea = document.createElement("textarea");
-							textArea.value = links;
-							// make the textarea out of viewport
-							textArea.style.position = "fixed";
-							textArea.style.left = "-999999px";
-							textArea.style.top = "-999999px";
-							document.body.appendChild(textArea);
-							textArea.focus();
-							textArea.select();
-							document.execCommand('copy');
-							textArea.remove();
-						}
+						await this.copyToClipboard(links)
 						this.$message.success("Copy link succeed!");
+					} catch (err) {
+						this.$message.error("Copy link failed!");
+					}
+				},
+				handleCopyAvailable: async function () {
+					try {
+						links = this.result.filter(elem => elem.ping > 0).map(elem => elem.link)
+						await this.copyToClipboard(links.join("\n"))
+						this.$message.success(`Copy ${links.length} link${links.length>1 ? "s" : ""} succeed!`);
 					} catch (err) {
 						this.$message.error("Copy link failed!");
 					}
@@ -536,7 +555,9 @@
 					const testids = this.multipleSelection.map(elem => elem.id)
 					const links = this.multipleSelection.map(elem => elem.link)
 					const data = { testMode: 3, ...this.getJSONOptions(), testids, links }
-					this.$refs.result.clearSelection()
+					this.$refs.result.clearSelection();
+					this.$refs.result.clearFilter();
+					this.$refs.result.clearSort();
 					console.log(`handleRetest: ${JSON.stringify(data)}`)
 					this.send(JSON.stringify(data));
 				},
@@ -914,6 +935,12 @@
 				},
 				filterPing: function (value, row) {
 					return value === "available" ? row.ping > 0 : true;
+				},
+				filterProtocol: function (value, row) {
+					if (value === "vmess") {
+						return row.protocol.startsWith("vmess")
+					}
+					return value === row.protocol
 				},
 				checkSelectable: function (row, index) {
 					return !!row.link && row.hasOwnProperty("id") && row.testing !== true

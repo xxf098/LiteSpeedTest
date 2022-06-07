@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/xxf098/lite-proxy/constant"
 	"github.com/xxf098/lite-proxy/download"
 	"golang.org/x/image/font"
 )
@@ -363,7 +364,7 @@ func (t *Table) drawPoweredBy() {
 		return
 	}
 	t.SetFontFace(fontface)
-	msg := "powered by https://github.com/xxf098"
+	msg := constant.Version + " powered by https://github.com/xxf098"
 	var x float64 = float64(t.width) - getWidth(fontface, msg) - t.options.lineWidth
 	var y float64 = (t.options.fontHeight+t.options.verticalpadding)*float64((len(t.nodes)+4)) + t.options.fontHeight*t.options.smallFontRatio
 	t.DrawString(msg, x, y)

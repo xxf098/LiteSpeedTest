@@ -58,3 +58,8 @@ func Fastrandn(x uint32) uint32
 func U16toa(i uint16) string {
 	return strconv.FormatUint(uint64(i), 10)
 }
+
+func IsUrl(message string) bool {
+	matched, err := regexp.MatchString(`^(?:https?:\/\/)(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)`, message)
+	return matched && err == nil
+}

@@ -2,25 +2,33 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 
+	C "github.com/xxf098/lite-proxy/constant"
 	"github.com/xxf098/lite-proxy/core"
 	"github.com/xxf098/lite-proxy/utils"
 	webServer "github.com/xxf098/lite-proxy/web"
 )
 
 var (
-	port = flag.Int("p", 8090, "set port")
-	test = flag.String("test", "", "test from command line with subscription link or file")
-	conf = flag.String("config", "", "command line options")
-	ping = flag.Int("ping", 2, "retry times to ping link on startup")
+	port    = flag.Int("p", 8090, "set port")
+	test    = flag.String("test", "", "test from command line with subscription link or file")
+	conf    = flag.String("config", "", "command line options")
+	ping    = flag.Int("ping", 2, "retry times to ping link on startup")
+	version = flag.Bool("v", false, "show current version of clash")
 )
 
 func main() {
 	flag.Parse()
+	if *version {
+		fmt.Printf("LiteSpeedTest  %s %s %s with %s %s\n", C.Version, runtime.GOOS, runtime.GOARCH, runtime.Version(), C.BuildTime)
+		return
+	}
 	link := ""
 	for _, arg := range os.Args {
 		if _, err := utils.CheckLink(arg); err == nil {

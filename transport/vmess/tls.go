@@ -1,8 +1,11 @@
 package vmess
 
 import (
+	"context"
 	"crypto/tls"
 	"net"
+
+	C "github.com/xxf098/lite-proxy/constant"
 )
 
 type TLSConfig struct {
@@ -21,6 +24,8 @@ func StreamTLSConn(conn net.Conn, cfg *TLSConfig) (net.Conn, error) {
 	}
 
 	tlsConn := tls.Client(conn, tlsConfig)
-	err := tlsConn.Handshake()
+	ctx, cancel := context.WithTimeout(context.Background(), C.DefaultTLSTimeout)
+	defer cancel()
+	err := tlsConn.HandshakeContext(ctx)
 	return tlsConn, err
 }

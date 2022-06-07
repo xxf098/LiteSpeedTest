@@ -26,7 +26,7 @@ type Vmess struct {
 }
 
 type VmessOption struct {
-	Name           string            `proxy:"name"`
+	Name           string            `proxy:"name,omitempty"`
 	Server         string            `proxy:"server"`
 	Port           uint16            `proxy:"port"`
 	UUID           string            `proxy:"uuid"`
@@ -55,6 +55,7 @@ type HTTP2Options struct {
 	Path string   `proxy:"path,omitempty"`
 }
 
+// https://github.com/Dreamacro/clash/blob/412b44a98185b2a61500628835afcbd2c115b00e/adapter/outbound/vmess.go#L75
 func (v *Vmess) StreamConn(c net.Conn, metadata *C.Metadata) (net.Conn, error) {
 	var err error
 	switch v.option.Network {

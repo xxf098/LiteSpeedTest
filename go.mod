@@ -1,6 +1,6 @@
 module github.com/xxf098/lite-proxy
 
-go 1.17
+go 1.18
 
 require (
 	github.com/Dreamacro/go-shadowsocks2 v0.1.7
