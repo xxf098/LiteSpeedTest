@@ -305,7 +305,7 @@ func getSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// convert yaml link
-	if strings.HasSuffix(filePath, ".yaml") && utils.IsUrl(filePath) {
+	if isYamlFile(filePath) && utils.IsUrl(filePath) {
 		links, err := getSubscriptionLinks(filePath)
 		if err != nil {
 			http.Error(w, err.Error(), 400)
@@ -316,7 +316,7 @@ func getSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// FIXME
-	if strings.HasSuffix(filePath, ".yaml") {
+	if isYamlFile(filePath) {
 		data, err := writeClash(filePath)
 		if err != nil {
 			http.Error(w, err.Error(), 400)

@@ -163,7 +163,7 @@ func parseFile(filepath string) ([]string, error) {
 		return nil, err
 	}
 	// clash
-	if strings.HasSuffix(filepath, ".yaml") {
+	if isYamlFile(filepath) {
 		return parseClashByLine(filepath)
 	}
 	data, err := ioutil.ReadFile(filepath)
@@ -568,4 +568,8 @@ func png2base64(path string) (string, error) {
 		return "", err
 	}
 	return "data:image/png;base64," + base64.StdEncoding.EncodeToString(bytes), nil
+}
+
+func isYamlFile(filePath string) bool {
+	return strings.HasSuffix(filePath, ".yaml") || strings.HasSuffix(filePath, ".yml")
 }
