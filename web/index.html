@@ -38,9 +38,9 @@
 									</el-radio-group>
 								</el-form-item>
 
-								<el-form-item label="订阅链接：" v-if="option<2">
+								<el-form-item label="链接：" v-if="option<2">
 									<el-input v-model="subscription" style="width: 800px" size="small"
-										@keyup.enter.native="submit" placeholder="支持 V2Ray/Trojan/SS/SSR 订阅链接，多节点链接及文件路径的批量测速"
+										@keyup.enter.native="submit" placeholder="支持 V2Ray/Trojan/SS/SSR 订阅链接，多个节点链接及文件路径的批量测速"
 										:disabled="loading||upload" clearable></el-input>
 									<el-upload :drag="checkUploadStatus('drag')" :v-if="checkUploadStatus('if')"
 										action="" :show-file-list="false" ref="upload" :http-request="handleFileChange"
@@ -302,8 +302,8 @@
 					init: {
 						speedtestModes: {
 							all: "全部",
+							pingonly: "Ping only",
 							speedonly: "Speed only",
-							pingonly: "Ping only"
 						},
 						pingMethods: {
 							googleping: "Google",
