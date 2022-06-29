@@ -67,6 +67,7 @@ type VmessConfig struct {
 	V              json.RawMessage `json:"v,omitempty"`
 	Security       string          `json:"security,omitempty"`
 	Scy            string          `json:"scy,omitempty"`
+	Encryption     string          `json:"encryption,omitempty"`
 	ResolveIP      bool            `json:"resolve_ip,omitempty"`
 	SkipCertVerify bool            `json:"skip-cert-verify"`
 	ServerName     string          `json:"sni"`
@@ -165,6 +166,10 @@ func rawMessageToTLS(raw json.RawMessage) (string, error) {
 	return s, nil
 }
 
+func checkCipher(cipher string) bool {
+	return cipher == "auto" || cipher == "none" || cipher == "aes-128-gcm" || cipher == "chacha20-poly1305"
+}
+
 func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error) {
 	port, err := rawMessageToInt(config.Port)
 	if err != nil {
@@ -218,10 +223,13 @@ func VmessConfigToVmessOption(config *VmessConfig) (*outbound.VmessOption, error
 			config.SkipCertVerify = true
 		}
 	}
-	if config.Security != "" {
+	// check cipher
+	if checkCipher(config.Security) {
 		vmessOption.Cipher = config.Security
-	} else if config.Scy != "" {
+	} else if checkCipher(config.Scy) {
 		vmessOption.Cipher = config.Scy
+	} else if checkCipher(config.Encryption) {
+		vmessOption.Cipher = config.Encryption
 	}
 	if config.Net == "ws" {
 		vmessOption.Network = "ws"
