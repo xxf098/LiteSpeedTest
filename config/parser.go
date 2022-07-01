@@ -72,6 +72,9 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 		if len(vmessOption.Network) < 1 {
 			vmessOption.Network = "tcp"
 		}
+		if len(vmessOption.Cipher) < 1 {
+			vmessOption.Cipher = "none"
+		}
 		skipCertVerify := vmessOption.SkipCertVerify
 		if len(vmessOption.ServerName) < 1 {
 			skipCertVerify = true
@@ -89,6 +92,7 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 			Host:           host,
 			SkipCertVerify: skipCertVerify,
 			ServerName:     vmessOption.ServerName,
+			Security:       vmessOption.Cipher,
 		}
 		data, err := json.MarshalIndent(&c, "", "    ")
 		if err != nil {
