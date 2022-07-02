@@ -69,8 +69,8 @@ type VmessConfig struct {
 	Scy            string          `json:"scy,omitempty"`
 	Encryption     string          `json:"encryption,omitempty"`
 	ResolveIP      bool            `json:"resolve_ip,omitempty"`
-	SkipCertVerify bool            `json:"skip-cert-verify"`
-	ServerName     string          `json:"sni"`
+	SkipCertVerify bool            `json:"skip-cert-verify,omitempty"`
+	ServerName     string          `json:"sni,omitempty"`
 	PortInt        int             `json:"-"`
 	AidInt         int             `json:"-"`
 	TLS            string          `json:"-"`
