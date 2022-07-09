@@ -379,8 +379,18 @@ func (p *ProfileTest) testAll(ctx context.Context) (render.Nodes, error) {
 	}
 	start := time.Now()
 	p.WriteMessage(getMsgByte(-1, "started"))
-	for i := range p.Links {
-		p.WriteMessage(gotserverMsg(i, p.Links[i], p.Options.GroupName))
+	// for i := range p.Links {
+	// 	p.WriteMessage(gotserverMsg(i, p.Links[i], p.Options.GroupName))
+	// }
+	for i := 0; i < linksCount; {
+		end := i + 9
+		if end > linksCount {
+			end = linksCount
+		}
+		links := p.Links[i:end]
+		msg := gotserversMsg(i, links, p.Options.GroupName)
+		p.WriteMessage(msg)
+		i += 9
 	}
 	guard := make(chan int, p.Options.Concurrency)
 	nodeChan := make(chan render.Node, linksCount)

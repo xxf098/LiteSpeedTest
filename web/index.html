@@ -818,6 +818,23 @@
 							};
 							this.$set(this.result, id, item);
 							break;
+						case "gotservers":
+							json.servers.forEach(json => {
+								item = {
+									id: json.id,
+									group: this.groupname == "" ? json.group : this.groupname,
+									remark: json.remarks,
+									server: json.server,
+									protocol: json.protocol,
+									link: json.link,
+									loss: "0.00%",
+									ping: "0.00",
+									speed: "0.00B",
+									maxspeed: "0.00B"
+								};
+								this.$set(this.result, json.id, item);
+							})
+							break;							
 						case "endone":
 							item = this.result[id];
 							item.testing = false
