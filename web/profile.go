@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -78,9 +79,21 @@ func ParseLinks(message string) ([]string, error) {
 }
 
 func parseProfiles(data string) ([]string, error) {
+	// encodeed url
+	links := strings.Split(data, "\n")
+	if len(links) > 1 {
+		for i, link := range links {
+			if l, err := url.Parse(link); err == nil {
+				if query, err := url.QueryUnescape(l.RawQuery); err == nil && query == l.RawQuery {
+					links[i] = l.String()
+				}
+			}
+		}
+		data = strings.Join(links, "\n")
+	}
 	reg := regexp.MustCompile(`((?i)vmess://[a-zA-Z0-9+_/=-]+([?#][^\s]+)?)|((?i)ssr://[a-zA-Z0-9+_/=-]+)|((?i)(ss|trojan)://(\S+?)@(\S+?):([0-9]{2,5})([?#][^\s]+))|((?i)(ss)://[a-zA-Z0-9+_/=-]+([?#][^\s]+))`)
 	matches := reg.FindAllStringSubmatch(data, -1)
-	links := make([]string, len(matches))
+	links = make([]string, len(matches))
 	for index, match := range matches {
 		links[index] = match[0]
 	}
