@@ -8,3 +8,33 @@
     overflow: hidden;
     text-overflow: ellipsis;   
 }
+
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 1.5rem;
+}
+
+.dashboard .progress {
+    position: relative;
+}
+
+.dashboard .progress .progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background-color: rgba(3, 256, 32, 0.2);
+}
+
+.dashboard .progress  div {
+    z-index: 1;
+}
+
+.dashboard .traffic,
+.dashboard .time {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
