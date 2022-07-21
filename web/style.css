@@ -48,6 +48,17 @@
     display: flex;
     align-items: center;
     font-weight: 500;
+    position: relative;
+}
+
+.dashboard .traffic i,
+.dashboard .time i {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    font-size: 1.8rem;
+    font-weight: 500;
 }
 
 .progress-item div,
@@ -60,7 +71,7 @@
 .progress-item span,
 .dashboard .traffic span,
 .dashboard .time span {
-    font-size: 18px;
+    font-size: 1.5rem;
     font-weight: bolder;
     color: black;
 }
