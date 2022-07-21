@@ -51,6 +51,7 @@
     position: relative;
 }
 
+.dashboard .progress .progress-inner i,
 .dashboard .traffic i,
 .dashboard .time i {
     position: absolute;
@@ -59,13 +60,13 @@
     transform: translateY(-50%);
     font-size: 1.8rem;
     font-weight: 500;
+    z-index: 1;
 }
 
 .progress-item div,
 .dashboard .traffic div,
 .dashboard .time div {
-    margin-bottom: 4px;
-    color: #666;
+    color: #555;
 }
 
 .progress-item span,

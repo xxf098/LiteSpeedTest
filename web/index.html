@@ -208,43 +208,44 @@
 						<div class="progress-bar" :style="{ 'width': testProgress(result) + '%' }"></div>
 						<div class="progress-inner">
 							<div class="progress-item">
-								<div>Progress:</div>
 								<span>{{ testProgress(result) }}%</span>
+								<div>Progress</div>
 							</div>
 							<div class="progress-item">
-								<div>Available:</div>
 								<span>{{ result.filter(item => item.ping > 0).length }}/{{ result.length }}</span>
+								<div>Available</div>
 							</div>
+							<i class="el-icon-check" v-if="testProgress(result)>99"></i>
 						</div>
 					</el-card>
 					<el-card class="category">
 						<ul>
 							<li>
-								<div>Vmess:</div>
 								<span>0</span>
+								<div>Vmess</div>
 							</li>
 							<li>
-								<div>Trojan:</div>
 								<span>0</span>
+								<div>Trojan</div>
 							</li>
 							<li>
-								<div>SSR:</div>
-							<span>0</span>
+								<span>0</span>
+								<div>SSR</div>
 							</li>
 							<li>
-								<div>SS:</div>
-							<span>0</span>
+								<span>0</span>
+								<div>SS</div>
 							</li>
 						</ul>
 					</el-card>
 					<el-card class="traffic">
-						<div>Traffic:</div>
 						<span> {{ bytesToSize(totalTraffic) }} </span>
+						<div>Traffic</div>
 						<i class="el-icon-download"></i>
 					</el-card>
 					<el-card class="time">
-						<div>Total Time:</div>
 						<span>{{ formatSeconds(totalTime) }}</span>
+						<div>Total Time</div>
 						<i class="el-icon-timer"></i>
 					</el-card>
 				</div>
