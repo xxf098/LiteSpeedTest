@@ -203,17 +203,27 @@
 
 				<br>
 
-				<div class="dashboard" v-if="result.length">
+				<div class="dashboard">
 					<el-card class="progress">
 						<div class="progress-bar" :style="{ 'width': testProgress(result) + '%' }"></div>
-						<div>Progress: {{ testProgress(result) }}%</div>
-						<div>Available: {{ result.filter(item => item.ping > 0).length }}/{{ result.length }}</div>
+						<div class="progress-inner">
+							<div class="progress-item">
+								<div>Progress:</div>
+								<span>{{ testProgress(result) }}%</span>
+							</div>
+							<div class="progress-item">
+								<div>Available:</div>
+								<span>{{ result.filter(item => item.ping > 0).length }}/{{ result.length }}</span>
+							</div>
+						</div>
 					</el-card>
 					<el-card class="traffic">
-						Traffic: {{ bytesToSize(totalTraffic) }}
+						<div>Traffic:</div>
+						<span> {{ bytesToSize(totalTraffic) }} </span>
 					</el-card>
 					<el-card class="time">
-						Total Time: {{ formatSeconds(totalTime) }}
+						<div>Total Time:</div>
+						<span>{{ formatSeconds(totalTime) }}</span>
 					</el-card>
 				</div>
 

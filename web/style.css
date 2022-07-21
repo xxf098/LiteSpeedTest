@@ -25,16 +25,42 @@
     left: 0;
     height: 100%;
     width: 0%;
-    background-color: rgba(3, 256, 32, 0.2);
+    background-color: rgba(3, 256, 32, 0.8);
 }
 
-.dashboard .progress  div {
+.dashboard .progress div {
     z-index: 1;
 }
 
+.dashboard .progress .progress-inner {
+    display: flex;
+}
+
+.dashboard .progress .progress-inner .progress-item:first-child {
+    flex-grow: 1;
+}
+
+.dashboard .progress .progress-inner .progress-item:nth-child(2) {
+    flex-grow: 1;
+}
 .dashboard .traffic,
 .dashboard .time {
     display: flex;
     align-items: center;
     font-weight: 500;
+}
+
+.progress-item div,
+.dashboard .traffic div,
+.dashboard .time div {
+    margin-bottom: 4px;
+    color: #666;
+}
+
+.progress-item span,
+.dashboard .traffic span,
+.dashboard .time span {
+    font-size: 18px;
+    font-weight: bolder;
+    color: black;
 }
