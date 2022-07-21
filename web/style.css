@@ -11,7 +11,7 @@
 
 .dashboard {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     grid-gap: 1.5rem;
 }
 
@@ -71,6 +71,30 @@
 .progress-item span,
 .dashboard .traffic span,
 .dashboard .time span {
+    font-size: 1.5rem;
+    font-weight: bolder;
+    color: black;
+}
+
+.dashboard ul {
+    display: flex;
+    list-style: none;
+    justify-content: space-between;
+    padding: 0;
+    margin: 0;
+}
+
+.dashboard ul li {
+    padding: 0;
+    margin: 0;
+}
+
+.dashboard ul li div {
+    margin-bottom: 4px;
+    color: #666;
+}
+
+.dashboard ul li span {
     font-size: 1.5rem;
     font-weight: bolder;
     color: black;
