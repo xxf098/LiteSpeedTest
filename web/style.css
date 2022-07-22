@@ -15,6 +15,14 @@
     grid-gap: 1.5rem;
 }
 
+.dashboard .progress:hover,
+.dashboard .category:hover,
+.dashboard .traffic:hover,
+.dashboard .time:hover {
+    transform: scale(1.05);
+    transition: 0.2s;
+}
+
 .dashboard .progress {
     position: relative;
 }
