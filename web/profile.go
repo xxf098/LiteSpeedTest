@@ -91,7 +91,7 @@ func parseProfiles(data string) ([]string, error) {
 		}
 		data = strings.Join(links, "\n")
 	}
-	reg := regexp.MustCompile(`((?i)vmess://[a-zA-Z0-9+_/=-]+([?#][^\s]+)?)|((?i)ssr://[a-zA-Z0-9+_/=-]+)|((?i)(ss|trojan)://(\S+?)@(\S+?):([0-9]{2,5})([?#][^\s]+))|((?i)(ss)://[a-zA-Z0-9+_/=-]+([?#][^\s]+))`)
+	reg := regexp.MustCompile(`((?i)vmess://[a-zA-Z0-9+_/=-]+([?#][^\s]+)?)|((?i)ssr://[a-zA-Z0-9+_/=-]+)|((?i)(vless|ss|trojan)://(\S+?)@(\S+?):([0-9]{2,5})([?#][^\s]+))|((?i)(ss)://[a-zA-Z0-9+_/=-]+([?#][^\s]+))`)
 	matches := reg.FindAllStringSubmatch(data, -1)
 	links = make([]string, len(matches))
 	for index, match := range matches {
