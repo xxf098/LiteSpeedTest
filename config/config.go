@@ -1,6 +1,8 @@
 package config
 
 import (
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/xxf098/lite-proxy/common"
@@ -118,6 +120,23 @@ func Link2Config(link string) (*Config, error) {
 				Port:     cfgSSR.Port,
 				Password: cfgSSR.Password,
 			}
+		}
+	case "vless":
+		u, err := url.Parse(link)
+		if err != nil {
+			return nil, err
+		}
+		port, err := strconv.Atoi(u.Port())
+		if err != nil {
+			return nil, err
+		}
+		password, _ := u.User.Password()
+		cfg = &Config{
+			Protocol: "vless",
+			Remarks:  u.Fragment,
+			Server:   u.Host,
+			Port:     port,
+			Password: password,
 		}
 	default:
 		return nil, common.NewError("Not Suported Link")

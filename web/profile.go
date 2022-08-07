@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -78,9 +79,21 @@ func ParseLinks(message string) ([]string, error) {
 }
 
 func parseProfiles(data string) ([]string, error) {
-	reg := regexp.MustCompile(`((?i)vmess://[a-zA-Z0-9+_/=-]+([?#][^\s]+)?)|((?i)ssr://[a-zA-Z0-9+_/=-]+)|((?i)(ss|trojan)://(\S+?)@(\S+?):([0-9]{2,5})([?#][^\s]+))|((?i)(ss)://[a-zA-Z0-9+_/=-]+([?#][^\s]+))`)
+	// encodeed url
+	links := strings.Split(data, "\n")
+	if len(links) > 1 {
+		for i, link := range links {
+			if l, err := url.Parse(link); err == nil {
+				if query, err := url.QueryUnescape(l.RawQuery); err == nil && query == l.RawQuery {
+					links[i] = l.String()
+				}
+			}
+		}
+		data = strings.Join(links, "\n")
+	}
+	reg := regexp.MustCompile(`((?i)vmess://[a-zA-Z0-9+_/=-]+([?#][^\s]+)?)|((?i)ssr://[a-zA-Z0-9+_/=-]+)|((?i)(vless|ss|trojan)://(\S+?)@(\S+?):([0-9]{2,5})([?#][^\s]+))|((?i)(ss)://[a-zA-Z0-9+_/=-]+([?#][^\s]+))`)
 	matches := reg.FindAllStringSubmatch(data, -1)
-	links := make([]string, len(matches))
+	links = make([]string, len(matches))
 	for index, match := range matches {
 		links[index] = match[0]
 	}
@@ -163,7 +176,7 @@ func parseFile(filepath string) ([]string, error) {
 		return nil, err
 	}
 	// clash
-	if strings.HasSuffix(filepath, ".yaml") {
+	if isYamlFile(filepath) {
 		return parseClashByLine(filepath)
 	}
 	data, err := ioutil.ReadFile(filepath)
@@ -379,8 +392,18 @@ func (p *ProfileTest) testAll(ctx context.Context) (render.Nodes, error) {
 	}
 	start := time.Now()
 	p.WriteMessage(getMsgByte(-1, "started"))
-	for i := range p.Links {
-		p.WriteMessage(gotserverMsg(i, p.Links[i], p.Options.GroupName))
+	// for i := range p.Links {
+	// 	p.WriteMessage(gotserverMsg(i, p.Links[i], p.Options.GroupName))
+	// }
+	for i := 0; i < linksCount; {
+		end := i + 9
+		if end > linksCount {
+			end = linksCount
+		}
+		links := p.Links[i:end]
+		msg := gotserversMsg(i, links, p.Options.GroupName)
+		p.WriteMessage(msg)
+		i += 9
 	}
 	guard := make(chan int, p.Options.Concurrency)
 	nodeChan := make(chan render.Node, linksCount)
@@ -568,4 +591,8 @@ func png2base64(path string) (string, error) {
 		return "", err
 	}
 	return "data:image/png;base64," + base64.StdEncoding.EncodeToString(bytes), nil
+}
+
+func isYamlFile(filePath string) bool {
+	return strings.HasSuffix(filePath, ".yaml") || strings.HasSuffix(filePath, ".yml")
 }

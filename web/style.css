@@ -8,3 +8,103 @@
     overflow: hidden;
     text-overflow: ellipsis;   
 }
+
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 1.5rem;
+}
+
+.dashboard .progress:hover,
+.dashboard .category:hover,
+.dashboard .traffic:hover,
+.dashboard .time:hover {
+    transform: scale(1.05);
+    transition: 0.2s;
+}
+
+.dashboard .progress {
+    position: relative;
+}
+
+.dashboard .progress .progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background-color: #66b1ff;
+}
+
+.dashboard .progress div {
+    z-index: 1;
+}
+
+.dashboard .progress .progress-inner {
+    display: flex;
+}
+
+.dashboard .progress .progress-inner .progress-item:first-child {
+    flex-grow: 1;
+}
+
+.dashboard .progress .progress-inner .progress-item:nth-child(2) {
+    flex-grow: 1;
+}
+.dashboard .traffic,
+.dashboard .time {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    position: relative;
+}
+
+.dashboard .progress .progress-inner i,
+.dashboard .traffic i,
+.dashboard .time i {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    font-size: 1.8rem;
+    font-weight: 500;
+    z-index: 1;
+}
+
+.progress-item div,
+.dashboard .traffic div,
+.dashboard .time div {
+    color: #555;
+}
+
+.progress-item span,
+.dashboard .traffic span,
+.dashboard .time span {
+    font-size: 1.5rem;
+    font-weight: bolder;
+    color: black;
+}
+
+.dashboard ul {
+    display: flex;
+    list-style: none;
+    justify-content: space-between;
+    padding: 0;
+    margin: 0;
+}
+
+.dashboard ul li {
+    padding: 0;
+    margin: 0;
+}
+
+.dashboard ul li div {
+    margin-bottom: 4px;
+    color: #666;
+}
+
+.dashboard ul li span {
+    font-size: 1.5rem;
+    font-weight: bolder;
+    color: black;
+}

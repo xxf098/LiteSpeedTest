@@ -18,19 +18,20 @@ const (
 )
 
 type Message struct {
-	ID       int    `json:"id"`
-	Info     string `json:"info"`
-	Remarks  string `json:"remarks"`
-	Server   string `json:"server"`
-	Group    string `json:"group"`
-	Ping     int64  `json:"ping"`
-	Lost     string `json:"lost"`
-	Speed    string `json:"speed"`
-	MaxSpeed string `json:"maxspeed"`
-	Traffic  int64  `json:"traffic"`
-	Link     string `json:"link"`
-	Protocol string `json:"protocol"`
-	PicData  string `json:"data"`
+	ID       int       `json:"id"`
+	Info     string    `json:"info"`
+	Remarks  string    `json:"remarks"`
+	Server   string    `json:"server"`
+	Group    string    `json:"group"`
+	Ping     int64     `json:"ping"`
+	Lost     string    `json:"lost"`
+	Speed    string    `json:"speed"`
+	MaxSpeed string    `json:"maxspeed"`
+	Traffic  int64     `json:"traffic"`
+	Link     string    `json:"link"`
+	Protocol string    `json:"protocol"`
+	PicData  string    `json:"data,omitempty"`
+	Servers  []Message `json:"servers"`
 }
 
 func GetRemarks(link string) (string, string, error) {
@@ -55,6 +56,28 @@ func gotserverMsg(id int, link string, groupName string) []byte {
 		msg.Link = link
 	}
 	b, _ := json.Marshal(msg)
+	return b
+}
+
+func gotserversMsg(startID int, links []string, groupName string) []byte {
+	servers := Message{ID: startID, Info: "gotservers"}
+	for i, link := range links {
+		id := startID + i
+		msg := Message{ID: id, Info: "gotserver"}
+		cfg, err := config.Link2Config(link)
+		if err == nil {
+			msg.Group = groupName
+			msg.Remarks = cfg.Remarks
+			msg.Server = fmt.Sprintf("%s:%d", cfg.Server, cfg.Port)
+			msg.Protocol = cfg.Protocol
+			if cfg.Protocol == "vmess" && cfg.Net != "" {
+				msg.Protocol = fmt.Sprintf("%s/%s", cfg.Protocol, cfg.Net)
+			}
+			msg.Link = link
+		}
+		servers.Servers = append(servers.Servers, msg)
+	}
+	b, _ := json.Marshal(servers)
 	return b
 }
 

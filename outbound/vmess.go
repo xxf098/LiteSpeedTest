@@ -42,6 +42,7 @@ type VmessOption struct {
 	SkipCertVerify bool              `proxy:"skip-cert-verify,omitempty"`
 	ServerName     string            `proxy:"servername,omitempty"`
 	Type           string            `proxy:"type,omitempty"`
+	WSOpts         WSOptions         `proxy:"ws-opts,omitempty"`
 }
 
 type HTTPOptions struct {
@@ -53,6 +54,13 @@ type HTTPOptions struct {
 type HTTP2Options struct {
 	Host []string `proxy:"host,omitempty"`
 	Path string   `proxy:"path,omitempty"`
+}
+
+type WSOptions struct {
+	Path                string            `proxy:"path,omitempty"`
+	Headers             map[string]string `proxy:"headers,omitempty"`
+	MaxEarlyData        int               `proxy:"max-early-data,omitempty"`
+	EarlyDataHeaderName string            `proxy:"early-data-header-name,omitempty"`
 }
 
 // https://github.com/Dreamacro/clash/blob/412b44a98185b2a61500628835afcbd2c115b00e/adapter/outbound/vmess.go#L75

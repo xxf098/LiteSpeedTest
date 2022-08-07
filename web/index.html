@@ -38,9 +38,9 @@
 									</el-radio-group>
 								</el-form-item>
 
-								<el-form-item label="订阅链接：" v-if="option<2">
+								<el-form-item label="链接：" v-if="option<2">
 									<el-input v-model="subscription" style="width: 800px" size="small"
-										@keyup.enter.native="submit" placeholder="支持 V2Ray/Trojan/SS/SSR 订阅链接，多节点链接及文件路径的批量测速"
+										@keyup.enter.native="submit" placeholder="支持 V2Ray/Trojan/SS/SSR 订阅链接，多个节点链接及文件路径的批量测速"
 										:disabled="loading||upload" clearable></el-input>
 									<el-upload :drag="checkUploadStatus('drag')" :v-if="checkUploadStatus('if')"
 										action="" :show-file-list="false" ref="upload" :http-request="handleFileChange"
@@ -161,6 +161,7 @@
 									<el-dropdown-item @click.native="handleCopySub()">复制订阅链接</el-dropdown-item>
 									<el-dropdown-item v-if="!loading && result.length" @click.native="handleCopyAvailable()">复制可用节点</el-dropdown-item>
 									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">复制节点</el-dropdown-item>
+									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">筛选节点</el-dropdown-item>
 									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleSave()">导出节点</el-dropdown-item>
 									<!-- <el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item> -->
 									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleQRCode()">显示二维码</el-dropdown-item>
@@ -198,11 +199,56 @@
 							</el-table-column>
 						</el-table>
 					</el-container>
-					<br>
-					<div v-if="result.length">Progress: {{ Math.floor(result.filter(item => item.ping !== '0.00' && item.ping != "测试中...").length/result.length*100) }}%&nbsp;&nbsp;Available: {{ result.filter(item => item.ping > 0).length }}/{{ result.length }}&nbsp;&nbsp;Total Traffic: {{ bytesToSize(totalTraffic) }}&nbsp;&nbsp;Total Time: {{
-						formatSeconds(totalTime) }}</div>
 				</el-card>
 
+				<br>
+
+				<div class="dashboard">
+					<el-card class="progress">
+						<div class="progress-bar" :style="{ 'width': testProgress(result) + '%' }"></div>
+						<div class="progress-inner">
+							<div class="progress-item">
+								<span>{{ testProgress(result) }}%</span>
+								<div>Progress</div>
+							</div>
+							<div class="progress-item">
+								<span>{{ result.filter(item => item.ping > 0).length }}/{{ result.length }}</span>
+								<div>Available</div>
+							</div>
+							<i class="el-icon-check" v-if="testProgress(result)>99"></i>
+						</div>
+					</el-card>
+					<el-card class="category" v-memo="[result]">
+						<ul>
+							<li>
+								<span>{{ result.filter(item => item.protocol.startsWith("vmess")).length }}</span>
+								<div>Vmess</div>
+							</li>
+							<li>
+								<span>{{ result.filter(item => item.protocol === "trojan").length }}</span>
+								<div>Trojan</div>
+							</li>
+							<li>
+								<span>{{ result.filter(item => item.protocol === "ssr").length }}</span>
+								<div>SSR</div>
+							</li>
+							<li>
+								<span>{{ result.filter(item => item.protocol === "ss").length }}</span>
+								<div>SS</div>
+							</li>
+						</ul>
+					</el-card>
+					<el-card class="traffic">
+						<span> {{ bytesToSize(totalTraffic) }} </span>
+						<div>Traffic</div>
+						<i class="el-icon-download"></i>
+					</el-card>
+					<el-card class="time">
+						<span>{{ formatSeconds(totalTime) }}</span>
+						<div>Total Time</div>
+						<i class="el-icon-timer"></i>
+					</el-card>
+				</div>
 
 				<br>
 
@@ -302,8 +348,8 @@
 					init: {
 						speedtestModes: {
 							all: "全部",
+							pingonly: "Ping only",
 							speedonly: "Speed only",
-							pingonly: "Ping only"
 						},
 						pingMethods: {
 							googleping: "Google",
@@ -334,6 +380,9 @@
 					const i = parseInt(Math.floor(Math.log(Math.abs(bytes)) / Math.log(1024)), 10);
 					if (i === 0) return `${bytes} ${sizes[i]})`;
 					return `${(bytes / (1024 ** i)).toFixed(1)} ${sizes[i]}`;
+				},
+				testProgress: function (result) {
+					return result.length ? Math.floor(result.filter(item => item.ping !== '0.00' && item.ping != "测试中...").length/result.length*100) : 0
 				},
 				formatSeconds: function (seconds) {
 					let totalTime = seconds > 0 ? seconds : 0
@@ -483,7 +532,7 @@
 				},
 				handleCopySub: async function () {
 					// url
-					if (this.subscription.trim().startsWith("http") && !this.subscription.trim().endsWith("yaml")) {
+					if (this.subscription.trim().startsWith("http") && !this.subscription.trim().endsWith(".yaml") && !!this.subscription.trim().endsWith(".yml")) {
 						await navigator.clipboard.writeText(this.subscription.trim())
 						this.$message.success("Copy Subscription succeed!");
 						return
@@ -817,6 +866,23 @@
 							};
 							this.$set(this.result, id, item);
 							break;
+						case "gotservers":
+							json.servers.forEach(json => {
+								item = {
+									id: json.id,
+									group: this.groupname == "" ? json.group : this.groupname,
+									remark: json.remarks,
+									server: json.server,
+									protocol: json.protocol,
+									link: json.link,
+									loss: "0.00%",
+									ping: "0.00",
+									speed: "0.00B",
+									maxspeed: "0.00B"
+								};
+								this.$set(this.result, json.id, item);
+							})
+							break;							
 						case "endone":
 							item = this.result[id];
 							item.testing = false

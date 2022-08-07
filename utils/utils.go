@@ -14,7 +14,7 @@ import (
 )
 
 func CheckLink(link string) ([]string, error) {
-	r := regexp.MustCompile("(?i)^(vmess|trojan|ss|ssr)://.+")
+	r := regexp.MustCompile("(?i)^(vmess|trojan|vless|ss|ssr)://.+")
 	matches := r.FindStringSubmatch(link)
 	if len(matches) < 2 {
 		return nil, common.NewError("Not Suported Link")

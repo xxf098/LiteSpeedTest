@@ -65,12 +65,23 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 		if vmessOption.TLS {
 			tls = "tls"
 		}
+		if len(vmessOption.WSPath) == 0 && len(vmessOption.WSOpts.Path) > 0 {
+			vmessOption.WSPath = vmessOption.WSOpts.Path
+		}
 		host := ""
 		if h, ok := vmessOption.WSHeaders["Host"]; ok {
 			host = h
+		} else {
+			headers := vmessOption.WSOpts.Headers
+			if h, ok := headers["Host"]; ok {
+				host = h
+			}
 		}
 		if len(vmessOption.Network) < 1 {
 			vmessOption.Network = "tcp"
+		}
+		if len(vmessOption.Cipher) < 1 {
+			vmessOption.Cipher = "none"
 		}
 		skipCertVerify := vmessOption.SkipCertVerify
 		if len(vmessOption.ServerName) < 1 {
@@ -89,6 +100,7 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 			Host:           host,
 			SkipCertVerify: skipCertVerify,
 			ServerName:     vmessOption.ServerName,
+			Security:       vmessOption.Cipher,
 		}
 		data, err := json.MarshalIndent(&c, "", "    ")
 		if err != nil {

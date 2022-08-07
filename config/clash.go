@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/xxf098/lite-proxy/dns"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // General config
