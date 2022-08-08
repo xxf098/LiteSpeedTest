@@ -12,18 +12,16 @@
 .dashboard {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 12px;
     position: fixed;
     top: 68px;
     right: 4.5%;
-    width: 20%;
+    width: 22%;
     z-index: 1000;
 }
 
 .dashboard .progress:hover,
-.dashboard .category:hover,
-.dashboard .traffic:hover,
-.dashboard .time:hover {
+.dashboard .category:hover {
     transform: scale(1.05);
     transition: 0.2s;
 }
@@ -47,22 +45,9 @@
 
 .dashboard .progress .progress-inner {
     display: flex;
+    justify-content: space-between;
 }
 
-.dashboard .progress .progress-inner .progress-item:first-child {
-    flex-grow: 1;
-}
-
-.dashboard .progress .progress-inner .progress-item:nth-child(2) {
-    flex-grow: 1;
-}
-.dashboard .traffic,
-.dashboard .time {
-    display: flex;
-    align-items: center;
-    font-weight: 500;
-    position: relative;
-}
 
 .dashboard .progress .progress-inner i,
 .dashboard .traffic i,

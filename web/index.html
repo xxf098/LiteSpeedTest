@@ -215,7 +215,14 @@
 								<span>{{ result.filter(item => item.ping > 0).length }}/{{ result.length }}</span>
 								<div>Available</div>
 							</div>
-							<i class="el-icon-check" v-if="testProgress(result)>99"></i>
+							<div class="traffic">
+								<span> {{ bytesToSize(totalTraffic) }} </span>
+								<div>Traffic</div>
+							</div>
+							<div class="time">
+								<span>{{ formatSeconds(totalTime) }}</span>
+								<div>Time</div>
+							</div>
 						</div>
 					</el-card>
 					<el-card class="category" v-memo="[result]">
@@ -237,16 +244,6 @@
 								<div>SS</div>
 							</li>
 						</ul>
-					</el-card>
-					<el-card class="traffic">
-						<span> {{ bytesToSize(totalTraffic) }} </span>
-						<div>Traffic</div>
-						<i class="el-icon-download"></i>
-					</el-card>
-					<el-card class="time">
-						<span>{{ formatSeconds(totalTime) }}</span>
-						<div>Total Time</div>
-						<i class="el-icon-timer"></i>
 					</el-card>
 				</div>
 
