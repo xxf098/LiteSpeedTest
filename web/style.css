@@ -20,14 +20,31 @@
     z-index: 1000;
 }
 
-.dashboard .progress:hover,
+/* .dashboard .progress:hover,
 .dashboard .category:hover {
     transform: scale(1.05);
     transition: 0.2s;
-}
+} */
 
 .dashboard .progress {
     position: relative;
+}
+
+.dashboard  .icon {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, 100%);
+    left: 0px;
+    z-index: 9999;
+
+}
+
+.dashboard .icon i {
+    font-size: 30px;
+    padding: 10x;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
 }
 
 .dashboard .progress .progress-bar {

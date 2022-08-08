@@ -245,6 +245,10 @@
 							</li>
 						</ul>
 					</el-card>
+					<div class="icon" @click="handleDashboardCollapsed()">
+						<i v-if="!dashboardCollapsed" class="el-icon-right" ></i>
+						<i v-if="dashboardCollapsed" class="el-icon-back"></i>
+					</div>
 				</div>
 
 				<br>
@@ -341,6 +345,7 @@
 					fontSize: 24,
 					theme: "rainbow",
 					generateResultJSON: "",
+					dashboardCollapsed: false,
 
 					init: {
 						speedtestModes: {
@@ -627,6 +632,10 @@
 					link.click()
 					document.body.removeChild(link)
 					
+				},
+				handleDashboardCollapsed: function () {
+					console.log(this.dashboardCollapsed)
+					this.dashboardCollapsed = !this.dashboardCollapsed
 				},
 				handleSave: function () {
 					const links = this.multipleSelection.map(elem => {
