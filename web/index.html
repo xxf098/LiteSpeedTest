@@ -203,7 +203,7 @@
 
 				<br>
 
-				<div class="dashboard">
+				<div :class="['dashboard', dashboardCollapsed ? 'collapsed' : '']">
 					<el-card class="progress">
 						<div class="progress-bar" :style="{ 'width': testProgress(result) + '%' }"></div>
 						<div class="progress-inner">
@@ -211,15 +211,15 @@
 								<span>{{ testProgress(result) }}%</span>
 								<div>Progress</div>
 							</div>
-							<div class="progress-item">
+							<div v-if="!dashboardCollapsed" class="progress-item">
 								<span>{{ result.filter(item => item.ping > 0).length }}/{{ result.length }}</span>
 								<div>Available</div>
 							</div>
-							<div class="traffic">
+							<div v-if="!dashboardCollapsed" class="traffic">
 								<span> {{ bytesToSize(totalTraffic) }} </span>
 								<div>Traffic</div>
 							</div>
-							<div class="time">
+							<div v-if="!dashboardCollapsed" class="time">
 								<span>{{ formatSeconds(totalTime) }}</span>
 								<div>Time</div>
 							</div>
@@ -231,15 +231,15 @@
 								<span>{{ result.filter(item => item.protocol.startsWith("vmess")).length }}</span>
 								<div>Vmess</div>
 							</li>
-							<li>
+							<li v-if="!dashboardCollapsed">
 								<span>{{ result.filter(item => item.protocol === "trojan").length }}</span>
 								<div>Trojan</div>
 							</li>
-							<li>
+							<li v-if="!dashboardCollapsed">
 								<span>{{ result.filter(item => item.protocol === "ssr").length }}</span>
 								<div>SSR</div>
 							</li>
-							<li>
+							<li v-if="!dashboardCollapsed">
 								<span>{{ result.filter(item => item.protocol === "ss").length }}</span>
 								<div>SS</div>
 							</li>

@@ -18,6 +18,11 @@
     right: 4.5%;
     width: 22%;
     z-index: 1000;
+    transition: all 0.5s;
+}
+
+.dashboard.collapsed {
+    width: 5%;
 }
 
 /* .dashboard .progress:hover,
