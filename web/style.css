@@ -10,9 +10,14 @@
 }
 
 .dashboard {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-gap: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: fixed;
+    top: 68px;
+    right: 4.5%;
+    width: 20%;
+    z-index: 1000;
 }
 
 .dashboard .progress:hover,
