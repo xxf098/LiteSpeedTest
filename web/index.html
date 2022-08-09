@@ -227,7 +227,11 @@
 					</el-card>
 					<el-card class="category" v-memo="[result]">
 						<ul>
-							<li>
+							<li v-if="dashboardCollapsed">
+								<span>{{ result.filter(item => item.ping > 0).length }}/{{ result.length }}</span>
+								<div>Available</div>
+							</li>
+							<li v-if="!dashboardCollapsed">
 								<span>{{ result.filter(item => item.protocol.startsWith("vmess")).length }}</span>
 								<div>Vmess</div>
 							</li>
@@ -345,7 +349,7 @@
 					fontSize: 24,
 					theme: "rainbow",
 					generateResultJSON: "",
-					dashboardCollapsed: false,
+					dashboardCollapsed: true,
 
 					init: {
 						speedtestModes: {
