@@ -47,9 +47,13 @@
 .dashboard .icon i {
     font-size: 30px;
     padding: 10x;
-    border-radius: 20px;
+    border-radius: 50%;
     text-align: center;
     box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard .icon:hover i {
+    color: #66b1ff;
 }
 
 .dashboard .progress .progress-bar {
