@@ -10,21 +10,50 @@
 }
 
 .dashboard {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-gap: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: fixed;
+    top: 68px;
+    right: 4.5%;
+    width: 22%;
+    z-index: 1000;
+    transition: all 0.5s;
 }
 
-.dashboard .progress:hover,
-.dashboard .category:hover,
-.dashboard .traffic:hover,
-.dashboard .time:hover {
+.dashboard.collapsed {
+    width: 6%;
+}
+
+/* .dashboard .progress:hover,
+.dashboard .category:hover {
     transform: scale(1.05);
     transition: 0.2s;
-}
+} */
 
 .dashboard .progress {
     position: relative;
+}
+
+.dashboard  .icon {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, 100%);
+    left: 0px;
+    z-index: 9999;
+
+}
+
+.dashboard .icon i {
+    font-size: 30px;
+    padding: 10x;
+    border-radius: 50%;
+    text-align: center;
+    box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard .icon:hover i {
+    color: #66b1ff;
 }
 
 .dashboard .progress .progress-bar {
@@ -42,22 +71,9 @@
 
 .dashboard .progress .progress-inner {
     display: flex;
+    justify-content: space-between;
 }
 
-.dashboard .progress .progress-inner .progress-item:first-child {
-    flex-grow: 1;
-}
-
-.dashboard .progress .progress-inner .progress-item:nth-child(2) {
-    flex-grow: 1;
-}
-.dashboard .traffic,
-.dashboard .time {
-    display: flex;
-    align-items: center;
-    font-weight: 500;
-    position: relative;
-}
 
 .dashboard .progress .progress-inner i,
 .dashboard .traffic i,

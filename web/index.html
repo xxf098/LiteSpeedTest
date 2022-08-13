@@ -203,7 +203,7 @@
 
 				<br>
 
-				<div class="dashboard">
+				<div :class="['dashboard', dashboardCollapsed ? 'collapsed' : '']">
 					<el-card class="progress">
 						<div class="progress-bar" :style="{ 'width': testProgress(result) + '%' }"></div>
 						<div class="progress-inner">
@@ -211,43 +211,48 @@
 								<span>{{ testProgress(result) }}%</span>
 								<div>Progress</div>
 							</div>
-							<div class="progress-item">
+							<div v-if="!dashboardCollapsed" class="progress-item">
 								<span>{{ result.filter(item => item.ping > 0).length }}/{{ result.length }}</span>
 								<div>Available</div>
 							</div>
-							<i class="el-icon-check" v-if="testProgress(result)>99"></i>
+							<div v-if="!dashboardCollapsed" class="traffic">
+								<span> {{ bytesToSize(totalTraffic) }} </span>
+								<div>Traffic</div>
+							</div>
+							<div v-if="!dashboardCollapsed" class="time">
+								<span>{{ formatSeconds(totalTime) }}</span>
+								<div>Time</div>
+							</div>
 						</div>
 					</el-card>
 					<el-card class="category" v-memo="[result]">
 						<ul>
-							<li>
+							<li v-if="dashboardCollapsed">
+								<span>{{ result.filter(item => item.ping > 0).length }}/{{ result.length }}</span>
+								<div>Available</div>
+							</li>
+							<li v-if="!dashboardCollapsed">
 								<span>{{ result.filter(item => item.protocol.startsWith("vmess")).length }}</span>
 								<div>Vmess</div>
 							</li>
-							<li>
+							<li v-if="!dashboardCollapsed">
 								<span>{{ result.filter(item => item.protocol === "trojan").length }}</span>
 								<div>Trojan</div>
 							</li>
-							<li>
+							<li v-if="!dashboardCollapsed">
 								<span>{{ result.filter(item => item.protocol === "ssr").length }}</span>
 								<div>SSR</div>
 							</li>
-							<li>
+							<li v-if="!dashboardCollapsed">
 								<span>{{ result.filter(item => item.protocol === "ss").length }}</span>
 								<div>SS</div>
 							</li>
 						</ul>
 					</el-card>
-					<el-card class="traffic">
-						<span> {{ bytesToSize(totalTraffic) }} </span>
-						<div>Traffic</div>
-						<i class="el-icon-download"></i>
-					</el-card>
-					<el-card class="time">
-						<span>{{ formatSeconds(totalTime) }}</span>
-						<div>Total Time</div>
-						<i class="el-icon-timer"></i>
-					</el-card>
+					<div class="icon" @click="handleDashboardCollapsed()">
+						<i v-if="!dashboardCollapsed" class="el-icon-right" ></i>
+						<i v-if="dashboardCollapsed" class="el-icon-back"></i>
+					</div>
 				</div>
 
 				<br>
@@ -260,7 +265,6 @@
 				</el-card>
 			</el-col>
 		</el-row>
-		<!-- el-col -->
 		<el-dialog title="Share Links with QRcode" center :visible.sync="qrCodeDialogVisible" width="40%"
 			@opened="handleQRCodeCreate" :before-close="qrCodeHandleClose">
 			<el-scrollbar style="height:360px;">
@@ -344,6 +348,7 @@
 					fontSize: 24,
 					theme: "rainbow",
 					generateResultJSON: "",
+					dashboardCollapsed: true,
 
 					init: {
 						speedtestModes: {
@@ -532,7 +537,7 @@
 				},
 				handleCopySub: async function () {
 					// url
-					if (this.subscription.trim().startsWith("http") && !this.subscription.trim().endsWith(".yaml") && !!this.subscription.trim().endsWith(".yml")) {
+					if (this.subscription.trim().startsWith("http") && !this.subscription.trim().endsWith(".yaml") && !this.subscription.trim().endsWith(".yml")) {
 						await navigator.clipboard.writeText(this.subscription.trim())
 						this.$message.success("Copy Subscription succeed!");
 						return
@@ -630,6 +635,10 @@
 					link.click()
 					document.body.removeChild(link)
 					
+				},
+				handleDashboardCollapsed: function () {
+					console.log(this.dashboardCollapsed)
+					this.dashboardCollapsed = !this.dashboardCollapsed
 				},
 				handleSave: function () {
 					const links = this.multipleSelection.map(elem => {

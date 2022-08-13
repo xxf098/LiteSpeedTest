@@ -52,6 +52,9 @@ func getSubscriptionLinks(link string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	if isYamlFile(link) {
+		return parseClash(string(data))
+	}
 	msg, err := utils.DecodeB64(string(data))
 	if err != nil {
 		return parseClash(string(data))
