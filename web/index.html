@@ -213,7 +213,7 @@
 							</div>
 							<div v-if="!dashboardCollapsed" class="progress-item">
 								<span>{{ result.filter(item => item.ping > 0).length }}/{{ result.length }}</span>
-								<div>Available</div>
+								<div>Ratio</div>
 							</div>
 							<div v-if="!dashboardCollapsed" class="traffic">
 								<span> {{ bytesToSize(totalTraffic) }} </span>
@@ -229,7 +229,7 @@
 						<ul>
 							<li v-if="dashboardCollapsed">
 								<span>{{ result.filter(item => item.ping > 0).length }}/{{ result.length }}</span>
-								<div>Available</div>
+								<div>Ratio</div>
 							</li>
 							<li v-if="!dashboardCollapsed">
 								<span>{{ result.filter(item => item.protocol.startsWith("vmess")).length }}</span>
