@@ -81,6 +81,39 @@ func ParseLinks(message string) ([]string, error) {
 	return links, err
 }
 
+// return the first link
+func PeekClash(input string) (string, error) {
+	scanner := bufio.NewScanner(strings.NewReader(input))
+	proxiesStart := false
+	data := []byte{}
+	for scanner.Scan() {
+		b := scanner.Bytes()
+		trimLine := strings.TrimSpace(string(b))
+		if trimLine == "proxy-groups:" || trimLine == "rules:" || trimLine == "Proxy Group:" {
+			break
+		}
+		if proxiesStart {
+			if _, err := config.ParseBaseProxy(trimLine); err != nil {
+				continue
+			}
+			data = append(data, b...)
+			data = append(data, byte('\n'))
+			break
+		}
+		if !proxiesStart && (trimLine == "proxies:" || trimLine == "Proxy:") {
+			proxiesStart = true
+			b = []byte("proxies:")
+		}
+		data = append(data, b...)
+		data = append(data, byte('\n'))
+	}
+	links, err := parseClashByte(data)
+	if err != nil || len(links) < 1 {
+		return "", err
+	}
+	return links[0], nil
+}
+
 func parseProfiles(data string) ([]string, error) {
 	// encodeed url
 	links := strings.Split(data, "\n")
