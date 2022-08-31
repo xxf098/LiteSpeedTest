@@ -81,11 +81,12 @@ func ParseLinks(message string) ([]string, error) {
 	return links, err
 }
 
-// return the first link
-func PeekClash(input string) (string, error) {
+// FIXME: return the top n links
+func PeekClash(input string, n int) ([]string, error) {
 	scanner := bufio.NewScanner(strings.NewReader(input))
 	proxiesStart := false
 	data := []byte{}
+	linkCount := 0
 	for scanner.Scan() {
 		b := scanner.Bytes()
 		trimLine := strings.TrimSpace(string(b))
@@ -96,9 +97,15 @@ func PeekClash(input string) (string, error) {
 			if _, err := config.ParseBaseProxy(trimLine); err != nil {
 				continue
 			}
+			if strings.HasPrefix(trimLine, "-") {
+				if linkCount >= n {
+					break
+				}
+				linkCount += 1
+			}
 			data = append(data, b...)
 			data = append(data, byte('\n'))
-			break
+			continue
 		}
 		if !proxiesStart && (trimLine == "proxies:" || trimLine == "Proxy:") {
 			proxiesStart = true
@@ -107,11 +114,16 @@ func PeekClash(input string) (string, error) {
 		data = append(data, b...)
 		data = append(data, byte('\n'))
 	}
+	fmt.Println(string(data))
 	links, err := parseClashByte(data)
 	if err != nil || len(links) < 1 {
-		return "", err
+		return []string{}, err
 	}
-	return links[0], nil
+	endIndex := n
+	if endIndex > len(links) {
+		endIndex = len(links)
+	}
+	return links[:endIndex], nil
 }
 
 func parseProfiles(data string) ([]string, error) {
