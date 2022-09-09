@@ -36,6 +36,12 @@ Run as http/socks5 proxy:
     go build -o lite
 ```
 
+### Docker
+```bash
+ docker build --network=host  -t lite:0.1 -f ./docker/Dockerfile ./
+ docker run lite:0.1
+```
+
 ## Credits
 
 - [clash](https://github.com/Dreamacro/clash)
