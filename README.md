@@ -39,7 +39,7 @@ Run as http/socks5 proxy:
 ### Docker
 ```bash
  docker build --network=host  -t lite:0.1 -f ./docker/Dockerfile ./
- docker run lite:0.1
+ docker run -p 10888:10888/tcp lite:0.1
 ```
 
 ## Credits
