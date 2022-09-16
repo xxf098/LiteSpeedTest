@@ -87,12 +87,16 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 		if len(vmessOption.ServerName) < 1 {
 			skipCertVerify = true
 		}
+		id := vmessOption.UUID
+		if len(id) < 1 {
+			id = vmessOption.Password
+		}
 		c := VmessConfigMarshal{
 			Ps:             namePrefix + vmessOption.Name,
 			Add:            vmessOption.Server,
 			Port:           vmessOption.Port,
 			Aid:            vmessOption.AlterID,
-			ID:             vmessOption.UUID,
+			ID:             id,
 			Type:           vmessOption.Cipher,
 			TLS:            tls,
 			Net:            vmessOption.Network,
