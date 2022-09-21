@@ -4,6 +4,9 @@ ADD / /go/lite
 WORKDIR /go/lite
 RUN go env -w GOPROXY=https://goproxy.cn,direct
 RUN go mod tidy
+RUN GOOS=js GOARCH=wasm go get -u ./...
+RUN cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./web/wasm_exec.js
+RUN GOOS=js GOARCH=wasm go build -o ./web/main.wasm ./wasm
 RUN make dockerbin
 
 # FROM gcr.io/distroless/static-debian11
