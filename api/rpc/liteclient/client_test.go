@@ -8,11 +8,14 @@ import (
 
 func TestStartClient(t *testing.T) {
 	go s.StartServer(10999)
-	replay, err := StartClient("127.0.0.1:10999")
+	reply, err := StartClient("127.0.0.1:10999")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if replay.Message != "ok" {
+	if len(reply) < 1 {
+		t.Fail()
+	}
+	if reply[0].Message != "ok" {
 		t.Fail()
 	}
 

@@ -2,13 +2,14 @@ package liteclient
 
 import (
 	"context"
+	"io"
 
 	pb "github.com/xxf098/lite-proxy/api/rpc/lite"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func StartClient(addr string) (*pb.TestReply, error) {
+func StartClient(addr string) ([]*pb.TestReply, error) {
 	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
@@ -19,5 +20,22 @@ func StartClient(addr string) (*pb.TestReply, error) {
 	req := pb.TestRequest{
 		Name: "ok",
 	}
-	return c.StartTest(ctx, &req)
+	stream, err := c.StartTest(ctx, &req)
+	if err != nil {
+		return nil, err
+	}
+	result := []*pb.TestReply{}
+	for {
+		reply, err := stream.Recv()
+		if err == io.EOF {
+			stream.CloseSend()
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, reply)
+
+	}
+	return result, nil
 }

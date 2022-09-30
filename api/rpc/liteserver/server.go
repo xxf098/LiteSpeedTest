@@ -1,7 +1,6 @@
 package liteserver
 
 import (
-	"context"
 	"fmt"
 	"net"
 
@@ -13,11 +12,15 @@ type server struct {
 	pb.TestProxyServer
 }
 
-func (s *server) StartTest(_ context.Context, req *pb.TestRequest) (*pb.TestReply, error) {
-	replay := pb.TestReply{
+// stream
+func (s *server) StartTest(req *pb.TestRequest, stream pb.TestProxy_StartTestServer) error {
+	reply := pb.TestReply{
 		Message: req.Name,
 	}
-	return &replay, nil
+	if err := stream.Send(&reply); err != nil {
+		return err
+	}
+	return nil
 }
 
 func StartServer(port uint16) error {
