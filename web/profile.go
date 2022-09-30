@@ -157,7 +157,7 @@ func parseBase64(data string) ([]string, error) {
 }
 
 func parseClash(data string) ([]string, error) {
-	cc, err := config.ParseClash([]byte(data))
+	cc, err := config.ParseClash(utils.UnsafeGetBytes(data))
 	if err != nil {
 		return parseClashProxies(data)
 	}
