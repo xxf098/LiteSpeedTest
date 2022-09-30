@@ -161,7 +161,6 @@
 									<el-dropdown-item @click.native="handleCopySub()">复制订阅链接</el-dropdown-item>
 									<el-dropdown-item v-if="!loading && result.length" @click.native="handleCopyAvailable()">复制可用节点</el-dropdown-item>
 									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">复制节点</el-dropdown-item>
-									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">筛选节点</el-dropdown-item>
 									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleSave()">导出节点</el-dropdown-item>
 									<!-- <el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item> -->
 									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleQRCode()">显示二维码</el-dropdown-item>
@@ -192,9 +191,15 @@
 								:filter-method="filterPing">
 							</el-table-column>
 							<el-table-column label="AvgSpeed" align="center" prop="speed" min-width="150" sortable
+								:filters="[{ text: '200KB', value: 204800 }, { text: '500KB', value: 512000 }, { text: '1MB', value: 1048576 }, { text: '2MB', value: 2097152 }, { text: '5MB', value: 5242880 }, { text: '10MB', value: 10485760 },{ text: '15MB', value: 15728640 }, { text: '20MB', value: 20971520 }]"
+								:filter-multiple="false"
+								:filter-method="filterAvgSpeed"
 								:sort-method="speedSort">
 							</el-table-column>
 							<el-table-column label="MaxSpeed" align="center" prop="maxspeed" min-width="150" sortable
+								:filters="[{ text: '200KB', value: 204800 }, { text: '500KB', value: 512000 }, { text: '1MB', value: 1048576 }, { text: '2MB', value: 2097152 }, { text: '5MB', value: 5242880 }, { text: '10MB', value: 10485760 },{ text: '15MB', value: 15728640 }, { text: '20MB', value: 20971520 }]"
+								:filter-multiple="false"
+								:filter-method="filterMaxSpeed"
 								:sort-method="maxSpeedSort">
 							</el-table-column>
 						</el-table>
@@ -1010,6 +1015,14 @@
 				},
 				filterPing: function (value, row) {
 					return value === "available" ? row.ping > 0 : true;
+				},
+				filterAvgSpeed: function (value, row) {
+					const speed = isNaN(this.getSpeed(row.speed)) ? -1 : this.getSpeed(row.speed);
+					return speed >= value;
+				},
+				filterMaxSpeed: function (value, row) {
+					const speed = isNaN(this.getSpeed(row.maxspeed)) ? -1 : this.getSpeed(row.maxspeed);
+					return speed >= value;
 				},
 				filterProtocol: function (value, row) {
 					if (value === "vmess") {
