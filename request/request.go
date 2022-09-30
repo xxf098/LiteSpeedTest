@@ -216,6 +216,8 @@ func PingLinkInternal(link string, pingOption PingOption) (int64, error) {
 		option, err = config.VmessLinkToVmessOption(link)
 	case "trojan":
 		option, err = config.TrojanLinkToTrojanOption(link)
+	case "http":
+		option, err = config.HttpLinkToHttpOption(link)
 	case "ss":
 		option, err = config.SSLinkToSSOption(link)
 	case "ssr":
@@ -299,6 +301,9 @@ func PingContext(ctx context.Context, option interface{}) (int64, error) {
 		if err != nil {
 			return 0, err
 		}
+	}
+	if httpOption, ok := option.(*outbound.HttpOption); ok {
+		d = outbound.NewHttp(*httpOption)
 	}
 	if d == nil {
 		return 0, errors.New("not support config")

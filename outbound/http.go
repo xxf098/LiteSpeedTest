@@ -27,6 +27,7 @@ type Http struct {
 type HttpOption struct {
 	BasicOption
 	Name           string `proxy:"name"`
+	Remarks        string `proxy:"remarks,omitempty"`
 	Server         string `proxy:"server"`
 	Port           int    `proxy:"port"`
 	UserName       string `proxy:"username,omitempty"`
@@ -111,6 +112,10 @@ func (h *Http) shakeHand(metadata *C.Metadata, rw io.ReadWriter) error {
 	}
 
 	return fmt.Errorf("can not connect remote err code: %d", resp.StatusCode)
+}
+
+func (h *Http) DialUDP(metadata *C.Metadata) (net.PacketConn, error) {
+	return nil, errors.New("not support udp")
 }
 
 func NewHttp(option HttpOption) *Http {

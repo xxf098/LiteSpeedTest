@@ -97,6 +97,18 @@ func Link2Config(link string) (*Config, error) {
 				Password: cfgTrojan.Password,
 			}
 		}
+	case "http":
+		if cfgHttp, err1 := HttpLinkToHttpOption(link); err1 != nil {
+			return nil, err1
+		} else {
+			cfg = &Config{
+				Protocol: "http",
+				Remarks:  cfgHttp.Remarks,
+				Server:   cfgHttp.Server,
+				Port:     cfgHttp.Port,
+				Password: cfgHttp.Password,
+			}
+		}
 	case "ss":
 		if cfgSS, err1 := SSLinkToSSOption(link); err1 != nil {
 			return nil, err1

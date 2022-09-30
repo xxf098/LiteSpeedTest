@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 	"os"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -14,7 +15,7 @@ import (
 )
 
 func CheckLink(link string) ([]string, error) {
-	r := regexp.MustCompile("(?i)^(vmess|trojan|vless|ss|ssr)://.+")
+	r := regexp.MustCompile("(?i)^(vmess|trojan|vless|ss|ssr|http)://.+")
 	matches := r.FindStringSubmatch(link)
 	if len(matches) < 2 {
 		return nil, common.NewError("Not Suported Link")
@@ -62,4 +63,8 @@ func U16toa(i uint16) string {
 func IsUrl(message string) bool {
 	matched, err := regexp.MatchString(`^(?:https?:\/\/)(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)`, message)
 	return matched && err == nil
+}
+
+func UnsafeGetBytes(s string) []byte {
+	return unsafe.Slice((*byte)(unsafe.Pointer((*reflect.StringHeader)(unsafe.Pointer(&s)).Data)), len(s))
 }
