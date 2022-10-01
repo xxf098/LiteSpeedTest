@@ -15,7 +15,7 @@ type server struct {
 // stream
 func (s *server) StartTest(req *pb.TestRequest, stream pb.TestProxy_StartTestServer) error {
 	reply := pb.TestReply{
-		Message: req.Name,
+		GroupName: req.GroupName,
 	}
 	if err := stream.Send(&reply); err != nil {
 		return err

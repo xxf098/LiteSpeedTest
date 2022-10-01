@@ -15,7 +15,7 @@ func TestStartClient(t *testing.T) {
 	if len(reply) < 1 {
 		t.Fail()
 	}
-	if reply[0].Message != "ok" {
+	if reply[0].GroupName != "ok" {
 		t.Fail()
 	}
 

@@ -18,7 +18,7 @@ func StartClient(addr string) ([]*pb.TestReply, error) {
 	c := pb.NewTestProxyClient(conn)
 	ctx := context.Background()
 	req := pb.TestRequest{
-		Name: "ok",
+		GroupName: "ok",
 	}
 	stream, err := c.StartTest(ctx, &req)
 	if err != nil {
