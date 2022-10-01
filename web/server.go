@@ -152,6 +152,23 @@ func TestContext(ctx context.Context, options ProfileTestOptions, w MessageWrite
 	return p.testAll(ctx)
 }
 
+// use as golang api
+func TestAsyncContext(ctx context.Context, options ProfileTestOptions) (chan render.Node, error) {
+	links, err := ParseLinks(options.Subscription)
+	if err != nil {
+		return nil, err
+	}
+	// outputMessageWriter := OutputMessageWriter{}
+	p := ProfileTest{
+		Writer:      nil,
+		MessageType: ALLTEST,
+		Links:       links,
+		Options:     &options,
+	}
+	trafficChan := make(chan int64)
+	return p.TestAll(ctx, trafficChan)
+}
+
 type TestResult struct {
 	TotalTraffic string `json:"totalTraffic"`
 	TotalTime    string `json:"totalTime"`

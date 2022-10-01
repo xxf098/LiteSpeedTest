@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func StartClient(addr string) ([]*pb.TestReply, error) {
+func StartClient(addr string, req *pb.TestRequest) ([]*pb.TestReply, error) {
 	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
@@ -17,10 +17,7 @@ func StartClient(addr string) ([]*pb.TestReply, error) {
 	defer conn.Close()
 	c := pb.NewTestProxyClient(conn)
 	ctx := context.Background()
-	req := pb.TestRequest{
-		GroupName: "ok",
-	}
-	stream, err := c.StartTest(ctx, &req)
+	stream, err := c.StartTest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
