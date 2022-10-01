@@ -17,13 +17,13 @@ func main() {
 		PingMethod:      "googleping", // googleping
 		SortMethod:      "rspeed",     // speed rspeed ping rping
 		Concurrency:     2,
-		TestMode:        2,
+		TestMode:        2, // 0: all 1: speed only 2: ping only
 		Subscription:    link,
 		Language:        "en", // en cn
 		FontSize:        24,
 		Theme:           "rainbow",
 		Timeout:         10 * time.Second,
-		GeneratePicMode: 0,
+		GeneratePicMode: 0, // 0: base64 1:file path 2: no pic
 	}
 	nodes, err := web.TestContext(ctx, opts, &web.EmptyMessageWriter{})
 

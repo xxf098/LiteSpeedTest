@@ -499,24 +499,29 @@ func (p *ProfileTest) testAll(ctx context.Context) (render.Nodes, error) {
 
 	// sort nodes
 	nodes.Sort(p.Options.SortMethod)
+	// render the result to pic
+	p.renderPic(nodes, traffic, duration, successCount, linksCount)
+	return nodes, nil
+}
 
+func (p *ProfileTest) renderPic(nodes render.Nodes, traffic int64, duration string, successCount int, linksCount int) error {
 	fontPath := "WenQuanYiMicroHei-01.ttf"
 	options := render.NewTableOptions(40, 30, 0.5, 0.5, p.Options.FontSize, 0.5, fontPath, p.Options.Language, p.Options.Theme, "Asia/Shanghai", FontBytes)
 	table, err := render.NewTableWithOption(nodes, &options)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	// msg := fmt.Sprintf("Total Traffic : %s. Total Time : %s. Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
 	msg := table.FormatTraffic(download.ByteCountIECTrim(traffic), duration, fmt.Sprintf("%d/%d", successCount, linksCount))
 	if p.Options.GeneratePicMode == PIC_PATH {
 		table.Draw("out.png", msg)
 		p.WriteMessage(getMsgByte(-1, "picdata", "out.png"))
-		return nodes, nil
+		return nil
 	}
 	if picdata, err := table.EncodeB64(msg); err == nil {
 		p.WriteMessage(getMsgByte(-1, "picdata", picdata))
 	}
-	return nodes, nil
+	return nil
 }
 
 func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeChan chan<- render.Node, trafficChan chan<- int64) error {
