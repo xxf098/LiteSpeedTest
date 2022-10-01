@@ -21,19 +21,45 @@ func (s *server) StartTest(req *pb.TestRequest, stream pb.TestProxy_StartTestSer
 	if err != nil {
 		return err
 	}
+	groupName := req.GroupName
+	if len(groupName) < 1 {
+		groupName = "Default"
+	}
+	concurrency := req.Concurrency
+	if concurrency < 1 {
+		concurrency = 1
+	}
+	timeout := time.Duration(req.Timeout)
+	if timeout < 15 {
+		timeout = 15
+	}
+	speedTestMode := "all"
+	if req.SpeedTestMode == pb.SpeedTestMode_pingonly {
+		speedTestMode = "pingonly"
+	} else if req.SpeedTestMode == pb.SpeedTestMode_speedonly {
+		speedTestMode = "speedonly"
+	}
+	sortMethod := "none"
+	if req.SortMethod == pb.SortMethod_ping {
+		sortMethod = "ping"
+	} else if req.SortMethod == pb.SortMethod_rping {
+		sortMethod = "rping"
+	} else if req.SortMethod == pb.SortMethod_rping {
+		sortMethod = "rping"
+	}
 	// config
 	p := web.ProfileTest{
 		Writer:      nil,
 		MessageType: web.ALLTEST,
 		Links:       links,
 		Options: &web.ProfileTestOptions{
-			GroupName:     "Default",
-			SpeedTestMode: "all",
+			GroupName:     groupName,
+			SpeedTestMode: speedTestMode,
 			PingMethod:    "googleping",
-			SortMethod:    "none",
-			Concurrency:   2,
+			SortMethod:    sortMethod,
+			Concurrency:   int(concurrency),
 			TestMode:      2,
-			Timeout:       15 * time.Second,
+			Timeout:       timeout * time.Second,
 			Language:      "en",
 			FontSize:      24,
 		},

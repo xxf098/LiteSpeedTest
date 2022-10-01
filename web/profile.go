@@ -401,15 +401,16 @@ func (p *ProfileTest) WriteString(data string) error {
 }
 
 // api
-func (p *ProfileTest) TestAll(ctx context.Context, links []string, max int, trafficChan chan<- int64) (chan render.Node, error) {
+// render.Node contain the final test result
+func (p *ProfileTest) TestAll(ctx context.Context, trafficChan chan<- int64) (chan render.Node, error) {
+	links := p.Links
 	linksCount := len(links)
 	if linksCount < 1 {
 		return nil, fmt.Errorf("no profile found")
 	}
-
 	nodeChan := make(chan render.Node, linksCount)
 	go func(context.Context) {
-		guard := make(chan int, max)
+		guard := make(chan int, p.Options.Concurrency)
 		for i := range links {
 			p.wg.Add(1)
 			id := i
