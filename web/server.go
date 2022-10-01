@@ -153,10 +153,10 @@ func TestContext(ctx context.Context, options ProfileTestOptions, w MessageWrite
 }
 
 // use as golang api
-func TestAsyncContext(ctx context.Context, options ProfileTestOptions) (chan render.Node, error) {
+func TestAsyncContext(ctx context.Context, options ProfileTestOptions) (chan render.Node, []string, error) {
 	links, err := ParseLinks(options.Subscription)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	// outputMessageWriter := OutputMessageWriter{}
 	p := ProfileTest{
@@ -166,7 +166,8 @@ func TestAsyncContext(ctx context.Context, options ProfileTestOptions) (chan ren
 		Options:     &options,
 	}
 	trafficChan := make(chan int64)
-	return p.TestAll(ctx, trafficChan)
+	nodeChan, err := p.TestAll(ctx, trafficChan)
+	return nodeChan, links, err
 }
 
 type TestResult struct {

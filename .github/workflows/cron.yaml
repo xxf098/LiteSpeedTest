@@ -6,7 +6,7 @@ name: Job
 #     - develop
 on:
   schedule:
-  - cron: "40 20 * * *"
+  - cron: "40 20 */2 * *"
 
 
 jobs:
@@ -29,7 +29,13 @@ jobs:
         GOOS=js GOARCH=wasm go build -o ./web/main.wasm ./wasm
 
     - name: Run build
-      run: go build -o lite
+      run: | 
+        go build -o lite
+        go build -o example ./examples
+    
+    - name: test example
+      run: ./example -async -link https://raw.githubusercontent.com/freefq/free/master/v2
+        
 
     - name: test link
       run: |
