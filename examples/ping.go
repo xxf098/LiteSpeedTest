@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/xxf098/lite-proxy/download"
 	"github.com/xxf098/lite-proxy/web"
 )
 
@@ -69,7 +70,7 @@ func pingAsync(ctx context.Context, opts web.ProfileTestOptions) error {
 	for i := 0; i < count; i++ {
 		node := <-nodeChan
 		if node.IsOk {
-			fmt.Println("id:", node.Id, node.Remarks, "ping:", node.Ping, "link:", links[node.Id])
+			fmt.Println("id:", node.Id, node.Remarks, "ping:", node.Ping, "avg", download.ByteCountIECTrim(node.AvgSpeed), "max", download.ByteCountIECTrim(node.MaxSpeed), "link:", links[node.Id])
 		}
 	}
 	close(nodeChan)
