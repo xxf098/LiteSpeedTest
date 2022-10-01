@@ -56,7 +56,7 @@ import (
 	"time"
     "github.com/xxf098/lite-proxy/web"
 )
-
+// see more in ./examples
 func testPing() error {
     ctx := context.Background()
     link := "https://www.example.com/subscription/link"
