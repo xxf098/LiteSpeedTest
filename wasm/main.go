@@ -32,11 +32,11 @@ func wasmQRcode(this js.Value, inputs []js.Value) interface{} {
 	if err != nil {
 		return nil
 	}
-	ch := make(chan bool, 2)
+	ch := make(chan struct{}, 2)
 	for _, v := range items {
 		go func(eid string, text string, size int) {
 			defer func() {
-				ch <- true
+				ch <- struct{}{}
 			}()
 			document := js.Global().Get("document")
 			elem := document.Call("getElementById", eid)
