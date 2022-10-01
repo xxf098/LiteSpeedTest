@@ -13,6 +13,7 @@ import (
 func main() {
 	async := flag.Bool("async", false, "use async test")
 	link := flag.String("link", "", "link to test")
+	mode := flag.String("mode", "pingonly", "speed test mode")
 	flag.Parse()
 	// link := "vmess://aHR0cHM6Ly9naXRodWIuY29tL3h4ZjA5OC9MaXRlU3BlZWRUZXN0"
 	if len(*link) < 1 {
@@ -20,7 +21,7 @@ func main() {
 	}
 	opts := web.ProfileTestOptions{
 		GroupName:       "Default",
-		SpeedTestMode:   "pingonly",   //  pingonly speedonly all
+		SpeedTestMode:   *mode,        //  pingonly speedonly all
 		PingMethod:      "googleping", // googleping
 		SortMethod:      "rspeed",     // speed rspeed ping rping
 		Concurrency:     2,
