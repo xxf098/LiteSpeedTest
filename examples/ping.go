@@ -26,7 +26,7 @@ func main() {
 		PingMethod:      "googleping", // googleping
 		SortMethod:      "rspeed",     // speed rspeed ping rping
 		Concurrency:     2,
-		TestMode:        2, // 0: all 1: speed only 2: ping only
+		TestMode:        2, // 2: ALLTEST 3: RETEST
 		Subscription:    *link,
 		Language:        "en", // en cn
 		FontSize:        24,

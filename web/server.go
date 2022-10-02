@@ -165,8 +165,7 @@ func TestAsyncContext(ctx context.Context, options ProfileTestOptions) (chan ren
 		Links:       links,
 		Options:     &options,
 	}
-	trafficChan := make(chan int64)
-	nodeChan, err := p.TestAll(ctx, trafficChan)
+	nodeChan, err := p.TestAll(ctx, nil)
 	return nodeChan, links, err
 }
 

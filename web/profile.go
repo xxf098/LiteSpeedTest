@@ -406,7 +406,7 @@ func (p *ProfileTest) TestAll(ctx context.Context, trafficChan chan<- int64) (ch
 	links := p.Links
 	linksCount := len(links)
 	if linksCount < 1 {
-		return nil, fmt.Errorf("no profile found")
+		return nil, fmt.Errorf("profile not found")
 	}
 	nodeChan := make(chan render.Node, linksCount)
 	go func(context.Context) {
