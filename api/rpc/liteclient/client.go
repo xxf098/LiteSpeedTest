@@ -3,8 +3,10 @@ package liteclient
 import (
 	"context"
 	"io"
+	"log"
 
 	pb "github.com/xxf098/lite-proxy/api/rpc/lite"
+	"github.com/xxf098/lite-proxy/download"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -31,6 +33,7 @@ func StartClient(addr string, req *pb.TestRequest) ([]*pb.TestReply, error) {
 		if err != nil {
 			return nil, err
 		}
+		log.Println("id: ", reply.Id, reply.Remarks, "ping:", reply.Ping, "avg:", download.ByteCountIECTrim(reply.AvgSpeed), "max:", download.ByteCountIECTrim(reply.MaxSpeed))
 		result = append(result, reply)
 
 	}

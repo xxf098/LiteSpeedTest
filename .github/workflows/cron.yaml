@@ -34,7 +34,7 @@ jobs:
         go build -o example ./examples
     
     - name: test example
-      run: ./example -async -link https://raw.githubusercontent.com/freefq/free/master/v2
+      run: ./example -async -mode all  -link https://raw.githubusercontent.com/freefq/free/master/v2
         
 
     - name: test link

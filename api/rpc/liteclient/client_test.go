@@ -10,7 +10,18 @@ import (
 func TestStartClient(t *testing.T) {
 	go s.StartServer(10999)
 	req := pb.TestRequest{
-		GroupName: "ok",
+		GroupName:       "Default",
+		SpeedTestMode:   pb.SpeedTestMode_all,
+		PingMethod:      pb.PingMethod_googleping,
+		SortMethod:      pb.SortMethod_rspeed,
+		Concurrency:     2,
+		TestMode:        2,
+		Subscription:    "https://raw.githubusercontent.com/freefq/free/master/v2",
+		Language:        "en",
+		FontSize:        24,
+		Theme:           "rainbow",
+		Timeout:         10,
+		GeneratePicMode: 0,
 	}
 	reply, err := StartClient("127.0.0.1:10999", &req)
 	if err != nil {
@@ -19,8 +30,4 @@ func TestStartClient(t *testing.T) {
 	if len(reply) < 1 {
 		t.Fail()
 	}
-	if reply[0].GroupName != "ok" {
-		t.Fail()
-	}
-
 }

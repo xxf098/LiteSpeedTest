@@ -65,8 +65,7 @@ func (s *server) StartTest(req *pb.TestRequest, stream pb.TestProxy_StartTestSer
 		},
 	}
 
-	trafficChan := make(chan int64)
-	nodeChan, err := p.TestAll(stream.Context(), trafficChan)
+	nodeChan, err := p.TestAll(stream.Context(), nil)
 	count := 0
 	linkCount := len(links)
 	for count < linkCount {
