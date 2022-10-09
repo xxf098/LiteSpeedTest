@@ -96,7 +96,7 @@ func StartServer(port uint16) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("start grpc server at 127.0.0.1:%d", port)
+	log.Printf("start grpc server at %s", lis.Addr().String())
 	s := grpc.NewServer()
 	pb.RegisterTestProxyServer(s, &server{})
 	if err := s.Serve(lis); err != nil {

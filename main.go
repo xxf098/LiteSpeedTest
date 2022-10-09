@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"strings"
 	"syscall"
 
 	grpcServer "github.com/xxf098/lite-proxy/api/rpc/liteserver"
@@ -33,6 +34,9 @@ func main() {
 	}
 	link := ""
 	for _, arg := range os.Args {
+		if strings.HasPrefix(arg, "-") {
+			continue
+		}
 		if _, err := utils.CheckLink(arg); err == nil {
 			link = arg
 			break
