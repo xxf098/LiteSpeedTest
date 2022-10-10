@@ -193,8 +193,10 @@ func scanClashProxies(scanner *bufio.Scanner, greedy bool) ([]string, error) {
 			proxiesStart = true
 			b = []byte("proxies:")
 		}
-		data = append(data, b...)
-		data = append(data, byte('\n'))
+		if proxiesStart {
+			data = append(data, b...)
+			data = append(data, byte('\n'))
+		}
 	}
 	// fmt.Println(string(data))
 	return parseClashByte(data)
