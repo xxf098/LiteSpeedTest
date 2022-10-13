@@ -170,7 +170,8 @@
 						</el-col>
 					</el-row>
 					<el-container>
-						<el-table :data="result" :cell-style="colorCell" size="small" ref="result"
+						<el-table :data="result" :cell-style="colorCell" size="small" ref="result" 
+							:row-key="row => `${row.server}${row.protocol}${row.ping}${row.speed}${row.maxspeed}`"
 							@selection-change="handleSelectionChange" @sort-change="handleSortChange">
 							<el-table-column type="selection" width="55" :selectable="checkSelectable">
 							</el-table-column>
