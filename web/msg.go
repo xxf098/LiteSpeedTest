@@ -20,18 +20,18 @@ const (
 type Message struct {
 	ID       int       `json:"id"`
 	Info     string    `json:"info"`
-	Remarks  string    `json:"remarks"`
-	Server   string    `json:"server"`
-	Group    string    `json:"group"`
-	Ping     int64     `json:"ping"`
-	Lost     string    `json:"lost"`
-	Speed    string    `json:"speed"`
-	MaxSpeed string    `json:"maxspeed"`
-	Traffic  int64     `json:"traffic"`
-	Link     string    `json:"link"`
-	Protocol string    `json:"protocol"`
+	Remarks  string    `json:"remarks,omitempty"`
+	Server   string    `json:"server,omitempty"`
+	Group    string    `json:"group,omitempty"`
+	Ping     int64     `json:"ping,omitempty"`
+	Lost     string    `json:"lost,omitempty"`
+	Speed    string    `json:"speed,omitempty"`
+	MaxSpeed string    `json:"maxspeed,omitempty"`
+	Traffic  int64     `json:"traffic,omitempty"`
+	Link     string    `json:"link,omitempty"`
+	Protocol string    `json:"protocol,omitempty"`
 	PicData  string    `json:"data,omitempty"`
-	Servers  []Message `json:"servers"`
+	Servers  []Message `json:"servers,omitempty"`
 }
 
 func GetRemarks(link string) (string, string, error) {

@@ -910,7 +910,7 @@
 							//clearInterval(interval)
 							item = this.result[id];
 							item.loss = json.loss;
-							item.ping = json.ping;
+							item.ping = json.ping || "0";
 							/*
 										item = {
 											"group": json.group,
