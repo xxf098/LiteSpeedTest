@@ -945,6 +945,7 @@
 							break;
 						case "eof":
 							this.loading = false;
+							console.log(this.result)
 							break;
 						case "retest":
 							item = this.result[id];
@@ -998,7 +999,6 @@
 							console.log("error:" + json.reason);
 							break;
 					}
-					console.log(this.result);
 				},
 				floatSort: function (obj1, obj2) {
 					return parseFloat(obj1.ping) - parseFloat(obj2.ping);
