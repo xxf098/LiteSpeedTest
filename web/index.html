@@ -210,14 +210,14 @@
 
 				<div :class="['dashboard', dashboardCollapsed ? 'collapsed' : '']">
 					<el-card class="progress">
-						<div class="progress-bar" :style="{ 'width': testProgress(result) + '%' }"></div>
+						<div class="progress-bar" :style="{ 'width': testProgress(result, testCount) + '%' }"></div>
 						<div class="progress-inner">
 							<div class="progress-item">
-								<span>{{ testProgress(result) }}%</span>
+								<span>{{ testProgress(result, testCount) }}%</span>
 								<div>Progress</div>
 							</div>
 							<div v-if="!dashboardCollapsed" class="progress-item">
-								<span>{{ result.filter(item => item.ping > 0).length }}/{{ result.length }}</span>
+								<span>{{ testOkCount }}/{{ result.length }}</span>
 								<div>Ratio</div>
 							</div>
 							<div v-if="!dashboardCollapsed" class="traffic">
@@ -354,6 +354,8 @@
 					theme: "rainbow",
 					generateResultJSON: "",
 					dashboardCollapsed: true,
+					testCount: 0,
+					testOkCount: 0,
 
 					init: {
 						speedtestModes: {
@@ -391,8 +393,8 @@
 					if (i === 0) return `${bytes} ${sizes[i]})`;
 					return `${(bytes / (1024 ** i)).toFixed(1)} ${sizes[i]}`;
 				},
-				testProgress: function (result) {
-					return result.length ? Math.floor(result.filter(item => item.ping !== '0.00' && item.ping != "测试中...").length/result.length*100) : 0
+				testProgress: function (result, testCount) {
+					return result.length ? Math.floor(testCount/result.length*100) : 0
 				},
 				formatSeconds: function (seconds) {
 					let totalTime = seconds > 0 ? seconds : 0
@@ -461,6 +463,8 @@
 					}
 				},
 				submit: function () {
+					this.testCount = 0;
+					this.testOkCount = 0;
 					if (!this.subscription.length) {
 						this.$alert("请先输入链接或选择文件！", "错误", {
 							type: "error",
@@ -910,7 +914,11 @@
 							//clearInterval(interval)
 							item = this.result[id];
 							item.loss = json.loss;
-							item.ping = json.ping || "0";
+							item.ping = json.ping || 0;
+							this.testCount += 1
+							if (item.ping > 0) {
+								this.testOkCount += 1
+							}
 							/*
 										item = {
 											"group": json.group,
