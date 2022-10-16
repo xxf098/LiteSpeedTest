@@ -127,6 +127,17 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 		if len(trojanOption.SNI) > 0 {
 			query = append(query, fmt.Sprintf("sni=%s", trojanOption.SNI))
 		}
+		// ws query
+		if trojanOption.Network == "ws" {
+			query = append(query, "type=ws")
+			if len(trojanOption.WSOpts.Path) > 0 {
+				query = append(query, fmt.Sprintf("path=%s", trojanOption.WSOpts.Path))
+				for k, v := range trojanOption.WSOpts.Headers {
+					query = append(query, fmt.Sprintf("%s=%s", k, v))
+				}
+			}
+		}
+
 		if len(query) > 0 {
 			link = fmt.Sprintf("%s?%s", link, strings.Join(query, "&"))
 		}
