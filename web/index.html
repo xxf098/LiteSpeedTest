@@ -1037,6 +1037,9 @@
 					if (value === "vmess") {
 						return row.protocol.startsWith("vmess")
 					}
+					if (value === "trojan") {
+						return row.protocol.startsWith("trojan")
+					}
 					return value === row.protocol
 				},
 				checkSelectable: function (row, index) {

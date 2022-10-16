@@ -70,7 +70,7 @@ func gotserversMsg(startID int, links []string, groupName string) []byte {
 			msg.Remarks = cfg.Remarks
 			msg.Server = fmt.Sprintf("%s:%d", cfg.Server, cfg.Port)
 			msg.Protocol = cfg.Protocol
-			if cfg.Protocol == "vmess" && cfg.Net != "" {
+			if (cfg.Protocol == "vmess" || cfg.Protocol == "trojan") && cfg.Net != "" {
 				msg.Protocol = fmt.Sprintf("%s/%s", cfg.Protocol, cfg.Net)
 			}
 			msg.Link = link

@@ -95,6 +95,7 @@ func Link2Config(link string) (*Config, error) {
 				Server:   cfgTrojan.Server,
 				Port:     cfgTrojan.Port,
 				Password: cfgTrojan.Password,
+				Net:      cfgTrojan.Network,
 			}
 		}
 	case "http":
