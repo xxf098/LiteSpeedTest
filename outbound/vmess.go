@@ -57,6 +57,10 @@ type HTTP2Options struct {
 	Path string   `proxy:"path,omitempty"`
 }
 
+type GrpcOptions struct {
+	GrpcServiceName string `proxy:"grpc-service-name,omitempty"`
+}
+
 type WSOptions struct {
 	Path                string            `proxy:"path,omitempty"`
 	Headers             map[string]string `proxy:"headers,omitempty"`

@@ -10,10 +10,12 @@ import (
 	"errors"
 	"io"
 	"net"
+	"net/http"
 	"sync"
 
 	C "github.com/xxf098/lite-proxy/constant"
 	"github.com/xxf098/lite-proxy/transport/socks5"
+	"github.com/xxf098/lite-proxy/transport/vmess"
 )
 
 const (
@@ -22,8 +24,9 @@ const (
 )
 
 var (
-	defaultALPN = []string{"h2", "http/1.1"}
-	crlf        = []byte{'\r', '\n'}
+	defaultALPN          = []string{"h2", "http/1.1"}
+	defaultWebsocketALPN = []string{"http/1.1"}
+	crlf                 = []byte{'\r', '\n'}
 
 	bufPool = sync.Pool{New: func() interface{} { return &bytes.Buffer{} }}
 )
@@ -41,6 +44,13 @@ type Option struct {
 	ServerName         string
 	SkipCertVerify     bool
 	ClientSessionCache tls.ClientSessionCache
+}
+
+type WebsocketOption struct {
+	Host    string
+	Port    string
+	Path    string
+	Headers http.Header
 }
 
 type Trojan struct {
@@ -70,6 +80,29 @@ func (t *Trojan) StreamConn(conn net.Conn) (net.Conn, error) {
 	}
 
 	return tlsConn, nil
+}
+
+func (t *Trojan) StreamWebsocketConn(conn net.Conn, wsOptions *WebsocketOption) (net.Conn, error) {
+	alpn := defaultWebsocketALPN
+	if len(t.option.ALPN) != 0 {
+		alpn = t.option.ALPN
+	}
+
+	tlsConfig := &tls.Config{
+		NextProtos:         alpn,
+		MinVersion:         tls.VersionTLS12,
+		InsecureSkipVerify: t.option.SkipCertVerify,
+		ServerName:         t.option.ServerName,
+	}
+
+	return vmess.StreamWebsocketConn(conn, &vmess.WebsocketConfig{
+		Host:      wsOptions.Host,
+		Port:      wsOptions.Port,
+		Path:      wsOptions.Path,
+		Headers:   wsOptions.Headers,
+		TLS:       true,
+		TLSConfig: tlsConfig,
+	})
 }
 
 func (t *Trojan) WriteHeader(w io.Writer, command Command, socks5Addr []byte) error {
