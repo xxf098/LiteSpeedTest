@@ -87,12 +87,16 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 		if len(vmessOption.ServerName) < 1 {
 			skipCertVerify = true
 		}
+		id := vmessOption.UUID
+		if len(id) < 1 {
+			id = vmessOption.Password
+		}
 		c := VmessConfigMarshal{
 			Ps:             namePrefix + vmessOption.Name,
 			Add:            vmessOption.Server,
 			Port:           vmessOption.Port,
 			Aid:            vmessOption.AlterID,
-			ID:             vmessOption.UUID,
+			ID:             id,
 			Type:           vmessOption.Cipher,
 			TLS:            tls,
 			Net:            vmessOption.Network,
@@ -113,7 +117,7 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 		if err != nil {
 			break
 		}
-		// TODO: SNI
+
 		link = fmt.Sprintf("trojan://%s@%s:%d", trojanOption.Password, trojanOption.Server, trojanOption.Port)
 		query := []string{}
 		// allowInsecure
@@ -123,6 +127,17 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 		if len(trojanOption.SNI) > 0 {
 			query = append(query, fmt.Sprintf("sni=%s", trojanOption.SNI))
 		}
+		// ws query
+		if trojanOption.Network == "ws" {
+			query = append(query, "type=ws")
+			if len(trojanOption.WSOpts.Path) > 0 {
+				query = append(query, fmt.Sprintf("path=%s", trojanOption.WSOpts.Path))
+				for k, v := range trojanOption.WSOpts.Headers {
+					query = append(query, fmt.Sprintf("%s=%s", k, v))
+				}
+			}
+		}
+
 		if len(query) > 0 {
 			link = fmt.Sprintf("%s?%s", link, strings.Join(query, "&"))
 		}
@@ -131,6 +146,31 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 		}
 		if len(trojanOption.Name) > 0 {
 			link = fmt.Sprintf("%s#%s%s", link, namePrefix, url.QueryEscape(trojanOption.Name))
+		}
+	case "http":
+		httpOption := &outbound.HttpOption{}
+		err = decoder.Decode(mapping, httpOption)
+		if err != nil {
+			break
+		}
+		link = fmt.Sprintf("http://%s@%s:%d", httpOption.Password, httpOption.Server, httpOption.Port)
+		query := []string{}
+		query = append(query, fmt.Sprintf("tls=%t", httpOption.TLS))
+		if len(httpOption.UserName) > 0 {
+			query = append(query, fmt.Sprintf("username=%s", httpOption.UserName))
+		}
+		// allowInsecure
+		if httpOption.SkipCertVerify {
+			query = append(query, "allowInsecure=1")
+		}
+		if len(httpOption.SNI) > 0 {
+			query = append(query, fmt.Sprintf("sni=%s", httpOption.SNI))
+		}
+		if len(query) > 0 {
+			link = fmt.Sprintf("%s?%s", link, strings.Join(query, "&"))
+		}
+		if len(httpOption.Name) > 0 {
+			link = fmt.Sprintf("%s#%s%s", link, namePrefix, url.QueryEscape(httpOption.Name))
 		}
 	default:
 		return "", fmt.Errorf("unsupport proxy type: %s", proxyType)

@@ -1,13 +1,13 @@
 # LiteSpeedTest
 
-LiteSpeedTest is a simple tool for batch test ss/ssr/v2ray/trojan servers.   
-Support test by single link, multiple links, subscription link and file path.
+LiteSpeedTest is a simple tool for batch test ss/ssr/v2ray/trojan/clash servers.   
+Support tested by single link, multiple links, subscription link and file path.
 
  ![build](https://github.com/xxf098/LiteSpeedTest/actions/workflows/test.yaml/badge.svg?branch=master&event=push) 
 
 ### Usage
 ```
-Run as speed test tool:
+Run as a speed test tool:
     # run this command then open http://127.0.0.1:10888/ in your browser to start speed test
     ./lite
     # start with another port
@@ -19,7 +19,13 @@ Run as speed test tool:
     # details can find here https://github.com/xxf098/LiteSpeedTest/blob/master/config.json
     ./lite --config config.json --test https://raw.githubusercontent.com/freefq/free/master/v2
 
-Run as http/socks5 proxy:
+
+Run as a grpc server:
+    # start the grpc server
+    # grpc client example in ./api/rpc/liteclient/client.go 
+    ./lite -grpc -p 10999
+
+Run as a http/socks5 proxy:
     # use default port 8090
     ./lite vmess://aHR0cHM6Ly9naXRodWIuY29tL3h4ZjA5OC9MaXRlU3BlZWRUZXN0
     ./lite ssr://aHR0cHM6Ly9naXRodWIuY29tL3h4ZjA5OC9MaXRlU3BlZWRUZXN0
@@ -36,6 +42,12 @@ Run as http/socks5 proxy:
     go build -o lite
 ```
 
+### Docker
+```bash
+ docker build --network=host  -t lite:0.1 -f ./docker/Dockerfile ./
+ docker run -p 10888:10888/tcp lite:0.1
+```
+
 ## Credits
 
 - [clash](https://github.com/Dreamacro/clash)
@@ -50,7 +62,7 @@ import (
 	"time"
     "github.com/xxf098/lite-proxy/web"
 )
-
+// see more details in ./examples
 func testPing() error {
     ctx := context.Background()
     link := "https://www.example.com/subscription/link"

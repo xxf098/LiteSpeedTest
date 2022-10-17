@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"net/http"
 	"strconv"
 
 	C "github.com/xxf098/lite-proxy/constant"
@@ -16,22 +17,53 @@ import (
 type Trojan struct {
 	*Base
 	instance *trojan.Trojan
+	option   *TrojanOption
 }
 
 type TrojanOption struct {
-	Name           string   `proxy:"name,omitempty"`
-	Server         string   `proxy:"server"`
-	Port           int      `proxy:"port"`
-	Password       string   `proxy:"password"`
-	ALPN           []string `proxy:"alpn,omitempty"`
-	SNI            string   `proxy:"sni,omitempty"`
-	SkipCertVerify bool     `proxy:"skip-cert-verify,omitempty"`
-	UDP            bool     `proxy:"udp,omitempty"`
-	Remarks        string   `proxy:"remarks,omitempty"`
+	Name           string      `proxy:"name,omitempty"`
+	Server         string      `proxy:"server"`
+	Port           int         `proxy:"port"`
+	Password       string      `proxy:"password"`
+	ALPN           []string    `proxy:"alpn,omitempty"`
+	SNI            string      `proxy:"sni,omitempty"`
+	SkipCertVerify bool        `proxy:"skip-cert-verify,omitempty"`
+	UDP            bool        `proxy:"udp,omitempty"`
+	Remarks        string      `proxy:"remarks,omitempty"`
+	Network        string      `proxy:"network,omitempty"`
+	GrpcOpts       GrpcOptions `proxy:"grpc-opts,omitempty"`
+	WSOpts         WSOptions   `proxy:"ws-opts,omitempty"`
+}
+
+func (t *Trojan) plainStream(c net.Conn) (net.Conn, error) {
+	if t.option.Network == "ws" {
+		host, port, _ := net.SplitHostPort(t.addr)
+		wsOpts := &trojan.WebsocketOption{
+			Host: host,
+			Port: port,
+			Path: t.option.WSOpts.Path,
+		}
+
+		if t.option.SNI != "" {
+			wsOpts.Host = t.option.SNI
+		}
+
+		if len(t.option.WSOpts.Headers) != 0 {
+			header := http.Header{}
+			for key, value := range t.option.WSOpts.Headers {
+				header.Add(key, value)
+			}
+			wsOpts.Headers = header
+		}
+
+		return t.instance.StreamWebsocketConn(c, wsOpts)
+	}
+
+	return t.instance.StreamConn(c)
 }
 
 func (t *Trojan) StreamConn(c net.Conn, metadata *C.Metadata) (net.Conn, error) {
-	c, err := t.instance.StreamConn(c)
+	c, err := t.plainStream(c)
 	if err != nil {
 		return nil, fmt.Errorf("%s connect error: %w", t.addr, err)
 	}
@@ -50,6 +82,7 @@ func (t *Trojan) DialContext(ctx context.Context, metadata *C.Metadata) (net.Con
 	return t.StreamConn(sc, metadata)
 }
 
+// TODO: grpc transport
 func (t *Trojan) DialUDP(metadata *C.Metadata) (net.PacketConn, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
 	defer cancel()
@@ -100,5 +133,6 @@ func NewTrojan(option *TrojanOption) (*Trojan, error) {
 			udp:  option.UDP,
 		},
 		instance: trojan.New(tOption),
+		option:   option,
 	}, nil
 }

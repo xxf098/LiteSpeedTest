@@ -32,17 +32,17 @@ func wasmQRcode(this js.Value, inputs []js.Value) interface{} {
 	if err != nil {
 		return nil
 	}
-	ch := make(chan bool, 2)
+	ch := make(chan struct{}, 3)
 	for _, v := range items {
 		go func(eid string, text string, size int) {
 			defer func() {
-				ch <- true
+				ch <- struct{}{}
 			}()
 			document := js.Global().Get("document")
 			elem := document.Call("getElementById", eid)
 			elem.Call("setAttribute", "title", text)
 			var bytes []byte
-			bytes, err := qrcode.Encode(text, qrcode.Medium, size)
+			bytes, err := qrcode.Encode(text, qrcode.High, size)
 			if err != nil {
 				return
 			}

@@ -81,6 +81,51 @@ func ParseLinks(message string) ([]string, error) {
 	return links, err
 }
 
+// FIXME: return the top n links
+func PeekClash(input string, n int) ([]string, error) {
+	scanner := bufio.NewScanner(strings.NewReader(input))
+	proxiesStart := false
+	data := []byte{}
+	linkCount := 0
+	for scanner.Scan() {
+		b := scanner.Bytes()
+		trimLine := strings.TrimSpace(string(b))
+		if trimLine == "proxy-groups:" || trimLine == "rules:" || trimLine == "Proxy Group:" {
+			break
+		}
+		if proxiesStart {
+			if _, err := config.ParseBaseProxy(trimLine); err != nil {
+				continue
+			}
+			if strings.HasPrefix(trimLine, "-") {
+				if linkCount >= n {
+					break
+				}
+				linkCount += 1
+			}
+			data = append(data, b...)
+			data = append(data, byte('\n'))
+			continue
+		}
+		if !proxiesStart && (trimLine == "proxies:" || trimLine == "Proxy:") {
+			proxiesStart = true
+			b = []byte("proxies:")
+		}
+		data = append(data, b...)
+		data = append(data, byte('\n'))
+	}
+	fmt.Println(string(data))
+	links, err := parseClashByte(data)
+	if err != nil || len(links) < 1 {
+		return []string{}, err
+	}
+	endIndex := n
+	if endIndex > len(links) {
+		endIndex = len(links)
+	}
+	return links[:endIndex], nil
+}
+
 func parseProfiles(data string) ([]string, error) {
 	// encodeed url
 	links := strings.Split(data, "\n")
@@ -112,9 +157,9 @@ func parseBase64(data string) ([]string, error) {
 }
 
 func parseClash(data string) ([]string, error) {
-	cc, err := config.ParseClash([]byte(data))
+	cc, err := config.ParseClash(utils.UnsafeGetBytes(data))
 	if err != nil {
-		return nil, err
+		return parseClashProxies(data)
 	}
 	return cc.Proxies, nil
 }
@@ -148,8 +193,10 @@ func scanClashProxies(scanner *bufio.Scanner, greedy bool) ([]string, error) {
 			proxiesStart = true
 			b = []byte("proxies:")
 		}
-		data = append(data, b...)
-		data = append(data, byte('\n'))
+		if proxiesStart {
+			data = append(data, b...)
+			data = append(data, byte('\n'))
+		}
 	}
 	// fmt.Println(string(data))
 	return parseClashByte(data)
@@ -356,15 +403,16 @@ func (p *ProfileTest) WriteString(data string) error {
 }
 
 // api
-func (p *ProfileTest) TestAll(ctx context.Context, links []string, max int, trafficChan chan<- int64) (chan render.Node, error) {
+// render.Node contain the final test result
+func (p *ProfileTest) TestAll(ctx context.Context, trafficChan chan<- int64) (chan render.Node, error) {
+	links := p.Links
 	linksCount := len(links)
 	if linksCount < 1 {
-		return nil, fmt.Errorf("no profile found")
+		return nil, fmt.Errorf("profile not found")
 	}
-
 	nodeChan := make(chan render.Node, linksCount)
 	go func(context.Context) {
-		guard := make(chan int, max)
+		guard := make(chan int, p.Options.Concurrency)
 		for i := range links {
 			p.wg.Add(1)
 			id := i
@@ -454,24 +502,29 @@ func (p *ProfileTest) testAll(ctx context.Context) (render.Nodes, error) {
 
 	// sort nodes
 	nodes.Sort(p.Options.SortMethod)
+	// render the result to pic
+	p.renderPic(nodes, traffic, duration, successCount, linksCount)
+	return nodes, nil
+}
 
+func (p *ProfileTest) renderPic(nodes render.Nodes, traffic int64, duration string, successCount int, linksCount int) error {
 	fontPath := "WenQuanYiMicroHei-01.ttf"
 	options := render.NewTableOptions(40, 30, 0.5, 0.5, p.Options.FontSize, 0.5, fontPath, p.Options.Language, p.Options.Theme, "Asia/Shanghai", FontBytes)
 	table, err := render.NewTableWithOption(nodes, &options)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	// msg := fmt.Sprintf("Total Traffic : %s. Total Time : %s. Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
 	msg := table.FormatTraffic(download.ByteCountIECTrim(traffic), duration, fmt.Sprintf("%d/%d", successCount, linksCount))
 	if p.Options.GeneratePicMode == PIC_PATH {
 		table.Draw("out.png", msg)
 		p.WriteMessage(getMsgByte(-1, "picdata", "out.png"))
-		return nodes, nil
+		return nil
 	}
 	if picdata, err := table.EncodeB64(msg); err == nil {
 		p.WriteMessage(getMsgByte(-1, "picdata", picdata))
 	}
-	return nodes, nil
+	return nil
 }
 
 func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeChan chan<- render.Node, trafficChan chan<- int64) error {

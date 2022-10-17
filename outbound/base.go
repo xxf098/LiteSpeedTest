@@ -14,6 +14,11 @@ type Base struct {
 	udp  bool
 }
 
+type BasicOption struct {
+	Interface   string `proxy:"interface-name,omitempty" group:"interface-name,omitempty"`
+	RoutingMark int    `proxy:"routing-mark,omitempty" group:"routing-mark,omitempty"`
+}
+
 type ContextDialer interface {
 	DialContext(ctx context.Context, m *C.Metadata) (c net.Conn, err error)
 }

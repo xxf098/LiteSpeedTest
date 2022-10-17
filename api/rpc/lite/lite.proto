@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+option go_package = "github.com/xxf098/lite-proxy/api/rpc/lite";
+option java_multiple_files = true;
+option java_package = "com.github.xxf098.api.rpc.lite";
+option java_outer_classname = "LiteProxy";
+
+package liteproxy;
+
+// The greeting service definition.
+service TestProxy {
+  rpc StartTest (TestRequest) returns (stream TestReply) {}
+}
+
+enum SpeedTestMode {
+  pingonly = 0;
+  speedonly = 1;
+  all = 2;
+}
+
+enum PingMethod {
+  googleping = 0;
+  tcpping = 1;
+}
+
+enum SortMethod {
+  speed = 0; 
+  rspeed = 1; // reverse speed
+  ping = 2;
+  rping = 3; // reverse ping
+}
+
+// The request message containing the user's name.
+message TestRequest {
+  string GroupName=1;
+  SpeedTestMode SpeedTestMode = 2;
+  PingMethod PingMethod = 3;
+  SortMethod SortMethod = 4;
+  int32 Concurrency = 5;
+  uint32 TestMode = 6;  // 0: all 1: speed only 2: ping only
+  string Subscription = 7; // subscription link, clash link, profile links
+  string Language = 8;
+  uint32 FontSize = 9;
+  string Theme = 10;
+  int64 Timeout = 11;
+  uint32 GeneratePicMode = 12; // 0: base64 1:file path 2: no pic
+}
+
+// reply message
+message TestReply {
+  int32 Id = 1;
+  string GroupName = 2;
+  string Remarks = 3;
+  string Protocol = 4; // v2ray trojan ss ssr
+  string Ping = 5;
+  int64 AvgSpeed = 6;
+  int64 MaxSpeed = 7;
+  bool IsOk = 8;
+  int64 Traffic = 9;
+  string Link = 10;
+}

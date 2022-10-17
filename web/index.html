@@ -40,7 +40,7 @@
 
 								<el-form-item label="链接：" v-if="option<2">
 									<el-input v-model="subscription" style="width: 800px" size="small"
-										@keyup.enter.native="submit" placeholder="支持 V2Ray/Trojan/SS/SSR 订阅链接，多个节点链接及文件路径的批量测速"
+										@keyup.enter.native="submit" placeholder="支持 V2Ray/Trojan/SS/SSR/Clash 订阅链接，多个节点链接及文件路径的批量测速"
 										:disabled="loading||upload" clearable></el-input>
 									<el-upload :drag="checkUploadStatus('drag')" :v-if="checkUploadStatus('if')"
 										action="" :show-file-list="false" ref="upload" :http-request="handleFileChange"
@@ -161,7 +161,6 @@
 									<el-dropdown-item @click.native="handleCopySub()">复制订阅链接</el-dropdown-item>
 									<el-dropdown-item v-if="!loading && result.length" @click.native="handleCopyAvailable()">复制可用节点</el-dropdown-item>
 									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">复制节点</el-dropdown-item>
-									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">筛选节点</el-dropdown-item>
 									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleSave()">导出节点</el-dropdown-item>
 									<!-- <el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item> -->
 									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleQRCode()">显示二维码</el-dropdown-item>
@@ -171,7 +170,8 @@
 						</el-col>
 					</el-row>
 					<el-container>
-						<el-table :data="result" :cell-style="colorCell" size="small" ref="result"
+						<el-table :data="result" :cell-style="colorCell" size="small" ref="result" 
+							:row-key="row => `${row.server}${row.protocol}${row.ping}${row.speed}${row.maxspeed}`"
 							@selection-change="handleSelectionChange" @sort-change="handleSortChange">
 							<el-table-column type="selection" width="55" :selectable="checkSelectable">
 							</el-table-column>
@@ -192,9 +192,15 @@
 								:filter-method="filterPing">
 							</el-table-column>
 							<el-table-column label="AvgSpeed" align="center" prop="speed" min-width="150" sortable
+								:filters="[{ text: '200KB', value: 204800 }, { text: '500KB', value: 512000 }, { text: '1MB', value: 1048576 }, { text: '2MB', value: 2097152 }, { text: '5MB', value: 5242880 }, { text: '10MB', value: 10485760 },{ text: '15MB', value: 15728640 }, { text: '20MB', value: 20971520 }]"
+								:filter-multiple="false"
+								:filter-method="filterAvgSpeed"
 								:sort-method="speedSort">
 							</el-table-column>
 							<el-table-column label="MaxSpeed" align="center" prop="maxspeed" min-width="150" sortable
+								:filters="[{ text: '200KB', value: 204800 }, { text: '500KB', value: 512000 }, { text: '1MB', value: 1048576 }, { text: '2MB', value: 2097152 }, { text: '5MB', value: 5242880 }, { text: '10MB', value: 10485760 },{ text: '15MB', value: 15728640 }, { text: '20MB', value: 20971520 }]"
+								:filter-multiple="false"
+								:filter-method="filterMaxSpeed"
 								:sort-method="maxSpeedSort">
 							</el-table-column>
 						</el-table>
@@ -205,15 +211,15 @@
 
 				<div :class="['dashboard', dashboardCollapsed ? 'collapsed' : '']">
 					<el-card class="progress">
-						<div class="progress-bar" :style="{ 'width': testProgress(result) + '%' }"></div>
+						<div class="progress-bar" :style="{ 'width': testProgress(result, testCount) + '%' }"></div>
 						<div class="progress-inner">
 							<div class="progress-item">
-								<span>{{ testProgress(result) }}%</span>
+								<span>{{ testProgress(result, testCount) }}%</span>
 								<div>Progress</div>
 							</div>
 							<div v-if="!dashboardCollapsed" class="progress-item">
-								<span>{{ result.filter(item => item.ping > 0).length }}/{{ result.length }}</span>
-								<div>Available</div>
+								<span>{{ testOkCount }}/{{ result.length }}</span>
+								<div>Ratio</div>
 							</div>
 							<div v-if="!dashboardCollapsed" class="traffic">
 								<span> {{ bytesToSize(totalTraffic) }} </span>
@@ -229,7 +235,7 @@
 						<ul>
 							<li v-if="dashboardCollapsed">
 								<span>{{ result.filter(item => item.ping > 0).length }}/{{ result.length }}</span>
-								<div>Available</div>
+								<div>Ratio</div>
 							</li>
 							<li v-if="!dashboardCollapsed">
 								<span>{{ result.filter(item => item.protocol.startsWith("vmess")).length }}</span>
@@ -349,6 +355,8 @@
 					theme: "rainbow",
 					generateResultJSON: "",
 					dashboardCollapsed: true,
+					testCount: 0,
+					testOkCount: 0,
 
 					init: {
 						speedtestModes: {
@@ -386,8 +394,8 @@
 					if (i === 0) return `${bytes} ${sizes[i]})`;
 					return `${(bytes / (1024 ** i)).toFixed(1)} ${sizes[i]}`;
 				},
-				testProgress: function (result) {
-					return result.length ? Math.floor(result.filter(item => item.ping !== '0.00' && item.ping != "测试中...").length/result.length*100) : 0
+				testProgress: function (result, testCount) {
+					return result.length ? Math.floor(testCount/result.length*100) : 0
 				},
 				formatSeconds: function (seconds) {
 					let totalTime = seconds > 0 ? seconds : 0
@@ -456,6 +464,8 @@
 					}
 				},
 				submit: function () {
+					this.testCount = 0;
+					this.testOkCount = 0;
 					if (!this.subscription.length) {
 						this.$alert("请先输入链接或选择文件！", "错误", {
 							type: "error",
@@ -905,7 +915,11 @@
 							//clearInterval(interval)
 							item = this.result[id];
 							item.loss = json.loss;
-							item.ping = json.ping;
+							item.ping = json.ping || 0;
+							this.testCount += 1
+							if (item.ping > 0) {
+								this.testOkCount += 1
+							}
 							/*
 										item = {
 											"group": json.group,
@@ -940,6 +954,7 @@
 							break;
 						case "eof":
 							this.loading = false;
+							console.log(this.result)
 							break;
 						case "retest":
 							item = this.result[id];
@@ -993,7 +1008,6 @@
 							console.log("error:" + json.reason);
 							break;
 					}
-					console.log(this.result);
 				},
 				floatSort: function (obj1, obj2) {
 					return parseFloat(obj1.ping) - parseFloat(obj2.ping);
@@ -1011,9 +1025,20 @@
 				filterPing: function (value, row) {
 					return value === "available" ? row.ping > 0 : true;
 				},
+				filterAvgSpeed: function (value, row) {
+					const speed = isNaN(this.getSpeed(row.speed)) ? -1 : this.getSpeed(row.speed);
+					return speed >= value;
+				},
+				filterMaxSpeed: function (value, row) {
+					const speed = isNaN(this.getSpeed(row.maxspeed)) ? -1 : this.getSpeed(row.maxspeed);
+					return speed >= value;
+				},
 				filterProtocol: function (value, row) {
 					if (value === "vmess") {
 						return row.protocol.startsWith("vmess")
+					}
+					if (value === "trojan") {
+						return row.protocol.startsWith("trojan")
 					}
 					return value === row.protocol
 				},

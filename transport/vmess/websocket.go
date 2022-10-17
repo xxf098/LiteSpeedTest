@@ -1,12 +1,17 @@
 package vmess
 
 import (
+	"bytes"
+	"context"
 	"crypto/tls"
+	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -24,15 +29,28 @@ type websocketConn struct {
 	wMux sync.Mutex
 }
 
+type websocketWithEarlyDataConn struct {
+	net.Conn
+	underlay net.Conn
+	closed   bool
+	dialed   chan bool
+	cancel   context.CancelFunc
+	ctx      context.Context
+	config   *WebsocketConfig
+}
+
 type WebsocketConfig struct {
-	Host           string
-	Port           string
-	Path           string
-	Headers        http.Header
-	TLS            bool
-	SkipCertVerify bool
-	ServerName     string
-	SessionCache   tls.ClientSessionCache
+	Host                string
+	Port                string
+	Path                string
+	Headers             http.Header
+	TLS                 bool
+	TLSConfig           *tls.Config
+	SkipCertVerify      bool
+	ServerName          string
+	SessionCache        tls.ClientSessionCache
+	MaxEarlyData        int
+	EarlyDataHeaderName string
 }
 
 // Read implements net.Conn.Read()
@@ -114,7 +132,118 @@ func (wsc *websocketConn) SetWriteDeadline(t time.Time) error {
 	return wsc.conn.SetWriteDeadline(t)
 }
 
-func StreamWebsocketConn(conn net.Conn, c *WebsocketConfig) (net.Conn, error) {
+func (wsedc *websocketWithEarlyDataConn) Dial(earlyData []byte) error {
+	base64DataBuf := &bytes.Buffer{}
+	base64EarlyDataEncoder := base64.NewEncoder(base64.RawURLEncoding, base64DataBuf)
+
+	earlyDataBuf := bytes.NewBuffer(earlyData)
+	if _, err := base64EarlyDataEncoder.Write(earlyDataBuf.Next(wsedc.config.MaxEarlyData)); err != nil {
+		return errors.New("failed to encode early data: " + err.Error())
+	}
+
+	if errc := base64EarlyDataEncoder.Close(); errc != nil {
+		return errors.New("failed to encode early data tail: " + errc.Error())
+	}
+
+	var err error
+	if wsedc.Conn, err = streamWebsocketConn(wsedc.underlay, wsedc.config, base64DataBuf); err != nil {
+		wsedc.Close()
+		return errors.New("failed to dial WebSocket: " + err.Error())
+	}
+
+	wsedc.dialed <- true
+	if earlyDataBuf.Len() != 0 {
+		_, err = wsedc.Conn.Write(earlyDataBuf.Bytes())
+	}
+
+	return err
+}
+
+func (wsedc *websocketWithEarlyDataConn) Write(b []byte) (int, error) {
+	if wsedc.closed {
+		return 0, io.ErrClosedPipe
+	}
+	if wsedc.Conn == nil {
+		if err := wsedc.Dial(b); err != nil {
+			return 0, err
+		}
+		return len(b), nil
+	}
+
+	return wsedc.Conn.Write(b)
+}
+
+func (wsedc *websocketWithEarlyDataConn) Read(b []byte) (int, error) {
+	if wsedc.closed {
+		return 0, io.ErrClosedPipe
+	}
+	if wsedc.Conn == nil {
+		select {
+		case <-wsedc.ctx.Done():
+			return 0, io.ErrUnexpectedEOF
+		case <-wsedc.dialed:
+		}
+	}
+	return wsedc.Conn.Read(b)
+}
+
+func (wsedc *websocketWithEarlyDataConn) Close() error {
+	wsedc.closed = true
+	wsedc.cancel()
+	if wsedc.Conn == nil {
+		return nil
+	}
+	return wsedc.Conn.Close()
+}
+
+func (wsedc *websocketWithEarlyDataConn) LocalAddr() net.Addr {
+	if wsedc.Conn == nil {
+		return wsedc.underlay.LocalAddr()
+	}
+	return wsedc.Conn.LocalAddr()
+}
+
+func (wsedc *websocketWithEarlyDataConn) RemoteAddr() net.Addr {
+	if wsedc.Conn == nil {
+		return wsedc.underlay.RemoteAddr()
+	}
+	return wsedc.Conn.RemoteAddr()
+}
+
+func (wsedc *websocketWithEarlyDataConn) SetDeadline(t time.Time) error {
+	if err := wsedc.SetReadDeadline(t); err != nil {
+		return err
+	}
+	return wsedc.SetWriteDeadline(t)
+}
+
+func (wsedc *websocketWithEarlyDataConn) SetReadDeadline(t time.Time) error {
+	if wsedc.Conn == nil {
+		return nil
+	}
+	return wsedc.Conn.SetReadDeadline(t)
+}
+
+func (wsedc *websocketWithEarlyDataConn) SetWriteDeadline(t time.Time) error {
+	if wsedc.Conn == nil {
+		return nil
+	}
+	return wsedc.Conn.SetWriteDeadline(t)
+}
+
+func streamWebsocketWithEarlyDataConn(conn net.Conn, c *WebsocketConfig) (net.Conn, error) {
+	ctx, cancel := context.WithCancel(context.Background())
+	conn = &websocketWithEarlyDataConn{
+		dialed:   make(chan bool, 1),
+		cancel:   cancel,
+		ctx:      ctx,
+		underlay: conn,
+		config:   c,
+	}
+	return conn, nil
+}
+
+func streamWebsocketConn(conn net.Conn, c *WebsocketConfig, earlyData *bytes.Buffer) (net.Conn, error) {
 	dialer := &websocket.Dialer{
 		NetDial: func(network, addr string) (net.Conn, error) {
 			return conn, nil
@@ -127,12 +256,15 @@ func StreamWebsocketConn(conn net.Conn, c *WebsocketConfig) (net.Conn, error) {
 	scheme := "ws"
 	if c.TLS {
 		scheme = "wss"
-		dialer.TLSClientConfig = &tls.Config{
-			ServerName:         c.Host,
-			InsecureSkipVerify: c.SkipCertVerify,
-			ClientSessionCache: c.SessionCache,
+		if c.TLSConfig != nil {
+			dialer.TLSClientConfig = c.TLSConfig
+		} else {
+			dialer.TLSClientConfig = &tls.Config{
+				ServerName:         c.Host,
+				InsecureSkipVerify: c.SkipCertVerify,
+				ClientSessionCache: c.SessionCache,
+			}
 		}
-
 		if c.ServerName != "" {
 			dialer.TLSClientConfig.ServerName = c.ServerName
 		} else if host := c.Headers.Get("Host"); host != "" {
@@ -140,16 +272,30 @@ func StreamWebsocketConn(conn net.Conn, c *WebsocketConfig) (net.Conn, error) {
 		}
 	}
 
+	u, err := url.Parse(c.Path)
+	if err != nil {
+		return nil, fmt.Errorf("parse url %s error: %w", c.Path, err)
+	}
+
 	uri := url.URL{
-		Scheme: scheme,
-		Host:   net.JoinHostPort(c.Host, c.Port),
-		Path:   c.Path,
+		Scheme:   scheme,
+		Host:     net.JoinHostPort(c.Host, c.Port),
+		Path:     u.Path,
+		RawQuery: u.RawQuery,
 	}
 
 	headers := http.Header{}
 	if c.Headers != nil {
 		for k := range c.Headers {
 			headers.Add(k, c.Headers.Get(k))
+		}
+	}
+
+	if earlyData != nil {
+		if c.EarlyDataHeaderName == "" {
+			uri.Path += earlyData.String()
+		} else {
+			headers.Set(c.EarlyDataHeaderName, earlyData.String())
 		}
 	}
 
@@ -166,4 +312,79 @@ func StreamWebsocketConn(conn net.Conn, c *WebsocketConfig) (net.Conn, error) {
 		conn:       wsConn,
 		remoteAddr: conn.RemoteAddr(),
 	}, nil
+}
+
+func StreamWebsocketConn(conn net.Conn, c *WebsocketConfig) (net.Conn, error) {
+
+	if u, err := url.Parse(c.Path); err == nil {
+		if q := u.Query(); q.Get("ed") != "" {
+			if ed, err := strconv.Atoi(q.Get("ed")); err == nil {
+				c.MaxEarlyData = ed
+				c.EarlyDataHeaderName = "Sec-WebSocket-Protocol"
+				q.Del("ed")
+				u.RawQuery = q.Encode()
+				c.Path = u.String()
+			}
+		}
+	}
+
+	// dialer := &websocket.Dialer{
+	// 	NetDial: func(network, addr string) (net.Conn, error) {
+	// 		return conn, nil
+	// 	},
+	// 	ReadBufferSize:   4 * 1024,
+	// 	WriteBufferSize:  4 * 1024,
+	// 	HandshakeTimeout: time.Second * 8,
+	// }
+
+	// scheme := "ws"
+	// if c.TLS {
+	// 	scheme = "wss"
+	// 	if c.TLSConfig != nil {
+	// 		dialer.TLSClientConfig = c.TLSConfig
+	// 	} else {
+	// 		dialer.TLSClientConfig = &tls.Config{
+	// 			ServerName:         c.Host,
+	// 			InsecureSkipVerify: c.SkipCertVerify,
+	// 			ClientSessionCache: c.SessionCache,
+	// 		}
+	// 	}
+	// 	if c.ServerName != "" {
+	// 		dialer.TLSClientConfig.ServerName = c.ServerName
+	// 	} else if host := c.Headers.Get("Host"); host != "" {
+	// 		dialer.TLSClientConfig.ServerName = host
+	// 	}
+	// }
+
+	// uri := url.URL{
+	// 	Scheme: scheme,
+	// 	Host:   net.JoinHostPort(c.Host, c.Port),
+	// 	Path:   c.Path,
+	// }
+
+	// headers := http.Header{}
+	// if c.Headers != nil {
+	// 	for k := range c.Headers {
+	// 		headers.Add(k, c.Headers.Get(k))
+	// 	}
+	// }
+
+	// wsConn, resp, err := dialer.Dial(uri.String(), headers)
+	// if err != nil {
+	// 	reason := err.Error()
+	// 	if resp != nil {
+	// 		reason = resp.Status
+	// 	}
+	// 	return nil, fmt.Errorf("dial %s error: %s", uri.Host, reason)
+	// }
+
+	// return &websocketConn{
+	// 	conn:       wsConn,
+	// 	remoteAddr: conn.RemoteAddr(),
+	// }, nil
+	if c.MaxEarlyData > 0 {
+		return streamWebsocketWithEarlyDataConn(conn, c)
+	}
+
+	return streamWebsocketConn(conn, c, nil)
 }
