@@ -2,6 +2,7 @@
 FROM golang:1.18 as build
 ADD / /go/lite
 WORKDIR /go/lite
+# china only
 RUN go env -w GOPROXY=https://goproxy.cn,direct
 RUN go mod tidy
 RUN GOOS=js GOARCH=wasm go get -u ./...

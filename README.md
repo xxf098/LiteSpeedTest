@@ -44,8 +44,8 @@ Run as a http/socks5 proxy:
 
 ### Docker
 ```bash
- docker build --network=host  -t lite:0.1 -f ./docker/Dockerfile ./
- docker run -p 10888:10888/tcp lite:0.1
+ docker build --network=host  -t lite:$(git describe --tags --abbrev=0) -f ./docker/Dockerfile ./
+ docker run -p 10888:10888/tcp lite:$(git describe --tags --abbrev=0)
 ```
 
 ## Credits
