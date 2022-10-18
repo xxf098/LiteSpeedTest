@@ -114,7 +114,7 @@ func PeekClash(input string, n int) ([]string, error) {
 		data = append(data, b...)
 		data = append(data, byte('\n'))
 	}
-	fmt.Println(string(data))
+	// fmt.Println(string(data))
 	links, err := parseClashByte(data)
 	if err != nil || len(links) < 1 {
 		return []string{}, err
@@ -235,8 +235,8 @@ func parseFile(filepath string) ([]string, error) {
 	}
 
 	links, err := parseBase64(string(data))
-	if err != nil && len(data) > 128 {
-		preview := string(data[:128])
+	if err != nil && len(data) > 2048 {
+		preview := string(data[:2048])
 		if strings.Contains(preview, "proxies:") {
 			return parseClashByLine(filepath)
 		}
