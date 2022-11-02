@@ -62,6 +62,9 @@
 									<el-input v-model="timeout" style="width: 215px" type="number" min="5" max="60"
 										size="small" @keyup.enter.native="submit" :disabled="loading"></el-input>
 								</el-form-item>
+								<el-form-item label="去除重复节点：" v-if="option===1">
+									<el-checkbox v-model="unique">去重</el-checkbox>
+								</el-form-item>
 								<el-form-item label="测试项：" v-if="option<2">
 									<el-select v-model="speedtestMode" size="small" :disabled="loading">
 										<el-option v-for="(item, key, index) in init.speedtestModes" :key="index"
@@ -337,6 +340,7 @@
 					subscription: "",
 					concurrency: 2,
 					timeout: 15,
+					unique: true,
 					groupname: "",
 					loadingContent: "",
 					speedtestMode: "all",
