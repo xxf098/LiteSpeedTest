@@ -83,7 +83,7 @@
 									<el-input v-model="groupname" style="width: 215px" 
 										@keyup.enter.native="submit" :disabled="loading" clearable></el-input>
 									<el-button type="primary" @click="submit" style="margin-left: 20px" v-if="!option"
-										:disabled="loading" :loading="loading"><el-icon class="el-icon--left"><Check /></el-icon>提 交</el-button>
+										:disabled="loading" :loading="loading"><el-icon v-if="!loading" class="el-icon--left"><Check /></el-icon>提 交</el-button>
 									<el-button type="danger" @click="terminate" :icon="Close" v-if="!option"
 										:disabled="!loading"><el-icon class="el-icon--left"><Close /></el-icon>终 止</el-button>
 								</el-form-item>
@@ -267,8 +267,10 @@
 						</ul>
 					</el-card>
 					<div class="icon" @click="handleDashboardCollapsed()">
-						<i v-if="!dashboardCollapsed" class="el-icon-right" ></i>
-						<i v-if="dashboardCollapsed" class="el-icon-back"></i>
+						<el-icon v-if="!dashboardCollapsed"><Right /></el-icon>
+						<el-icon v-if="dashboardCollapsed"><Back /></el-icon>
+						<!-- <i v-if="!dashboardCollapsed" class="el-icon-right" ></i>
+						<i v-if="dashboardCollapsed" class="el-icon-back"></i> -->
 					</div>
 				</div>
 
