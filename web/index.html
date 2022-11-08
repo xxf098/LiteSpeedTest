@@ -282,7 +282,7 @@
 				</el-card>
 			</el-col>
 		</el-row>
-		<el-dialog title="Share Links with QRcode" center :visible.sync="qrCodeDialogVisible" width="40%"
+		<el-dialog title="Share Links with QRcode" center v-model="qrCodeDialogVisible" width="40%"
 			@opened="handleQRCodeCreate" :before-close="qrCodeHandleClose">
 			<el-scrollbar style="height:360px;">
 				<el-row>
