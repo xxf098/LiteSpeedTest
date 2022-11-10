@@ -306,6 +306,7 @@ type ProfileTestOptions struct {
 	Language        string        `json:"language"`
 	FontSize        int           `json:"fontSize"`
 	Theme           string        `json:"theme"`
+	Unique          bool          `json:"unique"`
 	GeneratePicMode int           `json:"generatePicMode"` // 0: base64 1:file path 2: no pic
 }
 
