@@ -62,11 +62,11 @@
 								</el-form-item>
 
 								<el-form-item label="并发数：" v-if="option<2">
-									<el-input v-model="concurrency" style="width: 215px" type="number" min="1" max="50"
+									<el-input v-model="concurrency" style="width: 235px" type="number" min="1" max="50"
 										 @keyup.enter.native="submit" :disabled="loading"></el-input>
 								</el-form-item>
 								<el-form-item label="测试时长(秒)：" v-if="option===1">
-									<el-input v-model="timeout" style="width: 215px" type="number" min="5" max="60"
+									<el-input v-model="timeout" style="width: 235px" type="number" min="5" max="60"
 										 @keyup.enter.native="submit" :disabled="loading"></el-input>
 								</el-form-item>
 								<el-form-item label="去除重复节点：" v-if="option===1">
@@ -80,7 +80,7 @@
 									</el-select>
 								</el-form-item>
 								<el-form-item label="自定义组名：" v-if="option<2">
-									<el-input v-model="groupname" style="width: 215px" 
+									<el-input v-model="groupname" style="width: 235px" 
 										@keyup.enter.native="submit" :disabled="loading" clearable></el-input>
 									<el-button type="primary" @click="submit" style="margin-left: 20px" v-if="!option"
 										:disabled="loading" :loading="loading"><el-icon v-if="!loading" class="el-icon--left"><Check /></el-icon>提 交</el-button>
@@ -106,7 +106,7 @@
 									</el-select>
 								</el-form-item>
 								<el-form-item label="字体大小：" v-if="option===2">
-									<el-input v-model="fontSize" style="width: 215px" type="number" min="12" max="36"
+									<el-input v-model="fontSize" style="width: 235px" type="number" min="12" max="36"
 									 @keyup.enter.native="submit" :disabled="loading"></el-input>
 								</el-form-item>
 								<el-form-item label="排序方式：" v-if="option===2" :disabled="loading">
@@ -190,7 +190,7 @@
 							</el-table-column> -->
 							<el-table-column label="Remark" align="center" prop="remark" min-width="400" sortable>
 							</el-table-column>
-							<el-table-column label="Server" align="center" prop="server" min-width="150" sortable>
+							<el-table-column label="Server" align="center" prop="server" min-width="160" sortable>
 							</el-table-column>
 							<el-table-column label="Protocol" align="center" prop="protocol" width="120" sortable
 								:filters="[{ text: 'V2Ray', value: 'vmess' }, { text: 'Trojan', value: 'trojan' }, { text: 'ShadowsocksR', value: 'ssr' }, { text: 'Shadowsocks', value: 'ss' }]"
@@ -822,6 +822,7 @@
 						speedtestMode: self.speedtestMode,
 						pingMethod: self.pingMethod,
 						sortMethod: self.sortMethod,
+						unique: self.unique,
 						concurrency: parseInt(self.concurrency),
 						timeout: parseInt(self.timeout),
 						language: self.language,
