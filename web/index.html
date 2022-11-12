@@ -6,15 +6,17 @@
 </head>
 <meta charset="utf-8" />
 <!-- 引入 vue -->
-<script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/vue/2.6.11/vue.min.js"></script>
+<script src="https://cdn.staticfile.org/vue/3.2.41/vue.global.prod.js"></script>
 
 <!-- 引入样式 -->
 <!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
-<link href="https://cdn.staticfile.org/element-ui/2.15.7/theme-chalk/index.min.css" rel="stylesheet">
+<link href="https://cdn.staticfile.org/element-plus/2.2.20/index.css" rel="stylesheet">
 
 <!-- 引入组件库 -->
 <!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
-<script src="https://cdn.staticfile.org/element-ui/2.15.7/index.min.js"></script>
+<script src="https://cdn.staticfile.org/element-plus/2.2.20/index.full.min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/@element-plus/icons-vue"></script> -->
+<script src="https://cdn.staticfile.org/element-plus-icons-vue/2.0.10/global.iife.js"></script>
 <!-- qrcode -->
 <!-- <script src="https://cdn.jsdelivr.net/npm/qrcodejs2@0.0.2/qrcode.min.js"></script> -->
 <script src="wasm_exec.js"></script>
@@ -27,8 +29,7 @@
 				<el-card>
 					<div slot="header">订阅信息</div>
 					<el-container :element-loading-text="loadingContent">
-						<el-form label-width="120px">
-							<el-row>
+						<el-form label-width="120px" size="large">
 								<el-form-item label="设置：">
 									<el-radio-group v-model="option" :disabled="loading">
 										<el-radio :label="0">基础</el-radio>
@@ -39,10 +40,14 @@
 								</el-form-item>
 
 								<el-form-item label="链接：" v-if="option<2">
-									<el-input v-model="subscription" style="width: 800px" size="small"
+									<el-col :span="8">
+										<el-input v-model="subscription" style="width: 800px"
 										@keyup.enter.native="submit" placeholder="支持 V2Ray/Trojan/SS/SSR/Clash 订阅链接，多个节点链接及文件路径的批量测速"
 										:disabled="loading||upload" clearable></el-input>
-									<el-upload :drag="checkUploadStatus('drag')" :v-if="checkUploadStatus('if')"
+									</el-col>
+									<el-col :span="12" ></el-col>
+									<el-col :span="12" style="margin-top: 6px;">
+										<el-upload :drag="checkUploadStatus('drag')" :v-if="checkUploadStatus('if')"
 										action="" :show-file-list="false" ref="upload" :http-request="handleFileChange"
 										:auto-upload="true" :before-upload="beforeUpload">
 										<i class="el-icon-upload" v-if="!subscription.length"></i>
@@ -51,63 +56,68 @@
 											v-if="upload" @click="cancelFileUpload">取消文件选择</el-button>
 										<div class="el-upload__text" v-if="!subscription.length">
 											还可以将配置文件拖到此处，或<em>点击上传</em></div>
-									</el-upload>
+										</el-upload>
+									</el-col>
+									
 								</el-form-item>
 
 								<el-form-item label="并发数：" v-if="option<2">
-									<el-input v-model="concurrency" style="width: 215px" type="number" min="1" max="50"
-										size="small" @keyup.enter.native="submit" :disabled="loading"></el-input>
+									<el-input v-model="concurrency" style="width: 235px" type="number" min="1" max="50"
+										 @keyup.enter.native="submit" :disabled="loading"></el-input>
 								</el-form-item>
 								<el-form-item label="测试时长(秒)：" v-if="option===1">
-									<el-input v-model="timeout" style="width: 215px" type="number" min="5" max="60"
-										size="small" @keyup.enter.native="submit" :disabled="loading"></el-input>
+									<el-input v-model="timeout" style="width: 235px" type="number" min="5" max="60"
+										 @keyup.enter.native="submit" :disabled="loading"></el-input>
+								</el-form-item>
+								<el-form-item label="去除重复节点：" v-if="option===1">
+									<el-checkbox v-model="unique">去重</el-checkbox>
 								</el-form-item>
 								<el-form-item label="测试项：" v-if="option<2">
-									<el-select v-model="speedtestMode" size="small" :disabled="loading">
+									<el-select v-model="speedtestMode" :disabled="loading">
 										<el-option v-for="(item, key, index) in init.speedtestModes" :key="index"
 											:label="item" :value="key">
 										</el-option>
 									</el-select>
 								</el-form-item>
 								<el-form-item label="自定义组名：" v-if="option<2">
-									<el-input v-model="groupname" style="width: 215px" size="small"
+									<el-input v-model="groupname" style="width: 235px" 
 										@keyup.enter.native="submit" :disabled="loading" clearable></el-input>
 									<el-button type="primary" @click="submit" style="margin-left: 20px" v-if="!option"
-										icon="el-icon-check" :disabled="loading" :loading="loading">提 交</el-button>
-									<el-button type="danger" @click="terminate" icon="el-icon-close" v-if="!option"
-										:disabled="!loading">终 止</el-button>
+										:disabled="loading" :loading="loading"><el-icon v-if="!loading" class="el-icon--left"><Check /></el-icon>提 交</el-button>
+									<el-button type="danger" @click="terminate" :icon="Close" v-if="!option"
+										:disabled="!loading"><el-icon class="el-icon--left"><Close /></el-icon>终 止</el-button>
 								</el-form-item>
 
 								<el-form-item label="Ping方式：" v-if="option===1" :disabled="loading">
-									<el-select v-model="pingMethod" size="small">
+									<el-select v-model="pingMethod" >
 										<el-option v-for="(item, key, index) in init.pingMethods" :key="index" :label="item" :value="key">
 										</el-option>
 									</el-select>
-									<el-button type="primary" @click="submit" style="margin-left: 20px" icon="el-icon-check" :disabled="loading"
+									<el-button type="primary" @click="submit" style="margin-left: 20px" :icon="Check" :disabled="loading"
 										:loading="loading">提 交</el-button>
-									<el-button type="danger" @click="terminate" icon="el-icon-close" :disabled="!loading">终 止</el-button>
+									<el-button type="danger" @click="terminate" :icon="Close" :disabled="!loading">终 止</el-button>
 								</el-form-item>
 								
 								<!-- export -->
 								<el-form-item label="语言：" v-if="option===2" :disabled="loading">
-									<el-select v-model="language" size="small">
+									<el-select v-model="language">
 										<el-option key="1" label="EN" value="en"></el-option>
 										<el-option key="2" label="中文" value="cn"></el-option>
 									</el-select>
 								</el-form-item>
 								<el-form-item label="字体大小：" v-if="option===2">
-									<el-input v-model="fontSize" style="width: 215px" type="number" min="12" max="36"
-										size="small" @keyup.enter.native="submit" :disabled="loading"></el-input>
+									<el-input v-model="fontSize" style="width: 235px" type="number" min="12" max="36"
+									 @keyup.enter.native="submit" :disabled="loading"></el-input>
 								</el-form-item>
 								<el-form-item label="排序方式：" v-if="option===2" :disabled="loading">
-									<el-select v-model="sortMethod" size="small">
+									<el-select v-model="sortMethod" >
 										<el-option v-for="(item, key, index) in init.sortMethods" :key="index"
 											:label="item" :value="key">
 										</el-option>
 									</el-select>
 								</el-form-item>
 								<el-form-item label="主题：" v-if="option===2" :disabled="loading">
-									<el-select v-model="theme" size="small">
+									<el-select v-model="theme" >
 										<el-option v-for="(item, key, index) in init.themes" :key="index"
 											:label="item" :value="key">
 										</el-option>
@@ -121,10 +131,9 @@
 										style="width: 800px"
 										v-model="generateResultJSON">
 									</el-input>
-									<el-button type="primary" @click="generateResult" style="margin-left: 20px" icon="el-icon-check" :disabled="loading"
+									<el-button type="primary" @click="generateResult" style="margin-left: 20px" :icon="Check" :disabled="loading"
 										:loading="loading">生 成</el-button>
 								</el-form-item>
-							</el-row>
 						</el-form>
 					</el-container>
 				</el-card>
@@ -154,23 +163,25 @@
 						</el-col>
 						<el-col v-if="result.length" :span="8">
 							<el-dropdown trigger="click">
-								<el-button size="medium" type="primary">
-									Actions<i class="el-icon-arrow-down el-icon--right"></i>
+								<el-button size="large" type="primary">
+									Actions<el-icon class="el-icon--right"><arrow-down /></el-icon>
 								</el-button>
-								<el-dropdown-menu slot="dropdown">
-									<el-dropdown-item @click.native="handleCopySub()">复制订阅链接</el-dropdown-item>
-									<el-dropdown-item v-if="!loading && result.length" @click.native="handleCopyAvailable()">复制可用节点</el-dropdown-item>
-									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">复制节点</el-dropdown-item>
-									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleSave()">导出节点</el-dropdown-item>
-									<!-- <el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item> -->
-									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleQRCode()">显示二维码</el-dropdown-item>
-									<el-dropdown-item v-if="multipleSelection.length" @click.native="handleExportResult()">导出结果</el-dropdown-item>
-								</el-dropdown-menu>
+								<template #dropdown>
+									<el-dropdown-menu slot="dropdown">
+										<el-dropdown-item @click.native="handleCopySub()">复制订阅链接</el-dropdown-item>
+										<el-dropdown-item v-if="!loading && result.length" @click.native="handleCopyAvailable()">复制可用节点</el-dropdown-item>
+										<el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">复制节点</el-dropdown-item>
+										<el-dropdown-item v-if="multipleSelection.length" @click.native="handleSave()">导出节点</el-dropdown-item>
+										<!-- <el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item> -->
+										<el-dropdown-item v-if="multipleSelection.length" @click.native="handleQRCode()">显示二维码</el-dropdown-item>
+										<el-dropdown-item v-if="multipleSelection.length" @click.native="handleExportResult()">导出结果</el-dropdown-item>
+									</el-dropdown-menu>
+								</template>
 							</el-dropdown>
 						</el-col>
 					</el-row>
 					<el-container>
-						<el-table :data="result" :cell-style="colorCell" size="small" ref="result" 
+						<el-table :data="result" :cell-style="colorCell" ref="result" 
 							:row-key="row => `${row.server}${row.protocol}${row.ping}${row.speed}${row.maxspeed}`"
 							@selection-change="handleSelectionChange" @sort-change="handleSortChange">
 							<el-table-column type="selection" width="55" :selectable="checkSelectable">
@@ -179,9 +190,9 @@
 							</el-table-column> -->
 							<el-table-column label="Remark" align="center" prop="remark" min-width="400" sortable>
 							</el-table-column>
-							<el-table-column label="Server" align="center" prop="server" min-width="120" sortable>
+							<el-table-column label="Server" align="center" prop="server" min-width="160" sortable>
 							</el-table-column>
-							<el-table-column label="Protocol" align="center" prop="protocol" width="100" sortable
+							<el-table-column label="Protocol" align="center" prop="protocol" width="120" sortable
 								:filters="[{ text: 'V2Ray', value: 'vmess' }, { text: 'Trojan', value: 'trojan' }, { text: 'ShadowsocksR', value: 'ssr' }, { text: 'Shadowsocks', value: 'ss' }]"
 								:filter-method="filterProtocol">
 							</el-table-column>
@@ -256,8 +267,10 @@
 						</ul>
 					</el-card>
 					<div class="icon" @click="handleDashboardCollapsed()">
-						<i v-if="!dashboardCollapsed" class="el-icon-right" ></i>
-						<i v-if="dashboardCollapsed" class="el-icon-back"></i>
+						<el-icon v-if="!dashboardCollapsed"><Right /></el-icon>
+						<el-icon v-if="dashboardCollapsed"><Back /></el-icon>
+						<!-- <i v-if="!dashboardCollapsed" class="el-icon-right" ></i>
+						<i v-if="dashboardCollapsed" class="el-icon-back"></i> -->
 					</div>
 				</div>
 
@@ -271,7 +284,7 @@
 				</el-card>
 			</el-col>
 		</el-row>
-		<el-dialog title="Share Links with QRcode" center :visible.sync="qrCodeDialogVisible" width="40%"
+		<el-dialog title="Share Links with QRcode" center v-model="qrCodeDialogVisible" width="40%"
 			@opened="handleQRCodeCreate" :before-close="qrCodeHandleClose">
 			<el-scrollbar style="height:360px;">
 				<el-row>
@@ -326,8 +339,9 @@
 
 		let resultjson = [];
 
-		let app = new Vue({
-			el: "#app",
+		const { createApp } = Vue
+
+		const app = createApp({
 			data() {
 				return {
 					title: "Lite Speedtest Web GUI",
@@ -337,6 +351,7 @@
 					subscription: "",
 					concurrency: 2,
 					timeout: 15,
+					unique: true,
 					groupname: "",
 					loadingContent: "",
 					speedtestMode: "all",
@@ -389,7 +404,7 @@
 			methods: {
 				bytesToSize: function (bytes) {
 					const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-					if (bytes === 0) return '0 B';
+					if (!bytes || bytes === 0) return '0 B';
 					const i = parseInt(Math.floor(Math.log(Math.abs(bytes)) / Math.log(1024)), 10);
 					if (i === 0) return `${bytes} ${sizes[i]})`;
 					return `${(bytes / (1024 ** i)).toFixed(1)} ${sizes[i]}`;
@@ -691,7 +706,7 @@
 					rowIndex,
 					columnIndex
 				}) {
-					let style = "color: black; font-weight: 600;";
+					let style = {color: "black", "font-weight": 600};
 					let speed = 0;
 					switch (columnIndex) {
 						case 5:
@@ -706,7 +721,8 @@
 					if (isNaN(parseFloat(speed))) return style;
 					let color = this.getSpeedColor(speed);
 					// console.log(`speed: ${speed}, row.speed: ${row.speed}, row.maxspeed: ${row.maxspeed}  color: ${color}`);
-					return style + "background: " + color;
+					style.background = color
+					return style;
 				},
 				// useNewPalette() {
 				// 	colorgroup = [
@@ -806,6 +822,7 @@
 						speedtestMode: self.speedtestMode,
 						pingMethod: self.pingMethod,
 						sortMethod: self.sortMethod,
+						unique: self.unique,
 						concurrency: parseInt(self.concurrency),
 						timeout: parseInt(self.timeout),
 						language: self.language,
@@ -844,13 +861,13 @@
 							item.ping = "测试中...";
 							item.loss = "测试中...";
 							item.testing = true
-							this.$set(this.result, id, item);
+							this.result[id]=item;
 							break;
 						case "speed":
 							item.speed = "测试中...";
 							item.maxspeed = "测试中...";
 							item.testing = true
-							this.$set(this.result, id, item);
+							this.result[id]=item;
 							break;
 					}
 				},
@@ -883,7 +900,7 @@
 								speed: "0.00B",
 								maxspeed: "0.00B"
 							};
-							this.$set(this.result, id, item);
+							this.result[id] = item;
 							break;
 						case "gotservers":
 							json.servers.forEach(json => {
@@ -899,13 +916,13 @@
 									speed: "0.00B",
 									maxspeed: "0.00B"
 								};
-								this.$set(this.result, json.id, item);
+								this.result[json.id] = item;
 							})
 							break;							
 						case "endone":
 							item = this.result[id];
 							item.testing = false
-							this.$set(this.result, id, item);
+							this.result[id] = item;
 							break;
 						case "startping":
 							//inverval=setInterval("app.loopevent("+id+",\"ping\")",300)
@@ -929,7 +946,7 @@
 											"speed": "0.00KB"
 										}
 										*/
-							this.$set(this.result, id, item);
+							this.result[id] = item;
 							break;
 						case "startspeed":
 							//inverval=setInterval("app.loopevent("+id+",\"speed\")",300)
@@ -941,7 +958,7 @@
 							item.speed = json.speed;
 							item.maxspeed = json.maxspeed;
 							this.totalTraffic += json.traffic
-							this.$set(this.result, id, item);
+							this.result[id] = item;
 							break;
 						case "picsaving":
 							this.$notify.info("保存结果图片中……");
@@ -969,7 +986,7 @@
 							);
 							item.speed = "0.00B";
 							item.maxspeed = "0.00B";
-							this.$set(this.result, id, item);
+							this.result[id] = item;
 							break;
 						case "error":
 							switch (json.reason) {
@@ -980,7 +997,7 @@
 									this.$notify.error(
 										"节点 " + item.group + " - " + item.remark + " 无法连接。"
 									);
-									this.$set(this.result, id, item);
+									this.result[id] = item;
 									break;
 								case "noresolve":
 									item = this.result[id];
@@ -989,7 +1006,7 @@
 									this.$notify.error(
 										"节点 " + item.group + " - " + item.remark + " 无法解析到 IP 地址。"
 									);
-									this.$set(this.result, id, item);
+									this.result[id] = item;
 									break;
 								case "nonodes":
 									this.$alert("找不到任何节点。请检查订阅链接。", "错误");
@@ -1047,6 +1064,11 @@
 				},
 			}
 		});
+		for ([name, comp] of Object.entries(ElementPlusIconsVue)) {
+			app.component(name, comp);
+		}
+		app.use(ElementPlus);
+		app.mount('#app')
 	</script>
 </body>
 

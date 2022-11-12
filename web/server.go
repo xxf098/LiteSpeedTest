@@ -66,6 +66,22 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 			c.WriteMessage(mt, []byte(msg))
 			continue
 		}
+		if options.Unique {
+			uniqueLinks := []string{}
+			uniqueMap := map[string]struct{}{}
+			for _, link := range links {
+				cfg, err := config.Link2Config(link)
+				if err != nil {
+					continue
+				}
+				key := fmt.Sprintf("%s%d%s%s", cfg.Server, cfg.Port, cfg.Password, cfg.Protocol)
+				if _, ok := uniqueMap[key]; !ok {
+					uniqueLinks = append(uniqueLinks, link)
+					uniqueMap[key] = struct{}{}
+				}
+			}
+			links = uniqueLinks
+		}
 		p := ProfileTest{
 			Writer:      c,
 			MessageType: mt,
