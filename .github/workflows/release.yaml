@@ -6,21 +6,13 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3    
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: 1.18
-
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
-
-      - name: Cache go module
-        uses: actions/cache@v3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+          cache: true
 
       - name: Get dependencies, run test and static check
         run: |
