@@ -1,10 +1,16 @@
-name: Job
+name: TestJob
 
 # on:
 #   push:
 #     branches:
 #     - develop
 on:
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: 'tags'
+        required: false
+        type: boolean
   schedule:
   - cron: "40 20 */2 * *"
 
