@@ -32,6 +32,7 @@ const (
 	PIC_BASE64 = iota
 	PIC_PATH
 	PIC_NONE
+	JSON_OUTPUT
 )
 
 // support proxy
@@ -307,7 +308,16 @@ type ProfileTestOptions struct {
 	FontSize        int           `json:"fontSize"`
 	Theme           string        `json:"theme"`
 	Unique          bool          `json:"unique"`
-	GeneratePicMode int           `json:"generatePicMode"` // 0: base64 1:file path 2: no pic
+	GeneratePicMode int           `json:"generatePicMode"` // 0: base64 1:file path 2: no pic 3: json
+}
+
+type JSONOutput struct {
+	Nodes        []render.Node      `json:"nodes"`
+	Options      ProfileTestOptions `json:"options"`
+	Traffic      int64              `json:"traffic"`
+	Duration     string             `json:"duration"`
+	SuccessCount int                `json:"successCount"`
+	LinksCount   int                `json:"linksCount"`
 }
 
 func parseMessage(message []byte) ([]string, *ProfileTestOptions, error) {
@@ -503,8 +513,13 @@ func (p *ProfileTest) testAll(ctx context.Context) (render.Nodes, error) {
 
 	// sort nodes
 	nodes.Sort(p.Options.SortMethod)
-	// render the result to pic
-	p.renderPic(nodes, traffic, duration, successCount, linksCount)
+	// save json
+	if p.Options.GeneratePicMode == JSON_OUTPUT {
+		p.saveJSON(nodes, traffic, duration, successCount, linksCount)
+	} else {
+		// render the result to pic
+		p.renderPic(nodes, traffic, duration, successCount, linksCount)
+	}
 	return nodes, nil
 }
 
@@ -526,6 +541,22 @@ func (p *ProfileTest) renderPic(nodes render.Nodes, traffic int64, duration stri
 		p.WriteMessage(getMsgByte(-1, "picdata", picdata))
 	}
 	return nil
+}
+
+func (p *ProfileTest) saveJSON(nodes render.Nodes, traffic int64, duration string, successCount int, linksCount int) error {
+	jsonOutput := JSONOutput{
+		Nodes:        nodes,
+		Options:      *p.Options,
+		Traffic:      traffic,
+		Duration:     duration,
+		SuccessCount: successCount,
+		LinksCount:   linksCount,
+	}
+	data, err := json.MarshalIndent(&jsonOutput, "", "\t")
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile("out.json", data, 0644)
 }
 
 func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeChan chan<- render.Node, trafficChan chan<- int64) error {
