@@ -30,7 +30,7 @@ Run as a speed test tool:
 	#       "fontSize":24,
 	#       "unique": true,  // remove duplicated value
 	#       "theme":"rainbow", 
-	#       "generatePicMode": 1  // 0: base64, 1: pic path, 2: no pic 3: json
+	#       "generatePicMode": 1  // 0: base64 1: pic path 2: no pic 3: json
     ./lite --config config.json --test https://raw.githubusercontent.com/freefq/free/master/v2
 
 
@@ -92,6 +92,7 @@ func testPing() error {
 		Language:      "en",  // en cn
 		FontSize:      24,
 		Theme:         "rainbow",
+        Unique:        true,
 		Timeout:       10 * time.Second,
 		GeneratePicMode:  0,
 	}

@@ -74,7 +74,7 @@ type Node struct {
 	MaxSpeed int64  `en:"MaxSpeed" cn:"最大速度" json:"max_speed"`
 	IsOk     bool   `json:"isok"`
 	Traffic  int64  `json:"traffic"`
-	Link     string // api only
+	Link     string `json:"link,omitempty"` // api only
 }
 
 func getNodeHeaders(language string) ([]string, map[string]string) {

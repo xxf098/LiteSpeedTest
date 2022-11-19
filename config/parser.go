@@ -123,6 +123,8 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 		// allowInsecure
 		if trojanOption.SkipCertVerify {
 			query = append(query, "allowInsecure=1")
+		} else {
+			query = append(query, "security=tls")
 		}
 		if len(trojanOption.SNI) > 0 {
 			query = append(query, fmt.Sprintf("sni=%s", trojanOption.SNI))
