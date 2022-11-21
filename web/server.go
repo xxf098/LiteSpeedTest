@@ -148,7 +148,7 @@ func TestFromCMD(subscription string, configPath *string) error {
 		}
 	}
 	// check url
-	if subscription != options.Subscription {
+	if len(subscription) > 0 && subscription != options.Subscription {
 		if _, err := url.Parse(subscription); err == nil {
 			options.Subscription = subscription
 		} else if _, err := os.Stat(subscription); err == nil {
