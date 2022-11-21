@@ -11,6 +11,8 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -143,6 +145,14 @@ func TestFromCMD(subscription string, configPath *string) error {
 		if opt, err := readConfig(*configPath); err == nil {
 			options = *opt
 			// options.GeneratePic = true
+		}
+	}
+	// check url
+	if subscription != options.Subscription {
+		if _, err := url.Parse(subscription); err == nil {
+			options.Subscription = subscription
+		} else if _, err := os.Stat(subscription); err == nil {
+			options.Subscription = subscription
 		}
 	}
 	if jsonOpt, err := json.Marshal(options); err == nil {
