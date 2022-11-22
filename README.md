@@ -15,15 +15,30 @@ Run as a speed test tool:
     
     # test in command line only mode
     ./lite --test https://raw.githubusercontent.com/freefq/free/master/v2
-    # test in command only line mode with custom config.
+    # test in command line only mode with custom config.
     # details can find here https://github.com/xxf098/LiteSpeedTest/blob/master/config.json
+    # all config options:
+    #       "group":"job",   // group name
+	#       "speedtestMode":"pingonly", // speedonly pingonly all
+	#       "pingMethod":"googleping",  // googleping tcpping
+	#       "sortMethod":"rspeed",      // speed rspeed ping rping
+	#       "concurrency":1,  // concurrency number
+	#       "testMode":2,   // 2: ALLTEST 3: RETEST
+	#       "subscription":"subscription url",
+	#       "timeout":16,  // timeout in seconds
+	#       "language":"en", // en cn
+	#       "fontSize":24,
+	#       "unique": true,  // remove duplicated value
+	#       "theme":"rainbow", 
+	#       "generatePicMode": 1  // 0: base64 1: pic path 2: no pic 3: json
     ./lite --config config.json --test https://raw.githubusercontent.com/freefq/free/master/v2
 
 
 Run as a grpc server:
-    # start the grpc server
-    # grpc client example in ./api/rpc/liteclient/client.go 
+    # start the grpc server  
     ./lite -grpc -p 10999
+    # grpc go client example in ./api/rpc/liteclient/client.go 
+    # grpc python client example in ./api/rpc/liteclientpy/client.py
 
 Run as a http/socks5 proxy:
     # use default port 8090
@@ -77,6 +92,7 @@ func testPing() error {
 		Language:      "en",  // en cn
 		FontSize:      24,
 		Theme:         "rainbow",
+        Unique:        true,
 		Timeout:       10 * time.Second,
 		GeneratePicMode:  0,
 	}
