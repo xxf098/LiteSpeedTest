@@ -61,7 +61,10 @@ func getSubscriptionLinks(link string) ([]string, error) {
 	if err != nil {
 		if strings.Contains(dataStr, "proxies:") {
 			return parseClash(dataStr)
-		} else if strings.Contains(dataStr, "://") {
+		} else if strings.Contains(dataStr, "vmess://") ||
+			strings.Contains(dataStr, "trojan://") ||
+			strings.Contains(dataStr, "ssr://") ||
+			strings.Contains(dataStr, "ss://") {
 			return parseProfiles(dataStr)
 		} else {
 			return []string{}, err
@@ -578,6 +581,7 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 		remarks = fmt.Sprintf("Profile %d", index)
 	}
 	elapse, err := p.pingLink(index, link)
+	log.Printf("%s elapse: %d", remarks, elapse)
 	if err != nil {
 		node := render.Node{
 			Id:       index,
