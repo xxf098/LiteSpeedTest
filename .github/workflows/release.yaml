@@ -16,8 +16,8 @@ jobs:
 
       - name: Get dependencies, run test and static check
         run: |
-          LATESTTAG=$(git describe --tags --abbrev=0)
-          sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/$LATESTTAG/" ./constant/version.go
+          # LATESTTAG=$(git describe --tags --abbrev=0)
+          # sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/$LATESTTAG/" ./constant/version.go
           go version
           GOOS=js GOARCH=wasm go get -u ./...
           GOOS=js GOARCH=wasm go build -o ./web/main.wasm ./wasm
