@@ -53,12 +53,19 @@ func getSubscriptionLinks(link string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	dataStr := string(data)
 	if isYamlFile(link) {
-		return parseClash(string(data))
+		return parseClash(dataStr)
 	}
-	msg, err := utils.DecodeB64(string(data))
+	msg, err := utils.DecodeB64(dataStr)
 	if err != nil {
-		return parseClash(string(data))
+		if strings.Contains(dataStr, "proxies:") {
+			return parseClash(dataStr)
+		} else if strings.Contains(dataStr, "://") {
+			return parseProfiles(dataStr)
+		} else {
+			return []string{}, err
+		}
 	}
 	return ParseLinks(msg)
 }
