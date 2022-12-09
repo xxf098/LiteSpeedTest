@@ -581,7 +581,7 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 		remarks = fmt.Sprintf("Profile %d", index)
 	}
 	elapse, err := p.pingLink(index, link)
-	log.Printf("%s elapse: %d", remarks, elapse)
+	log.Printf("%s elapse: %dms", remarks, elapse)
 	if err != nil {
 		node := render.Node{
 			Id:       index,
