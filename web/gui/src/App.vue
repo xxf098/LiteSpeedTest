@@ -1,259 +1,270 @@
 
 
 <template>
-  
-  <el-row>
-    <el-col :span="22" :offset="1">
-      	<el-card>
-					<div slot="header">订阅信息</div>
-					<el-container :element-loading-text="loadingContent">
-						<el-form label-width="120px" size="large">
-								<el-form-item label="设置：">
-									<el-radio-group v-model="option" :disabled="loading">
-										<el-radio :label="0">基础</el-radio>
-										<el-radio :label="1">高级</el-radio>
-										<el-radio :label="2">导出</el-radio>
-										<el-radio :label="3">手动生成</el-radio>
-									</el-radio-group>
-								</el-form-item>
+  <div>
+    <el-row>
+        <el-col :span="22" :offset="1">
+            <el-card>
+                        <div slot="header">订阅信息</div>
+                        <el-container :element-loading-text="loadingContent">
+                            <el-form label-width="120px" size="large">
+                                    <el-form-item label="设置：">
+                                        <el-radio-group v-model="option" :disabled="loading">
+                                            <el-radio :label="0">基础</el-radio>
+                                            <el-radio :label="1">高级</el-radio>
+                                            <el-radio :label="2">导出</el-radio>
+                                            <el-radio :label="3">手动生成</el-radio>
+                                        </el-radio-group>
+                                    </el-form-item>
 
-								<el-form-item label="链接：" v-if="option<2">
-									<el-col :span="8">
-										<el-input v-model="subscription" style="width: 800px"
-										@keyup.enter.native="submit" placeholder="支持 V2Ray/Trojan/SS/SSR/Clash 订阅链接，多个节点链接及文件路径的批量测速"
-										:disabled="loading||upload" clearable></el-input>
-									</el-col>
-									<el-col :span="12" ></el-col>
-									<el-col :span="12" style="margin-top: 6px;">
-										<el-upload :drag="checkUploadStatus('drag')" :v-if="checkUploadStatus('if')"
-										action="" :show-file-list="false" ref="upload" :http-request="handleFileChange"
-										:auto-upload="true" :before-upload="beforeUpload">
-										<i class="el-icon-upload" v-if="!subscription.length"></i>
-										<!--<el-button slot="trigger" type="primary" icon="el-icon-files" :disabled="loading" v-if="!upload">选择配置文件</el-button>-->
-										<el-button slot="tip" type="danger" icon="el-icon-close" :disabled="loading"
-											v-if="upload" @click="cancelFileUpload">取消文件选择</el-button>
-										<div class="el-upload__text" v-if="!subscription.length">
-											还可以将配置文件拖到此处，或<em>点击上传</em></div>
-										</el-upload>
-									</el-col>
-									
-								</el-form-item>
+                                    <el-form-item label="链接：" v-if="option<2">
+                                        <el-col :span="8">
+                                            <el-input v-model="subscription" style="width: 800px"
+                                            @keyup.enter.native="submit" placeholder="支持 V2Ray/Trojan/SS/SSR/Clash 订阅链接，多个节点链接及文件路径的批量测速"
+                                            :disabled="loading||upload" clearable></el-input>
+                                        </el-col>
+                                        <el-col :span="12" ></el-col>
+                                        <el-col :span="12" style="margin-top: 6px;">
+                                            <el-upload :drag="checkUploadStatus('drag')" :v-if="checkUploadStatus('if')"
+                                            action="" :show-file-list="false" ref="upload" :http-request="handleFileChange"
+                                            :auto-upload="true" :before-upload="beforeUpload">
+                                            <i class="el-icon-upload" v-if="!subscription.length"></i>
+                                            <!--<el-button slot="trigger" type="primary" icon="el-icon-files" :disabled="loading" v-if="!upload">选择配置文件</el-button>-->
+                                            <el-button slot="tip" type="danger" icon="el-icon-close" :disabled="loading"
+                                                v-if="upload" @click="cancelFileUpload">取消文件选择</el-button>
+                                            <div class="el-upload__text" v-if="!subscription.length">
+                                                还可以将配置文件拖到此处，或<em>点击上传</em></div>
+                                            </el-upload>
+                                        </el-col>
+                                        
+                                    </el-form-item>
 
-								<el-form-item label="并发数：" v-if="option<2">
-									<el-input v-model="concurrency" style="width: 235px" type="number" min="1" max="50"
-										 @keyup.enter.native="submit" :disabled="loading"></el-input>
-								</el-form-item>
-								<el-form-item label="测试时长(秒)：" v-if="option===1">
-									<el-input v-model="timeout" style="width: 235px" type="number" min="5" max="60"
-										 @keyup.enter.native="submit" :disabled="loading"></el-input>
-								</el-form-item>
-								<el-form-item label="去除重复节点：" v-if="option===1">
-									<el-checkbox v-model="unique">去重</el-checkbox>
-								</el-form-item>
-								<el-form-item label="测试项：" v-if="option<2">
-									<el-select v-model="speedtestMode" :disabled="loading">
-										<el-option v-for="(item, key, index) in init.speedtestModes" :key="index"
-											:label="item" :value="key">
-										</el-option>
-									</el-select>
-								</el-form-item>
-								<el-form-item label="自定义组名：" v-if="option<2">
-									<el-input v-model="groupname" style="width: 235px" 
-										@keyup.enter.native="submit" :disabled="loading" clearable></el-input>
-									<el-button type="primary" @click="submit" style="margin-left: 20px" v-if="!option"
-										:disabled="loading" :loading="loading"><el-icon v-if="!loading" class="el-icon--left"><Check /></el-icon>提 交</el-button>
-									<el-button type="danger" @click="terminate" :icon="Close" v-if="!option"
-										:disabled="!loading"><el-icon class="el-icon--left"><Close /></el-icon>终 止</el-button>
-								</el-form-item>
+                                    <el-form-item label="并发数：" v-if="option<2">
+                                        <el-input v-model="concurrency" style="width: 235px" type="number" min="1" max="50"
+                                            @keyup.enter.native="submit" :disabled="loading"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="测试时长(秒)：" v-if="option===1">
+                                        <el-input v-model="timeout" style="width: 235px" type="number" min="5" max="60"
+                                            @keyup.enter.native="submit" :disabled="loading"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="去除重复节点：" v-if="option===1">
+                                        <el-checkbox v-model="unique">去重</el-checkbox>
+                                    </el-form-item>
+                                    <el-form-item label="测试项：" v-if="option<2">
+                                        <el-select v-model="speedtestMode" :disabled="loading">
+                                            <el-option v-for="(item, key, index) in init.speedtestModes" :key="index"
+                                                :label="item" :value="key">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                    <el-form-item label="自定义组名：" v-if="option<2">
+                                        <el-input v-model="groupname" style="width: 235px" 
+                                            @keyup.enter.native="submit" :disabled="loading" clearable></el-input>
+                                        <el-button type="primary" @click="submit" style="margin-left: 20px" v-if="!option"
+                                            :disabled="loading" :loading="loading"><el-icon v-if="!loading" class="el-icon--left"><Check /></el-icon>提 交</el-button>
+                                        <el-button type="danger" @click="terminate" :icon="Close" v-if="!option"
+                                            :disabled="!loading"><el-icon class="el-icon--left"><Close /></el-icon>终 止</el-button>
+                                    </el-form-item>
 
-								<el-form-item label="Ping方式：" v-if="option===1" :disabled="loading">
-									<el-select v-model="pingMethod" >
-										<el-option v-for="(item, key, index) in init.pingMethods" :key="index" :label="item" :value="key">
-										</el-option>
-									</el-select>
-									<el-button type="primary" @click="submit" style="margin-left: 20px" :icon="Check" :disabled="loading"
-										:loading="loading">提 交</el-button>
-									<el-button type="danger" @click="terminate" :icon="Close" :disabled="!loading">终 止</el-button>
-								</el-form-item>
-								
-								<!-- export -->
-								<el-form-item label="语言：" v-if="option===2" :disabled="loading">
-									<el-select v-model="language">
-										<el-option key="1" label="EN" value="en"></el-option>
-										<el-option key="2" label="中文" value="cn"></el-option>
-									</el-select>
-								</el-form-item>
-								<el-form-item label="字体大小：" v-if="option===2">
-									<el-input v-model="fontSize" style="width: 235px" type="number" min="12" max="36"
-									 @keyup.enter.native="submit" :disabled="loading"></el-input>
-								</el-form-item>
-								<el-form-item label="排序方式：" v-if="option===2" :disabled="loading">
-									<el-select v-model="sortMethod" >
-										<el-option v-for="(item, key, index) in init.sortMethods" :key="index"
-											:label="item" :value="key">
-										</el-option>
-									</el-select>
-								</el-form-item>
-								<el-form-item label="主题：" v-if="option===2" :disabled="loading">
-									<el-select v-model="theme" >
-										<el-option v-for="(item, key, index) in init.themes" :key="index"
-											:label="item" :value="key">
-										</el-option>
-									</el-select>
-								</el-form-item>
-								<el-form-item label="结果数据：" v-if="option===3" :disabled="loading">
-									<el-input
-										type="textarea"
-										:autosize="{ minRows: 5, maxRows: 18}"
-										placeholder="input data"
-										style="width: 800px"
-										v-model="generateResultJSON">
-									</el-input>
-									<el-button type="primary" @click="generateResult" style="margin-left: 20px" :icon="Check" :disabled="loading"
-										:loading="loading">生 成</el-button>
-								</el-form-item>
-						</el-form>
-					</el-container>
-				</el-card>
+                                    <el-form-item label="Ping方式：" v-if="option===1" :disabled="loading">
+                                        <el-select v-model="pingMethod" >
+                                            <el-option v-for="(item, key, index) in init.pingMethods" :key="index" :label="item" :value="key">
+                                            </el-option>
+                                        </el-select>
+                                        <el-button type="primary" @click="submit" style="margin-left: 20px" :icon="Check" :disabled="loading"
+                                            :loading="loading">提 交</el-button>
+                                        <el-button type="danger" @click="terminate" :icon="Close" :disabled="!loading">终 止</el-button>
+                                    </el-form-item>
+                                    
+                                    <!-- export -->
+                                    <el-form-item label="语言：" v-if="option===2" :disabled="loading">
+                                        <el-select v-model="language">
+                                            <el-option key="1" label="EN" value="en"></el-option>
+                                            <el-option key="2" label="中文" value="cn"></el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                    <el-form-item label="字体大小：" v-if="option===2">
+                                        <el-input v-model="fontSize" style="width: 235px" type="number" min="12" max="36"
+                                        @keyup.enter.native="submit" :disabled="loading"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="排序方式：" v-if="option===2" :disabled="loading">
+                                        <el-select v-model="sortMethod" >
+                                            <el-option v-for="(item, key, index) in init.sortMethods" :key="index"
+                                                :label="item" :value="key">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                    <el-form-item label="主题：" v-if="option===2" :disabled="loading">
+                                        <el-select v-model="theme" >
+                                            <el-option v-for="(item, key, index) in init.themes" :key="index"
+                                                :label="item" :value="key">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                    <el-form-item label="结果数据：" v-if="option===3" :disabled="loading">
+                                        <el-input
+                                            type="textarea"
+                                            :autosize="{ minRows: 5, maxRows: 18}"
+                                            placeholder="input data"
+                                            style="width: 800px"
+                                            v-model="generateResultJSON">
+                                        </el-input>
+                                        <el-button type="primary" @click="generateResult" style="margin-left: 20px" :icon="Check" :disabled="loading"
+                                            :loading="loading">生 成</el-button>
+                                    </el-form-item>
+                            </el-form>
+                        </el-container>
+                    </el-card>
 
-        <br>
+            <br>
 
-				<el-card>
-					<el-row style="display: flex;">
-						<el-col style="display: flex;align-items: center;" :span="1">
-							<div>结果</div>
-						</el-col>
-						<el-col v-if="result.length" :span="8">
-							<el-dropdown trigger="click">
-								<el-button size="large" type="primary">
-									Actions<el-icon class="el-icon--right"><arrow-down /></el-icon>
-								</el-button>
-								<template #dropdown>
-									<el-dropdown-menu slot="dropdown">
-										<el-dropdown-item @click.native="handleCopySub()">复制订阅链接</el-dropdown-item>
-										<el-dropdown-item v-if="!loading && result.length" @click.native="handleCopyAvailable()">复制可用节点</el-dropdown-item>
-										<el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">复制节点</el-dropdown-item>
-										<el-dropdown-item v-if="multipleSelection.length" @click.native="handleSave()">导出节点</el-dropdown-item>
-										<!-- <el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item> -->
-										<el-dropdown-item v-if="multipleSelection.length" @click.native="handleQRCode()">显示二维码</el-dropdown-item>
-										<el-dropdown-item v-if="multipleSelection.length" @click.native="handleExportResult()">导出结果</el-dropdown-item>
-									</el-dropdown-menu>
-								</template>
-							</el-dropdown>
-						</el-col>
-					</el-row>
-					<el-container>
-						<el-table :data="result" :cell-style="colorCell" ref="result" 
-							:row-key="row => `${row.server}${row.protocol}${row.ping}${row.speed}${row.maxspeed}`"
-							@selection-change="handleSelectionChange" @sort-change="handleSortChange">
-							<el-table-column type="selection" width="55" :selectable="checkSelectable">
-							</el-table-column>
-							<!-- <el-table-column label="Group" align="center" prop="group" width="300" sortable>
-							</el-table-column> -->
-							<el-table-column label="Remark" align="center" prop="remark" min-width="400" sortable>
-							</el-table-column>
-							<el-table-column label="Server" align="center" prop="server" min-width="160" sortable>
-							</el-table-column>
-							<el-table-column label="Protocol" align="center" prop="protocol" width="120" sortable
-								:filters="[{ text: 'V2Ray', value: 'vmess' }, { text: 'Trojan', value: 'trojan' }, { text: 'ShadowsocksR', value: 'ssr' }, { text: 'Shadowsocks', value: 'ss' }]"
-								:filter-method="filterProtocol">
-							</el-table-column>
-							<!-- <el-table-column label="Loss" align="center" prop="loss" width="100" sortable>
-							</el-table-column> -->
-							<el-table-column label="Ping" align="center" prop="ping" width="100" sortable="custom"
-								:filters="[{ text: 'Available ', value: 'available' }]"
-								:filter-method="filterPing">
-							</el-table-column>
-							<el-table-column label="AvgSpeed" align="center" prop="speed" min-width="150" sortable
-								:filters="[{ text: '200KB', value: 204800 }, { text: '500KB', value: 512000 }, { text: '1MB', value: 1048576 }, { text: '2MB', value: 2097152 }, { text: '5MB', value: 5242880 }, { text: '10MB', value: 10485760 },{ text: '15MB', value: 15728640 }, { text: '20MB', value: 20971520 }]"
-								:filter-multiple="false"
-								:filter-method="filterAvgSpeed"
-								:sort-method="speedSort">
-							</el-table-column>
-							<el-table-column label="MaxSpeed" align="center" prop="maxspeed" min-width="150" sortable
-								:filters="[{ text: '200KB', value: 204800 }, { text: '500KB', value: 512000 }, { text: '1MB', value: 1048576 }, { text: '2MB', value: 2097152 }, { text: '5MB', value: 5242880 }, { text: '10MB', value: 10485760 },{ text: '15MB', value: 15728640 }, { text: '20MB', value: 20971520 }]"
-								:filter-multiple="false"
-								:filter-method="filterMaxSpeed"
-								:sort-method="maxSpeedSort">
-							</el-table-column>
-						</el-table>
-					</el-container>
-				</el-card>   
+                    <el-card>
+                        <el-row style="display: flex;">
+                            <el-col style="display: flex;align-items: center;" :span="1">
+                                <div>结果</div>
+                            </el-col>
+                            <el-col v-if="result.length" :span="8">
+                                <el-dropdown trigger="click">
+                                    <el-button size="large" type="primary">
+                                        Actions<el-icon class="el-icon--right"><arrow-down /></el-icon>
+                                    </el-button>
+                                    <template #dropdown>
+                                        <el-dropdown-menu slot="dropdown">
+                                            <el-dropdown-item @click.native="handleCopySub()">复制订阅链接</el-dropdown-item>
+                                            <el-dropdown-item v-if="!loading && result.length" @click.native="handleCopyAvailable()">复制可用节点</el-dropdown-item>
+                                            <el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">复制节点</el-dropdown-item>
+                                            <el-dropdown-item v-if="multipleSelection.length" @click.native="handleSave()">导出节点</el-dropdown-item>
+                                            <!-- <el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item> -->
+                                            <el-dropdown-item v-if="multipleSelection.length" @click.native="handleQRCode()">显示二维码</el-dropdown-item>
+                                            <el-dropdown-item v-if="multipleSelection.length" @click.native="handleExportResult()">导出结果</el-dropdown-item>
+                                        </el-dropdown-menu>
+                                    </template>
+                                </el-dropdown>
+                            </el-col>
+                        </el-row>
+                        <el-container>
+                            <el-table :data="result" :cell-style="colorCell" ref="result" 
+                                :row-key="row => `${row.server}${row.protocol}${row.ping}${row.speed}${row.maxspeed}`"
+                                @selection-change="handleSelectionChange" @sort-change="handleSortChange">
+                                <el-table-column type="selection" width="55" :selectable="checkSelectable">
+                                </el-table-column>
+                                <!-- <el-table-column label="Group" align="center" prop="group" width="300" sortable>
+                                </el-table-column> -->
+                                <el-table-column label="Remark" align="center" prop="remark" min-width="400" sortable>
+                                </el-table-column>
+                                <el-table-column label="Server" align="center" prop="server" min-width="160" sortable>
+                                </el-table-column>
+                                <el-table-column label="Protocol" align="center" prop="protocol" width="120" sortable
+                                    :filters="[{ text: 'V2Ray', value: 'vmess' }, { text: 'Trojan', value: 'trojan' }, { text: 'ShadowsocksR', value: 'ssr' }, { text: 'Shadowsocks', value: 'ss' }]"
+                                    :filter-method="filterProtocol">
+                                </el-table-column>
+                                <!-- <el-table-column label="Loss" align="center" prop="loss" width="100" sortable>
+                                </el-table-column> -->
+                                <el-table-column label="Ping" align="center" prop="ping" width="100" sortable="custom"
+                                    :filters="[{ text: 'Available ', value: 'available' }]"
+                                    :filter-method="filterPing">
+                                </el-table-column>
+                                <el-table-column label="AvgSpeed" align="center" prop="speed" min-width="150" sortable
+                                    :filters="[{ text: '200KB', value: 204800 }, { text: '500KB', value: 512000 }, { text: '1MB', value: 1048576 }, { text: '2MB', value: 2097152 }, { text: '5MB', value: 5242880 }, { text: '10MB', value: 10485760 },{ text: '15MB', value: 15728640 }, { text: '20MB', value: 20971520 }]"
+                                    :filter-multiple="false"
+                                    :filter-method="filterAvgSpeed"
+                                    :sort-method="speedSort">
+                                </el-table-column>
+                                <el-table-column label="MaxSpeed" align="center" prop="maxspeed" min-width="150" sortable
+                                    :filters="[{ text: '200KB', value: 204800 }, { text: '500KB', value: 512000 }, { text: '1MB', value: 1048576 }, { text: '2MB', value: 2097152 }, { text: '5MB', value: 5242880 }, { text: '10MB', value: 10485760 },{ text: '15MB', value: 15728640 }, { text: '20MB', value: 20971520 }]"
+                                    :filter-multiple="false"
+                                    :filter-method="filterMaxSpeed"
+                                    :sort-method="maxSpeedSort">
+                                </el-table-column>
+                            </el-table>
+                        </el-container>
+                    </el-card>   
 
-        <br>
+            <br>
 
-        			<div :class="['dashboard', dashboardCollapsed ? 'collapsed' : '']">
-					<el-card class="progress">
-						<div class="progress-bar" :style="{ 'width': testProgress(result, testCount) + '%' }"></div>
-						<div class="progress-inner">
-							<div class="progress-item">
-								<span>{{ testProgress(result, testCount) }}%</span>
-								<div>Progress</div>
-							</div>
-							<div v-if="!dashboardCollapsed" class="progress-item">
-								<span>{{ testOkCount }}/{{ result.length }}</span>
-								<div>Ratio</div>
-							</div>
-							<div v-if="!dashboardCollapsed" class="traffic">
-								<span> {{ bytesToSize(totalTraffic) }} </span>
-								<div>Traffic</div>
-							</div>
-							<div v-if="!dashboardCollapsed" class="time">
-								<span>{{ formatSeconds(totalTime) }}</span>
-								<div>Time</div>
-							</div>
-						</div>
-					</el-card>
-					<el-card class="category" v-memo="[result]">
-						<ul>
-							<li v-if="dashboardCollapsed">
-								<span>{{ result.filter(item => item.ping > 0).length }}/{{ result.length }}</span>
-								<div>Ratio</div>
-							</li>
-							<li v-if="!dashboardCollapsed">
-								<span>{{ result.filter(item => item.protocol.startsWith("vmess")).length }}</span>
-								<div>Vmess</div>
-							</li>
-							<li v-if="!dashboardCollapsed">
-								<span>{{ result.filter(item => item.protocol === "trojan").length }}</span>
-								<div>Trojan</div>
-							</li>
-							<li v-if="!dashboardCollapsed">
-								<span>{{ result.filter(item => item.protocol === "ssr").length }}</span>
-								<div>SSR</div>
-							</li>
-							<li v-if="!dashboardCollapsed">
-								<span>{{ result.filter(item => item.protocol === "ss").length }}</span>
-								<div>SS</div>
-							</li>
-						</ul>
-					</el-card>
-					<div class="icon" @click="handleDashboardCollapsed()">
-						<el-icon v-if="!dashboardCollapsed"><Right /></el-icon>
-						<el-icon v-if="dashboardCollapsed"><Back /></el-icon>
-						<!-- <i v-if="!dashboardCollapsed" class="el-icon-right" ></i>
-						<i v-if="dashboardCollapsed" class="el-icon-back"></i> -->
-					</div>
-				</div>
+                        <div :class="['dashboard', dashboardCollapsed ? 'collapsed' : '']">
+                        <el-card class="progress">
+                            <div class="progress-bar" :style="{ 'width': testProgress(result, testCount) + '%' }"></div>
+                            <div class="progress-inner">
+                                <div class="progress-item">
+                                    <span>{{ testProgress(result, testCount) }}%</span>
+                                    <div>Progress</div>
+                                </div>
+                                <div v-if="!dashboardCollapsed" class="progress-item">
+                                    <span>{{ testOkCount }}/{{ result.length }}</span>
+                                    <div>Ratio</div>
+                                </div>
+                                <div v-if="!dashboardCollapsed" class="traffic">
+                                    <span> {{ bytesToSize(totalTraffic) }} </span>
+                                    <div>Traffic</div>
+                                </div>
+                                <div v-if="!dashboardCollapsed" class="time">
+                                    <span>{{ formatSeconds(totalTime) }}</span>
+                                    <div>Time</div>
+                                </div>
+                            </div>
+                        </el-card>
+                        <el-card class="category" v-memo="[result]">
+                            <ul>
+                                <li v-if="dashboardCollapsed">
+                                    <span>{{ result.filter(item => item.ping > 0).length }}/{{ result.length }}</span>
+                                    <div>Ratio</div>
+                                </li>
+                                <li v-if="!dashboardCollapsed">
+                                    <span>{{ result.filter(item => item.protocol.startsWith("vmess")).length }}</span>
+                                    <div>Vmess</div>
+                                </li>
+                                <li v-if="!dashboardCollapsed">
+                                    <span>{{ result.filter(item => item.protocol === "trojan").length }}</span>
+                                    <div>Trojan</div>
+                                </li>
+                                <li v-if="!dashboardCollapsed">
+                                    <span>{{ result.filter(item => item.protocol === "ssr").length }}</span>
+                                    <div>SSR</div>
+                                </li>
+                                <li v-if="!dashboardCollapsed">
+                                    <span>{{ result.filter(item => item.protocol === "ss").length }}</span>
+                                    <div>SS</div>
+                                </li>
+                            </ul>
+                        </el-card>
+                        <div class="icon" @click="handleDashboardCollapsed()">
+                            <el-icon v-if="!dashboardCollapsed"><Right /></el-icon>
+                            <el-icon v-if="dashboardCollapsed"><Back /></el-icon>
+                            <!-- <i v-if="!dashboardCollapsed" class="el-icon-right" ></i>
+                            <i v-if="dashboardCollapsed" class="el-icon-back"></i> -->
+                        </div>
+                    </div>
 
-        <br>
+            <br>
 
-				<el-card v-if="picdata.length">
-					<div slot="header">导出图片</div>
-					<el-container>
-						<el-image :src="picdata" fit="true" placeholder="未加载图片" id="result_png"></el-image>
-					</el-container>
-				</el-card>
-
-    </el-col>
-  </el-row>
-
-
+            <el-card v-if="picdata.length">
+                <div slot="header">导出图片</div>
+                <el-container>
+                    <el-image :src="picdata" fit="true" placeholder="未加载图片" id="result_png"></el-image>
+                </el-container>
+            </el-card>
+        </el-col>
+    </el-row>
+    <el-dialog title="Share Links with QRcode" center v-model="qrCodeDialogVisible" width="40%"
+        @opened="handleQRCodeCreate" :before-close="qrCodeHandleClose">
+        <el-scrollbar style="height:360px;">
+            <el-row>
+                <el-col v-for="(item, index) of multipleSelection" :key="index" :span="12">
+                    <el-card :body-style="{ padding: '0px', height:'400px'}" shadow="hover"
+                        style="width: 320px;height: 330px;text-align: center;">
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 15px;">
+                            <div :id="'qrcode_' + item.id" style="margin-left: 20px;"></div>
+                            <div class="truncate_remark">{{ item.remark }}</div>
+                            <div>{{ `${item.ping}ms ${item.speed} ${item.maxspeed}` }}</div>
+                        </div>
+                    </el-card>
+                </el-col>
+            </el-row>
+        </el-scrollbar>
+    </el-dialog>
+  </div>
 </template>
-
-<style scoped>
-
-</style>
 
 
 <script>
