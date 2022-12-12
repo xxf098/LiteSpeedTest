@@ -586,9 +586,15 @@ export default {
                         return ping1 - ping2
                     })
                 } else {
-                     this.result.sort((obj1, obj2) => {
-                         return obj1.id - obj2.id
-                     })
+                     this.result.sort((obj1, obj2) => obj1.id - obj2.id)
+                }
+                return
+            }
+            if (key === "server" || key === "protocol" || key === "remark") {
+                if (order == TableV2SortOrder.DESC ) {
+                    this.result.sort((obj1, obj2) => obj1[key].localeCompare(obj2[key]))
+                } else {
+                    this.result.sort((obj1, obj2) => obj1.id - obj2.id)
                 }
                 return
             }
