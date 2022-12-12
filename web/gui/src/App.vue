@@ -576,6 +576,22 @@ export default {
         },
         onSortV2({ key, order }) {
             this.sortState[key] = order
+            if (key === "ping") {
+                if (order == TableV2SortOrder.DESC ) {
+                     this.result.sort((obj1, obj2) => {
+                        let ping1 = parseFloat(obj1.ping);
+                        if (ping1 < 1) { ping1 = 99999 }
+                        let ping2 = parseFloat(obj2.ping);
+                        if (ping2 < 1) { ping2 = 99999 }
+                        return ping1 - ping2
+                    })
+                } else {
+                     this.result.sort((obj1, obj2) => {
+                         return obj1.id - obj2.id
+                     })
+                }
+                return
+            }
             this.result = this.result.reverse()
         },
         copyToClipboard: async function (data) {
