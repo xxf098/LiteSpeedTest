@@ -1,5 +1,3 @@
-
-
 <template>
   <div>
     <el-row>
@@ -143,6 +141,16 @@
                             </el-col>
                         </el-row>
                         <el-container>
+                            <el-table-v2
+                                :sort-state="sortState"
+                                :columns="columns"
+                                :data="result"
+                                :width="1700"
+                                :height="800"
+                                @column-sort="onSortV2"
+                            />
+                        </el-container>
+                        <el-container>
                             <el-table :data="result" :cell-style="colorCell" ref="result" 
                                 :row-key="row => `${row.server}${row.protocol}${row.ping}${row.speed}${row.maxspeed}`"
                                 @selection-change="handleSelectionChange" @sort-change="handleSortChange">
@@ -266,8 +274,65 @@
   </div>
 </template>
 
+<script setup>
+
+const columns = [
+  {
+    key: "remark",
+    title: 'Remark',
+    dataKey: 'remark',
+    width: 700,
+    align: "center",
+    sortable: true,
+  },
+  {
+    key: "server",
+    title: 'Server',
+    dataKey: 'server',
+    width: 400,
+    align: "center",
+    sortable: true,
+  },
+  {
+    key: "protocol",
+    title: 'Protocol',
+    dataKey: 'protocol',
+    width: 120,
+    align: "center",
+    sortable: true,
+  },
+  {
+    key: "ping",
+    title: 'Ping',
+    dataKey: 'ping',
+    width: 100,
+    align: "center",
+    sortable: true,
+  },
+  {
+    key: "speed",
+    title: 'AvgSpeed',
+    dataKey: 'speed',
+    width: 180,
+    align: "center",
+    sortable: true,
+  },
+  {
+    key: "maxspeed",
+    title: 'MaxSpeed',
+    dataKey: 'maxspeed',
+    width: 180,
+    align: "center",
+    sortable: true,
+  },
+]
+
+</script>
+
 
 <script>
+
+import { TableV2SortOrder } from 'element-plus'
 
 const go = new Go();
     WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
@@ -332,6 +397,7 @@ export default {
             dashboardCollapsed: true,
             testCount: 0,
             testOkCount: 0,
+            sortState: {},
 
             init: {
                 speedtestModes: {
@@ -355,7 +421,15 @@ export default {
                     original: "Original",
                 }
             },
-            result: []
+            result: [],
+            sortState: {
+                'remark': TableV2SortOrder.ASC,
+                'server': TableV2SortOrder.ASC,
+                'protocol': TableV2SortOrder.ASC,
+                'ping': TableV2SortOrder.ASC,
+                'speed': TableV2SortOrder.ASC,
+                'maxspeed': TableV2SortOrder.ASC,
+            }
         }
     },
     methods: {
@@ -499,6 +573,10 @@ export default {
                     this.result.sort((obj1, obj2) => obj1.id - obj2.id)
                 }
              }
+        },
+        onSortV2({ key, order }) {
+            this.sortState[key] = order
+            this.result = this.result.reverse()
         },
         copyToClipboard: async function (data) {
             if (navigator.clipboard) {
