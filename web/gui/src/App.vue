@@ -274,62 +274,6 @@
   </div>
 </template>
 
-<script setup>
-
-const columns = [
-  {
-    key: "remark",
-    title: 'Remark',
-    dataKey: 'remark',
-    width: 700,
-    align: "center",
-    sortable: true,
-  },
-  {
-    key: "server",
-    title: 'Server',
-    dataKey: 'server',
-    width: 400,
-    align: "center",
-    sortable: true,
-  },
-  {
-    key: "protocol",
-    title: 'Protocol',
-    dataKey: 'protocol',
-    width: 120,
-    align: "center",
-    sortable: true,
-  },
-  {
-    key: "ping",
-    title: 'Ping',
-    dataKey: 'ping',
-    width: 100,
-    align: "center",
-    sortable: true,
-  },
-  {
-    key: "speed",
-    title: 'AvgSpeed',
-    dataKey: 'speed',
-    width: 180,
-    align: "center",
-    sortable: true,
-  },
-  {
-    key: "maxspeed",
-    title: 'MaxSpeed',
-    dataKey: 'maxspeed',
-    width: 180,
-    align: "center",
-    sortable: true,
-  },
-]
-
-</script>
-
-
 <script>
 
 import { TableV2SortOrder } from 'element-plus'
@@ -398,6 +342,7 @@ export default {
             testCount: 0,
             testOkCount: 0,
             sortState: {},
+            columns: [],
 
             init: {
                 speedtestModes: {
@@ -429,7 +374,57 @@ export default {
                 'ping': TableV2SortOrder.ASC,
                 'speed': TableV2SortOrder.ASC,
                 'maxspeed': TableV2SortOrder.ASC,
-            }
+            },
+            columns: [
+                {
+                    key: "remark",
+                    title: 'Remark',
+                    dataKey: 'remark',
+                    width: 700,
+                    align: "center",
+                    sortable: true,
+                },
+                {
+                    key: "server",
+                    title: 'Server',
+                    dataKey: 'server',
+                    width: 400,
+                    align: "center",
+                    sortable: true,
+                },
+                {
+                    key: "protocol",
+                    title: 'Protocol',
+                    dataKey: 'protocol',
+                    width: 120,
+                    align: "center",
+                    sortable: true,
+                },
+                {
+                    key: "ping",
+                    title: 'Ping',
+                    dataKey: 'ping',
+                    width: 100,
+                    align: "center",
+                    sortable: true,
+                },
+                {
+                    key: "speed",
+                    title: 'AvgSpeed',
+                    dataKey: 'speed',
+                    width: 180,
+                    align: "center",
+                    sortable: true,
+                },
+                {
+                    key: "maxspeed",
+                    title: 'MaxSpeed',
+                    dataKey: 'maxspeed',
+                    width: 180,
+                    align: "center",
+                    sortable: true,
+                },
+            ]
         }
     },
     methods: {
