@@ -377,12 +377,12 @@ export default {
     },
     created() {
         this.columns = Object.freeze([
-                { headerName: 'Remark', field: 'remark', minWidth: 550 },
-                { headerName: 'Server', field: 'server',  minWidth: 240, },
-                { headerName: "Protocol", field: 'protocol', width: 200, },
-                { headerName: 'Ping', field: 'ping', width: 200, },
-                { headerName: 'AvgSpeed', field: 'speed',  width: 240, },
-                { headerName: 'MaxSpeed', field: 'maxspeed',  width: 240 },
+                { headerName: 'Remark', field: 'remark', cellStyle: { textAlign: 'center' }, minWidth: 550 },
+                { headerName: 'Server', field: 'server', cellStyle: { textAlign: 'center' }, minWidth: 370, },
+                { headerName: "Protocol", field: 'protocol', cellStyle: { textAlign: 'center' }, width: 150, },
+                { headerName: 'Ping', field: 'ping', cellStyle: { textAlign: 'center' }, width: 200, },
+                { headerName: 'AvgSpeed', field: 'speed', cellStyle: { textAlign: 'center' }, width: 200, },
+                { headerName: 'MaxSpeed', field: 'maxspeed', cellStyle: { textAlign: 'center' }, width: 200 },
             ])
          this.getRowId = (params) => {
             return params.data.id;
@@ -1067,3 +1067,10 @@ export default {
 }
 
 </script>
+
+<style>
+
+.ag-header-cell-label {
+   justify-content: center;
+}
+</style>
