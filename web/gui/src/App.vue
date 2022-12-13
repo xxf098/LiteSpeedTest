@@ -145,7 +145,9 @@
                                             :rowData="result"
                                             :columnDefs="columns"
                                             :getRowId="getRowId"
+                                            :rowSelection="rowSelection"
                                             @grid-ready="onGridReady"
+                                            @selection-changed="onSelectionChanged"
                                             >
                                 </ag-grid-vue>
                         </el-container>
@@ -388,6 +390,7 @@ export default {
             ])
          this.getRowId = (params) => params.data.id;
          this.rowSelection = 'multiple';
+        //  this.isRowSelectable = params => true
     },
     methods: {
         updateRow(id, newData) {
@@ -397,6 +400,10 @@ export default {
         onGridReady(params) {
             this.gridApi = params.api;
             // this.gridColumnApi = params.columnApi;
+        },
+        onSelectionChanged() {
+            const selectedRows = this.gridApi.getSelectedRows();
+            this.multipleSelection = selectedRows;
         },
         bytesToSize: function (bytes) {
             const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
