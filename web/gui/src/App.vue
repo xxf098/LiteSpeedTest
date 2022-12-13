@@ -141,14 +141,13 @@
                             </el-col>
                         </el-row>
                         <el-container>
-                            <el-table-v2
-                                :sort-state="sortState"
-                                :columns="columns"
-                                :data="result"
-                                :width="1700"
-                                :height="800"
-                                @column-sort="onSortV2"
-                            />
+                                <ag-grid-vue style="width: 100%; height: 650px;" class="ag-theme-alpine"
+                                            :rowData="result"
+                                            :columnDefs="columns"
+                                            :getRowId="getRowId"
+                                            @grid-ready="onGridReady"
+                                            >
+                                </ag-grid-vue>
                         </el-container>
                         <el-container>
                             <el-table :data="result" :cell-style="colorCell" ref="result" 
@@ -276,7 +275,9 @@
 
 <script>
 
-import { TableV2SortOrder } from 'element-plus'
+import "ag-grid-community/dist/styles/ag-grid.css";
+import "ag-grid-community/dist/styles/ag-theme-alpine.css";
+import { AgGridVue } from 'ag-grid-vue3';
 
 const go = new Go();
     WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
@@ -342,7 +343,9 @@ export default {
             testCount: 0,
             testOkCount: 0,
             sortState: {},
-            columns: [],
+            columns: this.columns,
+            gridApi: null,
+            getRowId: null,
 
             init: {
                 speedtestModes: {
@@ -366,68 +369,34 @@ export default {
                     original: "Original",
                 }
             },
-            result: [],
-            sortState: {
-                'remark': TableV2SortOrder.ASC,
-                'server': TableV2SortOrder.ASC,
-                'protocol': TableV2SortOrder.ASC,
-                'ping': TableV2SortOrder.ASC,
-                'speed': TableV2SortOrder.ASC,
-                'maxspeed': TableV2SortOrder.ASC,
-            },
-            columns: [
-                {
-                    key: "remark",
-                    title: 'Remark',
-                    dataKey: 'remark',
-                    width: 700,
-                    align: "center",
-                    sortable: true,
-                },
-                {
-                    key: "server",
-                    title: 'Server',
-                    dataKey: 'server',
-                    width: 400,
-                    align: "center",
-                    sortable: true,
-                },
-                {
-                    key: "protocol",
-                    title: 'Protocol',
-                    dataKey: 'protocol',
-                    width: 120,
-                    align: "center",
-                    sortable: true,
-                },
-                {
-                    key: "ping",
-                    title: 'Ping',
-                    dataKey: 'ping',
-                    width: 100,
-                    align: "center",
-                    sortable: true,
-                },
-                {
-                    key: "speed",
-                    title: 'AvgSpeed',
-                    dataKey: 'speed',
-                    width: 180,
-                    align: "center",
-                    sortable: true,
-                },
-                {
-                    key: "maxspeed",
-                    title: 'MaxSpeed',
-                    dataKey: 'maxspeed',
-                    width: 180,
-                    align: "center",
-                    sortable: true,
-                },
-            ]
+            result: []
         }
     },
+    components: {
+        'ag-grid-vue': AgGridVue
+    },
+    created() {
+        this.columns = Object.freeze([
+                { headerName: 'Remark', field: 'remark', minWidth: 550 },
+                { headerName: 'Server', field: 'server',  minWidth: 240, },
+                { headerName: "Protocol", field: 'protocol', width: 200, },
+                { headerName: 'Ping', field: 'ping', width: 200, },
+                { headerName: 'AvgSpeed', field: 'speed',  width: 240, },
+                { headerName: 'MaxSpeed', field: 'maxspeed',  width: 240 },
+            ])
+         this.getRowId = (params) => {
+            return params.data.id;
+        };
+    },
     methods: {
+        updateRow(id, newData) {
+            const rowNode = this.gridApi.getRowNode(id);
+            rowNode.setData(newData);
+        },
+        onGridReady(params) {
+            this.gridApi = params.api;
+            // this.gridColumnApi = params.columnApi;
+        },
         bytesToSize: function (bytes) {
             const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
             if (!bytes || bytes === 0) return '0 B';
@@ -568,32 +537,6 @@ export default {
                     this.result.sort((obj1, obj2) => obj1.id - obj2.id)
                 }
              }
-        },
-        onSortV2({ key, order }) {
-            this.sortState[key] = order
-            if (key === "ping") {
-                if (order == TableV2SortOrder.DESC ) {
-                     this.result.sort((obj1, obj2) => {
-                        let ping1 = parseFloat(obj1.ping);
-                        if (ping1 < 1) { ping1 = 99999 }
-                        let ping2 = parseFloat(obj2.ping);
-                        if (ping2 < 1) { ping2 = 99999 }
-                        return ping1 - ping2
-                    })
-                } else {
-                     this.result.sort((obj1, obj2) => obj1.id - obj2.id)
-                }
-                return
-            }
-            if (key === "server" || key === "protocol" || key === "remark") {
-                if (order == TableV2SortOrder.DESC ) {
-                    this.result.sort((obj1, obj2) => obj1[key].localeCompare(obj2[key]))
-                } else {
-                    this.result.sort((obj1, obj2) => obj1.id - obj2.id)
-                }
-                return
-            }
-            this.result = this.result.reverse()
         },
         copyToClipboard: async function (data) {
             if (navigator.clipboard) {
@@ -914,12 +857,14 @@ export default {
                     item.loss = "测试中...";
                     item.testing = true
                     this.result[id]=item;
+                    this.updateRow(id, item);
                     break;
                 case "speed":
                     item.speed = "测试中...";
                     item.maxspeed = "测试中...";
                     item.testing = true
                     this.result[id]=item;
+                    this.updateRow(id, item);
                     break;
             }
         },
@@ -975,6 +920,7 @@ export default {
                     item = this.result[id];
                     item.testing = false
                     this.result[id] = item;
+                    this.updateRow(id, item);
                     break;
                 case "startping":
                     //inverval=setInterval("app.loopevent("+id+",\"ping\")",300)
@@ -999,6 +945,7 @@ export default {
                                 }
                                 */
                     this.result[id] = item;
+                    this.updateRow(id, item);
                     break;
                 case "startspeed":
                     //inverval=setInterval("app.loopevent("+id+",\"speed\")",300)
@@ -1011,6 +958,7 @@ export default {
                     item.maxspeed = json.maxspeed;
                     this.totalTraffic += json.traffic
                     this.result[id] = item;
+                    this.updateRow(id, item);
                     break;
                 case "picsaving":
                     this.$notify.info("保存结果图片中……");
