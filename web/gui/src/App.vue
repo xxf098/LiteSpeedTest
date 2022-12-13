@@ -384,7 +384,18 @@ export default {
                 { headerName: 'Remark', field: 'remark', cellStyle: { textAlign: 'center' }, sortable: true, headerCheckboxSelection: true,checkboxSelection: true, minWidth: 550 },
                 { headerName: 'Server', field: 'server', cellStyle: { textAlign: 'center' }, sortable: true, minWidth: 370, },
                 { headerName: "Protocol", field: 'protocol', cellStyle: { textAlign: 'center' }, sortable: true, width: 150, },
-                { headerName: 'Ping', field: 'ping', cellStyle: { textAlign: 'center' }, width: 200, },
+                { headerName: 'Ping', field: 'ping', cellStyle: { textAlign: 'center' }, width: 200, sortable: true, sortingOrder: ['desc', 'asc', null], comparator: (valueA, valueB, nodeA, nodeB, isInverted) => {
+                    // isInverted: true for Ascending, false for Descending.
+                    if (isInverted) {
+                        let ping1 = parseFloat(valueB);
+                        if (ping1 < 1) { ping1 = 99999 }
+                        let ping2 = parseFloat(valueA);
+                        if (ping2 < 1) { ping2 = 99999 }
+                        return ping1 - ping2
+                    } else  {
+                        return parseFloat(valueB) - parseFloat(valueA)
+                    } 
+                }},
                 { headerName: 'AvgSpeed', field: 'speed', cellStyle: { textAlign: 'center' }, width: 200, },
                 { headerName: 'MaxSpeed', field: 'maxspeed', cellStyle: { textAlign: 'center' }, width: 200 },
             ])
