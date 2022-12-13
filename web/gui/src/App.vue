@@ -379,11 +379,11 @@ export default {
     components: {
         'ag-grid-vue': AgGridVue
     },
-    created() {
+    created() {        
         this.columns = Object.freeze([
-                { headerName: 'Remark', field: 'remark', cellStyle: { textAlign: 'center' }, headerCheckboxSelection: true,checkboxSelection: true, minWidth: 550 },
-                { headerName: 'Server', field: 'server', cellStyle: { textAlign: 'center' }, minWidth: 370, },
-                { headerName: "Protocol", field: 'protocol', cellStyle: { textAlign: 'center' }, width: 150, },
+                { headerName: 'Remark', field: 'remark', cellStyle: { textAlign: 'center' }, sortable: true, headerCheckboxSelection: true,checkboxSelection: true, minWidth: 550 },
+                { headerName: 'Server', field: 'server', cellStyle: { textAlign: 'center' }, sortable: true, minWidth: 370, },
+                { headerName: "Protocol", field: 'protocol', cellStyle: { textAlign: 'center' }, sortable: true, width: 150, },
                 { headerName: 'Ping', field: 'ping', cellStyle: { textAlign: 'center' }, width: 200, },
                 { headerName: 'AvgSpeed', field: 'speed', cellStyle: { textAlign: 'center' }, width: 200, },
                 { headerName: 'MaxSpeed', field: 'maxspeed', cellStyle: { textAlign: 'center' }, width: 200 },
@@ -395,7 +395,11 @@ export default {
     methods: {
         updateRow(id, newData) {
             const rowNode = this.gridApi.getRowNode(id);
-            rowNode.setData(newData);
+            if (!rowNode) {
+                this.gridApi.applyTransaction({ add: [newData] })
+            } else {
+                rowNode.setData(newData);
+            }
         },
         onGridReady(params) {
             this.gridApi = params.api;
@@ -906,6 +910,7 @@ export default {
                         maxspeed: "0.00B"
                     };
                     this.result[id] = item;
+                    this.updateRow(id, item);
                     break;
                 case "gotservers":
                     json.servers.forEach(json => {
@@ -922,6 +927,7 @@ export default {
                             maxspeed: "0.00B"
                         };
                         this.result[json.id] = item;
+                        this.updateRow(json.id, item);
                     })
                     break;							
                 case "endone":
@@ -995,6 +1001,7 @@ export default {
                     item.speed = "0.00B";
                     item.maxspeed = "0.00B";
                     this.result[id] = item;
+                    this.updateRow(id, item);
                     break;
                 case "error":
                     switch (json.reason) {
@@ -1006,6 +1013,7 @@ export default {
                                 "节点 " + item.group + " - " + item.remark + " 无法连接。"
                             );
                             this.result[id] = item;
+                            this.updateRow(id, item);
                             break;
                         case "noresolve":
                             item = this.result[id];
@@ -1015,6 +1023,7 @@ export default {
                                 "节点 " + item.group + " - " + item.remark + " 无法解析到 IP 地址。"
                             );
                             this.result[id] = item;
+                            this.updateRow(id, item);
                             break;
                         case "nonodes":
                             this.$alert("找不到任何节点。请检查订阅链接。", "错误");
