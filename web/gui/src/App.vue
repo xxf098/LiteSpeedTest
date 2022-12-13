@@ -343,9 +343,11 @@ export default {
             testCount: 0,
             testOkCount: 0,
             sortState: {},
+            // agGrid
             columns: this.columns,
             gridApi: null,
             getRowId: null,
+            rowSelection: null,
 
             init: {
                 speedtestModes: {
@@ -377,16 +379,15 @@ export default {
     },
     created() {
         this.columns = Object.freeze([
-                { headerName: 'Remark', field: 'remark', cellStyle: { textAlign: 'center' }, minWidth: 550 },
+                { headerName: 'Remark', field: 'remark', cellStyle: { textAlign: 'center' }, headerCheckboxSelection: true,checkboxSelection: true, minWidth: 550 },
                 { headerName: 'Server', field: 'server', cellStyle: { textAlign: 'center' }, minWidth: 370, },
                 { headerName: "Protocol", field: 'protocol', cellStyle: { textAlign: 'center' }, width: 150, },
                 { headerName: 'Ping', field: 'ping', cellStyle: { textAlign: 'center' }, width: 200, },
                 { headerName: 'AvgSpeed', field: 'speed', cellStyle: { textAlign: 'center' }, width: 200, },
                 { headerName: 'MaxSpeed', field: 'maxspeed', cellStyle: { textAlign: 'center' }, width: 200 },
             ])
-         this.getRowId = (params) => {
-            return params.data.id;
-        };
+         this.getRowId = (params) => params.data.id;
+         this.rowSelection = 'multiple';
     },
     methods: {
         updateRow(id, newData) {
