@@ -383,7 +383,19 @@ export default {
         this.columns = Object.freeze([
                 { headerName: 'Remark', field: 'remark', cellStyle: { textAlign: 'center' }, sortable: true, headerCheckboxSelection: true,checkboxSelection: true, minWidth: 550 },
                 { headerName: 'Server', field: 'server', cellStyle: { textAlign: 'center' }, sortable: true, minWidth: 370, },
-                { headerName: "Protocol", field: 'protocol', cellStyle: { textAlign: 'center' }, sortable: true, width: 150, },
+                // https://www.ag-grid.com/archive/26.0.0/vue-data-grid/filter-provided-simple/
+                { headerName: "Protocol", field: 'protocol', cellStyle: { textAlign: 'center' }, sortable: true, width: 150,  filter: 'agTextColumnFilter', 
+                    filterParams: {
+                        suppressAndOrCondition: false,
+                        filterOptions: [
+                            'empty',
+                             { displayKey: 'Vmess', displayName: 'Vmess', test: (filterValue, cellValue) =>  cellValue.startsWith("vmess"), hideFilterInput: true },
+                             { displayKey: 'Trojan', displayName: 'Trojan', test: (filterValue, cellValue) =>  cellValue.startsWith("trojan"), hideFilterInput: true },
+                             { displayKey: 'SSR', displayName: 'SSR', test: (filterValue, cellValue) =>  cellValue === "ssr", hideFilterInput: true },
+                             { displayKey: 'SS', displayName: 'SS', test: (filterValue, cellValue) =>  cellValue === "ss", hideFilterInput: true },
+                        ],
+                    }
+                },
                 { headerName: 'Ping', field: 'ping', cellStyle: { textAlign: 'center' }, width: 200, sortable: true, sortingOrder: ['desc', 'asc', null], comparator: (valueA, valueB, nodeA, nodeB, isInverted) => {
                     // isInverted: true for Ascending, false for Descending.
                     if (isInverted) {
