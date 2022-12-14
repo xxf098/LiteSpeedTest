@@ -396,7 +396,13 @@ export default {
                     } else  {
                         return parseFloat(valueB) - parseFloat(valueA)
                     } 
-                }},
+                }, filter: 'agNumberColumnFilter', filterParams: { 
+                    suppressAndOrCondition: true,
+                    filterOptions: [
+                        { displayKey: "lessThanOrEqual", 
+                        displayName: "<=", 
+                        predicate: ([filterValue], cellValue) =>  cellValue > 0 && cellValue <= filterValue }
+                    ] }},
                 { headerName: 'AvgSpeed', field: 'speed', cellStyle: { textAlign: 'center' }, width: 200, },
                 { headerName: 'MaxSpeed', field: 'maxspeed', cellStyle: { textAlign: 'center' }, width: 200 },
             ])
