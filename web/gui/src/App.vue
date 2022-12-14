@@ -141,24 +141,27 @@
                             </el-col>
                         </el-row>
                         <el-container>
-                                <ag-grid-vue style="width: 100%; height: 650px;" class="ag-theme-alpine"
-                                            :rowData="result"
-                                            :columnDefs="columns"
-                                            :getRowId="getRowId"
-                                            :rowSelection="rowSelection"
-                                            @grid-ready="onGridReady"
-                                            @selection-changed="onSelectionChanged"
-                                            >
+                            <!-- https://www.ag-grid.com/vue-data-grid/grid-size/#grid-auto-height  max 300row -->
+                                <ag-grid-vue 
+                                        id="myGrid"
+                                        style="width: 100%;" 
+                                        class="ag-theme-alpine"
+                                        :domLayout="domLayout"
+                                        :rowData="result"
+                                        :columnDefs="columns"
+                                        :getRowId="getRowId"
+                                        :rowSelection="rowSelection"
+                                        @grid-ready="onGridReady"
+                                        @selection-changed="onSelectionChanged"
+                                    >
                                 </ag-grid-vue>
                         </el-container>
-                        <el-container>
+                        <!-- <el-container>
                             <el-table :data="result" :cell-style="colorCell" ref="result" 
                                 :row-key="row => `${row.server}${row.protocol}${row.ping}${row.speed}${row.maxspeed}`"
                                 @selection-change="handleSelectionChange" @sort-change="handleSortChange">
                                 <el-table-column type="selection" width="55" :selectable="checkSelectable">
                                 </el-table-column>
-                                <!-- <el-table-column label="Group" align="center" prop="group" width="300" sortable>
-                                </el-table-column> -->
                                 <el-table-column label="Remark" align="center" prop="remark" min-width="400" sortable>
                                 </el-table-column>
                                 <el-table-column label="Server" align="center" prop="server" min-width="160" sortable>
@@ -167,8 +170,6 @@
                                     :filters="[{ text: 'V2Ray', value: 'vmess' }, { text: 'Trojan', value: 'trojan' }, { text: 'ShadowsocksR', value: 'ssr' }, { text: 'Shadowsocks', value: 'ss' }]"
                                     :filter-method="filterProtocol">
                                 </el-table-column>
-                                <!-- <el-table-column label="Loss" align="center" prop="loss" width="100" sortable>
-                                </el-table-column> -->
                                 <el-table-column label="Ping" align="center" prop="ping" width="100" sortable="custom"
                                     :filters="[{ text: 'Available ', value: 'available' }]"
                                     :filter-method="filterPing">
@@ -186,7 +187,7 @@
                                     :sort-method="maxSpeedSort">
                                 </el-table-column>
                             </el-table>
-                        </el-container>
+                        </el-container> -->
                     </el-card>   
 
             <br>
@@ -349,6 +350,7 @@ export default {
             columns: this.columns,
             gridApi: null,
             getRowId: null,
+            domLayout: null,
             rowSelection: null,
 
             init: {
@@ -408,6 +410,7 @@ export default {
             ])
          this.getRowId = (params) => params.data.id;
          this.rowSelection = 'multiple';
+          this.domLayout = 'autoHeight';
         //  this.isRowSelectable = params => true
     },
     methods: {
@@ -419,6 +422,19 @@ export default {
                 rowNode.setData(newData);
             }
         },
+        setAutoHeight() {
+            this.gridApi.setDomLayout('autoHeight');
+            // auto height will get the grid to fill the height of the contents,
+            // so the grid div should have no height set, the height is dynamic.
+            document.querySelector('#myGrid').style.height = '';
+        },
+        setFixedHeight() {
+            // we could also call setDomLayout() here as normal is the default
+            this.gridApi.setDomLayout('normal');
+            // when auto height is off, the grid ahs a fixed height, and then the grid
+            // will provide scrollbars if the data does not fit into it.
+            document.querySelector('#myGrid').style.height = '3000px';
+        },        
         onGridReady(params) {
             this.gridApi = params.api;
             // this.gridColumnApi = params.columnApi;
@@ -511,9 +527,9 @@ export default {
                     type: "error",
                 });
             } else {
-                this.$refs.result.clearSelection();
-                this.$refs.result.clearFilter();
-                this.$refs.result.clearSort();
+                // this.$refs.result.clearSelection();
+                // this.$refs.result.clearFilter();
+                // this.$refs.result.clearSort();
                 this.loading = true;
                 this.totalTraffic = 0;
                 this.totalTime = 0;
@@ -659,9 +675,9 @@ export default {
             const testids = this.multipleSelection.map(elem => elem.id)
             const links = this.multipleSelection.map(elem => elem.link)
             const data = { testMode: 3, ...this.getJSONOptions(), testids, links }
-            this.$refs.result.clearSelection();
-            this.$refs.result.clearFilter();
-            this.$refs.result.clearSort();
+            // this.$refs.result.clearSelection();
+            // this.$refs.result.clearFilter();
+            // this.$refs.result.clearSort();
             console.log(`handleRetest: ${JSON.stringify(data)}`)
             this.send(JSON.stringify(data));
         },
@@ -944,8 +960,13 @@ export default {
                             speed: "0.00B",
                             maxspeed: "0.00B"
                         };
+                        // FIXME:
                         this.result[json.id] = item;
                         this.updateRow(json.id, item);
+                        if (this.domLayout === "autoHeight" && this.result.length > 120) {
+                            this.setFixedHeight()
+                            this.domLayout = "normal"
+                        } 
                     })
                     break;							
                 case "endone":
