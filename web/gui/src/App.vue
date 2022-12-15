@@ -419,20 +419,15 @@ export default {
             if (!rowNode) {
                 this.gridApi.applyTransaction({ add: [newData] })
             } else {
-                rowNode.setData(newData);
+                this.gridApi.applyTransaction({ update: [newData] })
             }
         },
-        updateRowPing(id, ping) {
+        updateRowAsync(id, newData) {
             const rowNode = this.gridApi.getRowNode(id);
-            if (rowNode) {
-                rowNode.setDataValue("ping",ping);
-            }
-        },
-        updateRowSpeed(id, speed, maxspeed) {
-            const rowNode = this.gridApi.getRowNode(id);
-            if (rowNode) {
-                rowNode.setDataValue("speed",speed);
-                rowNode.setDataValue("maxspeed",maxspeed);
+            if (!rowNode) {
+                this.gridApi.applyTransactionAsync({ add: [newData] })
+            } else {
+                this.gridApi.applyTransactionAsync({ update: [newData] })
             }
         },
         setAutoHeight() {
@@ -960,7 +955,7 @@ export default {
                     this.updateRow(id, item);
                     break;
                 case "gotservers":
-                    json.servers.forEach(json => {
+                    const items = json.servers.map(json => {
                         item = {
                             id: json.id,
                             group: this.groupname == "" ? json.group : this.groupname,
@@ -974,12 +969,13 @@ export default {
                             maxspeed: "0.00B"
                         };
                         this.result[json.id] = item;
-                        this.updateRow(json.id, item);
-                        if (this.domLayout === "autoHeight" && this.result.length > 120) {
-                            this.setFixedHeight()
-                            this.domLayout = "normal"
-                        } 
-                    })
+                        return item
+                    });
+                    this.gridApi.applyTransaction({ add: items })
+                    if (this.domLayout === "autoHeight" && this.result.length > 120) {
+                        this.setFixedHeight()
+                        this.domLayout = "normal"
+                    } 
                     break;							
                 case "endone":
                     item = this.result[id];
@@ -1010,7 +1006,7 @@ export default {
                                 }
                                 */
                     this.result[id] = item;
-                    this.updateRowPing(id, item.ping);
+                    this.updateRowAsync(id, item);
                     break;
                 case "startspeed":
                     //inverval=setInterval("app.loopevent("+id+",\"speed\")",300)
@@ -1023,7 +1019,7 @@ export default {
                     item.maxspeed = json.maxspeed;
                     this.totalTraffic += json.traffic
                     this.result[id] = item;
-                     this.updateRowSpeed(id, speed, maxspeed);
+                    this.updateRowAsync(id, item);
                     break;
                 case "picsaving":
                     this.$notify.info("保存结果图片中……");
