@@ -406,8 +406,8 @@ export default {
                         displayName: "<=", 
                         predicate: ([filterValue], cellValue) =>  cellValue > 0 && cellValue <= filterValue }
                     ] }},
-                { headerName: 'AvgSpeed', field: 'speed', width: 200, cellStyle: { textAlign: 'center' },  },
-                { headerName: 'MaxSpeed', field: 'maxspeed', width: 200, cellStyle: { textAlign: 'center' }, },
+                { headerName: 'AvgSpeed', field: 'speed', width: 200, cellStyle: this.speedCellStyle,  },
+                { headerName: 'MaxSpeed', field: 'maxspeed', width: 200, cellStyle: this.speedCellStyle, },
             ])
         this.getRowId = (params) => params.data.id;
         this.rowSelection = 'multiple';
@@ -442,7 +442,16 @@ export default {
             // when auto height is off, the grid ahs a fixed height, and then the grid
             // will provide scrollbars if the data does not fit into it.
             document.querySelector('#myGrid').style.height = '3000px';
-        },        
+        },
+        speedCellStyle(params) {
+            // console.log(`params.value: ${params.value}`)
+            const style = {textAlign: 'center'}
+            const speed = this.getSpeed(params.value);
+            if (speed < 1 || isNaN(parseFloat(speed))) return style;
+            const color = this.getSpeedColor(speed);
+            style.backgroundColor = color;
+            return { backgroundColor: color, textAlign: 'center' }
+        },
         onGridReady(params) {
             this.gridApi = params.api;
             // this.gridColumnApi = params.columnApi;
