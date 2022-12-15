@@ -384,9 +384,9 @@ export default {
     },
     created() {        
         this.columns = Object.freeze([
-                { headerName: 'Remark', field: 'remark', cellStyle: { textAlign: 'center' }, sortable: true, headerCheckboxSelection: true,checkboxSelection: true, minWidth: 550,
+                { headerName: 'Remark', field: 'remark', cellStyle: { textAlign: 'center' }, sortable: true, headerCheckboxSelection: true,checkboxSelection: true, minWidth: 500, flex: 1,
                    filter: 'agTextColumnFilter', filterParams: {suppressAndOrCondition: true} },
-                { headerName: 'Server', field: 'server', cellStyle: { textAlign: 'center' }, sortable: true, minWidth: 370, filter: 'agTextColumnFilter', filterParams: {suppressAndOrCondition: true} },
+                { headerName: 'Server', field: 'server', cellStyle: { textAlign: 'center' }, sortable: true, minWidth: 300, flex: 1, filter: 'agTextColumnFilter', filterParams: {suppressAndOrCondition: true} },
                 { headerName: "Protocol", field: 'protocol', cellStyle: { textAlign: 'center' }, sortable: true, width: 150,  filter: 'agTextColumnFilter' },
                 { headerName: 'Ping', field: 'ping', cellStyle: { textAlign: 'center' }, width: 200, sortable: true, sortingOrder: ['desc', 'asc', null], comparator: (valueA, valueB, nodeA, nodeB, isInverted) => {
                     // isInverted: true for Ascending, false for Descending.
@@ -406,8 +406,8 @@ export default {
                         displayName: "<=", 
                         predicate: ([filterValue], cellValue) =>  cellValue > 0 && cellValue <= filterValue }
                     ] }},
-                { headerName: 'AvgSpeed', field: 'speed', cellStyle: { textAlign: 'center' }, width: 200, },
-                { headerName: 'MaxSpeed', field: 'maxspeed', cellStyle: { textAlign: 'center' }, width: 200 },
+                { headerName: 'AvgSpeed', field: 'speed', width: 200, cellStyle: { textAlign: 'center' },  },
+                { headerName: 'MaxSpeed', field: 'maxspeed', width: 200, cellStyle: { textAlign: 'center' }, },
             ])
         this.getRowId = (params) => params.data.id;
         this.rowSelection = 'multiple';
