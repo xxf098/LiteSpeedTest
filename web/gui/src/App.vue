@@ -144,13 +144,14 @@
                             <!-- https://www.ag-grid.com/vue-data-grid/grid-size/#grid-auto-height  max 300row -->
                                 <ag-grid-vue 
                                         id="myGrid"
-                                        style="width: 100%;" 
+                                        style="width: 100%;padding-top: 12px;" 
                                         class="ag-theme-alpine"
                                         :domLayout="domLayout"
                                         :rowData="result"
                                         :columnDefs="columns"
                                         :getRowId="getRowId"
                                         :rowSelection="rowSelection"
+                                        :suppressRowClickSelection="true"
                                         @grid-ready="onGridReady"
                                         @selection-changed="onSelectionChanged"
                                     >
@@ -408,10 +409,9 @@ export default {
                 { headerName: 'AvgSpeed', field: 'speed', cellStyle: { textAlign: 'center' }, width: 200, },
                 { headerName: 'MaxSpeed', field: 'maxspeed', cellStyle: { textAlign: 'center' }, width: 200 },
             ])
-         this.getRowId = (params) => params.data.id;
-         this.rowSelection = 'multiple';
-          this.domLayout = 'autoHeight';
-        //  this.isRowSelectable = params => true
+        this.getRowId = (params) => params.data.id;
+        this.rowSelection = 'multiple';
+        this.domLayout = 'autoHeight';
     },
     methods: {
         updateRow(id, newData) {
@@ -1136,5 +1136,9 @@ export default {
 
 .ag-header-cell-label {
    justify-content: center;
+}
+
+.ag-cell-focus,.ag-cell-no-focus{
+  border:none !important;
 }
 </style>
