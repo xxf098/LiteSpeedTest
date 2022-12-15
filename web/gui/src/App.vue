@@ -422,6 +422,19 @@ export default {
                 rowNode.setData(newData);
             }
         },
+        updateRowPing(id, ping) {
+            const rowNode = this.gridApi.getRowNode(id);
+            if (rowNode) {
+                rowNode.setDataValue("ping",ping);
+            }
+        },
+        updateRowSpeed(id, speed, maxspeed) {
+            const rowNode = this.gridApi.getRowNode(id);
+            if (rowNode) {
+                rowNode.setDataValue("speed",speed);
+                rowNode.setDataValue("maxspeed",maxspeed);
+            }
+        },
         setAutoHeight() {
             this.gridApi.setDomLayout('autoHeight');
             // auto height will get the grid to fill the height of the contents,
@@ -960,7 +973,6 @@ export default {
                             speed: "0.00B",
                             maxspeed: "0.00B"
                         };
-                        // FIXME:
                         this.result[json.id] = item;
                         this.updateRow(json.id, item);
                         if (this.domLayout === "autoHeight" && this.result.length > 120) {
@@ -982,7 +994,7 @@ export default {
                 case "gotping":
                     //clearInterval(interval)
                     item = this.result[id];
-                    item.loss = json.loss;
+                    // item.loss = json.loss;
                     item.ping = json.ping || 0;
                     this.testCount += 1
                     if (item.ping > 0) {
@@ -998,7 +1010,7 @@ export default {
                                 }
                                 */
                     this.result[id] = item;
-                    this.updateRow(id, item);
+                    this.updateRowPing(id, item.ping);
                     break;
                 case "startspeed":
                     //inverval=setInterval("app.loopevent("+id+",\"speed\")",300)
@@ -1011,7 +1023,7 @@ export default {
                     item.maxspeed = json.maxspeed;
                     this.totalTraffic += json.traffic
                     this.result[id] = item;
-                    this.updateRow(id, item);
+                     this.updateRowSpeed(id, speed, maxspeed);
                     break;
                 case "picsaving":
                     this.$notify.info("保存结果图片中……");
