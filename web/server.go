@@ -26,7 +26,7 @@ var upgrader = websocket.Upgrader{}
 
 func ServeFile(port int) error {
 	// TODO: Mobile UI
-	http.Handle("/", http.FileServer(http.FS(guiStatic)))
+	http.HandleFunc("/", serverFile)
 	http.HandleFunc("/test", updateTest)
 	http.HandleFunc("/getSubscriptionLink", getSubscriptionLink)
 	http.HandleFunc("/getSubscription", getSubscription)
@@ -45,6 +45,12 @@ func ServeFile(port int) error {
 // 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 // 	return err
 // }
+
+func serverFile(w http.ResponseWriter, r *http.Request) {
+	h := http.FileServer(http.FS(guiStatic))
+	r.URL.Path = "gui/dist" + r.URL.Path
+	h.ServeHTTP(w, r)
+}
 
 func updateTest(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
