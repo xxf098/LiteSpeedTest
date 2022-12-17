@@ -152,6 +152,7 @@
                                         :getRowId="getRowId"
                                         :rowSelection="rowSelection"
                                         :suppressRowClickSelection="true"
+                                        :defaultColDef="defaultColDef"
                                         @grid-ready="onGridReady"
                                         @selection-changed="onSelectionChanged"
                                     >
@@ -353,6 +354,9 @@ export default {
             getRowId: null,
             domLayout: null,
             rowSelection: null,
+            defaultColDef: {
+                resizable: true,
+            },
 
             init: {
                 speedtestModes: {
@@ -384,11 +388,11 @@ export default {
     },
     created() {        
         this.columns = Object.freeze([
-                { headerName: 'Remark', field: 'remark', cellStyle: { textAlign: 'center' }, sortable: true, headerCheckboxSelection: true,checkboxSelection: true, minWidth: 500, flex: 1, resizable: true,
+                { headerName: 'Remark', field: 'remark', cellStyle: { textAlign: 'center' }, sortable: true, headerCheckboxSelection: true,checkboxSelection: true, minWidth: 500, flex: 1,
                    filter: 'agTextColumnFilter', filterParams: {suppressAndOrCondition: true} },
-                { headerName: 'Server', field: 'server', cellStyle: { textAlign: 'center' }, sortable: true, minWidth: 330, resizable: true, filter: 'agTextColumnFilter', filterParams: {suppressAndOrCondition: true} },
-                { headerName: "Protocol", field: 'protocol', cellStyle: { textAlign: 'center' }, sortable: true, width: 150, resizable: true, filter: 'agTextColumnFilter' },
-                { headerName: 'Ping', field: 'ping', cellStyle: { textAlign: 'center' }, width: 200, resizable: true, sortable: true, sortingOrder: ['desc', 'asc', null], comparator: (valueA, valueB, nodeA, nodeB, isInverted) => {
+                { headerName: 'Server', field: 'server', cellStyle: { textAlign: 'center' }, sortable: true, minWidth: 330, filter: 'agTextColumnFilter', filterParams: {suppressAndOrCondition: true} },
+                { headerName: "Protocol", field: 'protocol', cellStyle: { textAlign: 'center' }, sortable: true, width: 150, filter: 'agTextColumnFilter' },
+                { headerName: 'Ping', field: 'ping', cellStyle: { textAlign: 'center' }, width: 200, sortable: true, sortingOrder: ['desc', 'asc', null], comparator: (valueA, valueB, nodeA, nodeB, isInverted) => {
                     // isInverted: true for Ascending, false for Descending.
                     if (isInverted) {
                         let ping1 = parseFloat(valueB);
@@ -406,8 +410,8 @@ export default {
                         displayName: "<=", 
                         predicate: ([filterValue], cellValue) =>  cellValue > 0 && cellValue <= filterValue }
                     ] }},
-                { headerName: 'AvgSpeed', field: 'speed', width: 200,resizable: true, cellStyle: this.speedCellStyle,  },
-                { headerName: 'MaxSpeed', field: 'maxspeed', width: 200, resizable: true, cellStyle: this.speedCellStyle, },
+                { headerName: 'AvgSpeed', field: 'speed', width: 200, cellStyle: this.speedCellStyle,  },
+                { headerName: 'MaxSpeed', field: 'maxspeed', width: 200, cellStyle: this.speedCellStyle, },
             ])
         this.getRowId = (params) => params.data.id;
         this.rowSelection = 'multiple';
