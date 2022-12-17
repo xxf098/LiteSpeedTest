@@ -547,6 +547,7 @@ export default {
                 // this.$refs.result.clearSelection();
                 // this.$refs.result.clearFilter();
                 // this.$refs.result.clearSort();
+                this.setAutoHeight()
                 this.loading = true;
                 this.totalTraffic = 0;
                 this.totalTime = 0;
