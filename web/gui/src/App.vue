@@ -356,6 +356,7 @@ export default {
             rowSelection: null,
             defaultColDef: {
                 resizable: true,
+                sortable: true,
                 cellStyle: { textAlign: 'center' },
             },
 
@@ -389,10 +390,10 @@ export default {
     },
     created() {        
         this.columns = Object.freeze([
-                { headerName: 'Remark', field: 'remark', sortable: true, headerCheckboxSelection: true,checkboxSelection: true, minWidth: 500, flex: 1, filter: 'agTextColumnFilter', filterParams: {suppressAndOrCondition: true} },
-                { headerName: 'Server', field: 'server', sortable: true, minWidth: 330, filter: 'agTextColumnFilter', filterParams: {suppressAndOrCondition: true} },
-                { headerName: "Protocol", field: 'protocol', sortable: true, width: 150, filter: 'agTextColumnFilter' },
-                { headerName: 'Ping', field: 'ping', width: 200, sortable: true, sortingOrder: ['desc', 'asc', null], comparator: (valueA, valueB, nodeA, nodeB, isInverted) => {
+                { headerName: 'Remark', field: 'remark', headerCheckboxSelection: true,checkboxSelection: true, minWidth: 500, flex: 1, filter: 'agTextColumnFilter', filterParams: {suppressAndOrCondition: true} },
+                { headerName: 'Server', field: 'server', minWidth: 330, filter: 'agTextColumnFilter', filterParams: {suppressAndOrCondition: true} },
+                { headerName: "Protocol", field: 'protocol', width: 150, filter: 'agTextColumnFilter' },
+                { headerName: 'Ping', field: 'ping', width: 200, sortingOrder: ['desc', 'asc', null], comparator: (valueA, valueB, nodeA, nodeB, isInverted) => {
                     // isInverted: true for Ascending, false for Descending.
                     if (isInverted) {
                         let ping1 = parseFloat(valueB);
@@ -410,8 +411,16 @@ export default {
                         displayName: "<=", 
                         predicate: ([filterValue], cellValue) =>  cellValue > 0 && cellValue <= filterValue }
                     ] }},
-                { headerName: 'AvgSpeed', field: 'speed', width: 200, cellStyle: this.speedCellStyle,  },
-                { headerName: 'MaxSpeed', field: 'maxspeed', width: 200, cellStyle: this.speedCellStyle, },
+                { headerName: 'AvgSpeed', field: 'speed', width: 200, cellStyle: this.speedCellStyle, sortingOrder: ['asc', null], comparator: (valueA, valueB, nodeA, nodeB, isInverted) => {
+                        const speed1 = isNaN(this.getSpeed(valueA)) ? -1 : this.getSpeed(valueA);
+                        const speed2 = isNaN(this.getSpeed(valueB)) ? -1 : this.getSpeed(valueB);
+                        return speed2 - speed1
+                }},
+                { headerName: 'MaxSpeed', field: 'maxspeed', width: 200, cellStyle: this.speedCellStyle,sortingOrder: ['asc', null], comparator: (valueA, valueB, nodeA, nodeB, isInverted) => {
+                        const speed1 = isNaN(this.getSpeed(valueA)) ? -1 : this.getSpeed(valueA);
+                        const speed2 = isNaN(this.getSpeed(valueB)) ? -1 : this.getSpeed(valueB);
+                        return speed2 - speed1
+                }},
             ])
         this.getRowId = (params) => params.data.id;
         this.rowSelection = 'multiple';
