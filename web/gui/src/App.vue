@@ -356,6 +356,7 @@ export default {
             rowSelection: null,
             defaultColDef: {
                 resizable: true,
+                cellStyle: { textAlign: 'center' },
             },
 
             init: {
@@ -388,11 +389,10 @@ export default {
     },
     created() {        
         this.columns = Object.freeze([
-                { headerName: 'Remark', field: 'remark', cellStyle: { textAlign: 'center' }, sortable: true, headerCheckboxSelection: true,checkboxSelection: true, minWidth: 500, flex: 1,
-                   filter: 'agTextColumnFilter', filterParams: {suppressAndOrCondition: true} },
-                { headerName: 'Server', field: 'server', cellStyle: { textAlign: 'center' }, sortable: true, minWidth: 330, filter: 'agTextColumnFilter', filterParams: {suppressAndOrCondition: true} },
-                { headerName: "Protocol", field: 'protocol', cellStyle: { textAlign: 'center' }, sortable: true, width: 150, filter: 'agTextColumnFilter' },
-                { headerName: 'Ping', field: 'ping', cellStyle: { textAlign: 'center' }, width: 200, sortable: true, sortingOrder: ['desc', 'asc', null], comparator: (valueA, valueB, nodeA, nodeB, isInverted) => {
+                { headerName: 'Remark', field: 'remark', sortable: true, headerCheckboxSelection: true,checkboxSelection: true, minWidth: 500, flex: 1, filter: 'agTextColumnFilter', filterParams: {suppressAndOrCondition: true} },
+                { headerName: 'Server', field: 'server', sortable: true, minWidth: 330, filter: 'agTextColumnFilter', filterParams: {suppressAndOrCondition: true} },
+                { headerName: "Protocol", field: 'protocol', sortable: true, width: 150, filter: 'agTextColumnFilter' },
+                { headerName: 'Ping', field: 'ping', width: 200, sortable: true, sortingOrder: ['desc', 'asc', null], comparator: (valueA, valueB, nodeA, nodeB, isInverted) => {
                     // isInverted: true for Ascending, false for Descending.
                     if (isInverted) {
                         let ping1 = parseFloat(valueB);
