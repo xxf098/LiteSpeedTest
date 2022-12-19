@@ -393,7 +393,7 @@ export default {
                 { headerName: 'Remark', field: 'remark', headerCheckboxSelection: true,checkboxSelection: true, minWidth: 500, flex: 1, filter: 'agTextColumnFilter', filterParams: {suppressAndOrCondition: true} },
                 { headerName: 'Server', field: 'server', minWidth: 330, filter: 'agTextColumnFilter', filterParams: {suppressAndOrCondition: true} },
                 { headerName: "Protocol", field: 'protocol', width: 150, filter: 'agTextColumnFilter' },
-                { headerName: 'Ping', field: 'ping', width: 200, sortingOrder: ['desc', 'asc', null], comparator: (valueA, valueB, nodeA, nodeB, isInverted) => {
+                { headerName: 'Ping(ms)', field: 'ping', width: 200, sortingOrder: ['desc', 'asc', null], comparator: (valueA, valueB, nodeA, nodeB, isInverted) => {
                     // isInverted: true for Ascending, false for Descending.
                     if (isInverted) {
                         let ping1 = parseFloat(valueB);
@@ -422,8 +422,8 @@ export default {
                         return speed2 - speed1
                 }},
             ])
-        this.getRowId = (params) => params.data.id;
-        this.rowSelection = 'multiple';
+        this.getRowId = params => params.data.id;
+        this.rowSelection = 'multiple';     
         this.domLayout = 'autoHeight';
     },
     methods: {
@@ -1160,7 +1160,4 @@ export default {
    justify-content: center;
 }
 
-.ag-cell-focus,.ag-cell-no-focus{
-  border:none !important;
-}
 </style>
