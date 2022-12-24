@@ -54,6 +54,7 @@ type Config struct {
 	Net      string // vmess net type
 	Port     int
 	Password string
+	SNI      string
 }
 
 func Link2Config(link string) (*Config, error) {
@@ -83,6 +84,7 @@ func Link2Config(link string) (*Config, error) {
 				Port:     cfgVmess.PortInt,
 				Net:      cfgVmess.Net,
 				Password: cfgVmess.ID,
+				SNI:      cfgVmess.ServerName,
 			}
 		}
 	case "trojan":
@@ -96,6 +98,7 @@ func Link2Config(link string) (*Config, error) {
 				Port:     cfgTrojan.Port,
 				Password: cfgTrojan.Password,
 				Net:      cfgTrojan.Network,
+				SNI:      cfgTrojan.SNI,
 			}
 		}
 	case "http":

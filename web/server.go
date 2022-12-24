@@ -82,7 +82,7 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					continue
 				}
-				key := fmt.Sprintf("%s%d%s%s", cfg.Server, cfg.Port, cfg.Password, cfg.Protocol)
+				key := fmt.Sprintf("%s%d%s%s%s", cfg.Server, cfg.Port, cfg.Password, cfg.Protocol, cfg.SNI)
 				if _, ok := uniqueMap[key]; !ok {
 					uniqueLinks = append(uniqueLinks, link)
 					uniqueMap[key] = struct{}{}
