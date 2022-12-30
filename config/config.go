@@ -84,7 +84,7 @@ func Link2Config(link string) (*Config, error) {
 				Port:     cfgVmess.PortInt,
 				Net:      cfgVmess.Net,
 				Password: cfgVmess.ID,
-				SNI:      cfgVmess.ServerName,
+				SNI:      cfgVmess.Host,
 			}
 		}
 	case "trojan":
