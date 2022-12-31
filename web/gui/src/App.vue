@@ -59,7 +59,7 @@
                                         <el-input v-model="groupname" style="width: 235px" 
                                             @keyup.enter.native="submit" :disabled="loading" clearable></el-input>
                                         <el-button type="primary" @click="submit" style="margin-left: 20px" v-if="!option"
-                                            :disabled="loading" :loading="loading"><el-icon v-if="!loading" class="el-icon--left"><Check /></el-icon>提 交</el-button>
+                                            :disabled="loading" :loading="loading"><el-icon v-if="!loading" class="el-icon--left"><Select /></el-icon>提 交</el-button>
                                         <el-button type="danger" @click="terminate" :icon="Close" v-if="!option"
                                             :disabled="!loading"><el-icon class="el-icon--left"><Close /></el-icon>终 止</el-button>
                                     </el-form-item>
