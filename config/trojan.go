@@ -62,6 +62,13 @@ func TrojanLinkToTrojanOption(link string) (*outbound.TrojanOption, error) {
 				trojanOption.WSOpts = wsOption
 			}
 		}
+		if network == "grpc" {
+			trojanOption.Network = "grpc"
+			serviceName := rawQuery.Get("serviceName")
+			if len(serviceName) > 0 {
+				trojanOption.GrpcOpts = outbound.GrpcOptions{GrpcServiceName: serviceName}
+			}
+		}
 
 	}
 	return &trojanOption, nil

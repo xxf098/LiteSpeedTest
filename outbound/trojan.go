@@ -2,6 +2,7 @@ package outbound
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -11,13 +12,20 @@ import (
 	C "github.com/xxf098/lite-proxy/constant"
 	"github.com/xxf098/lite-proxy/stats"
 	"github.com/xxf098/lite-proxy/transport/dialer"
+	"github.com/xxf098/lite-proxy/transport/gun"
 	"github.com/xxf098/lite-proxy/transport/trojan"
+	"golang.org/x/net/http2"
 )
 
 type Trojan struct {
 	*Base
 	instance *trojan.Trojan
 	option   *TrojanOption
+
+	// for gun mux
+	gunTLSConfig *tls.Config
+	gunConfig    *gun.Config
+	transport    *http2.Transport
 }
 
 type TrojanOption struct {
@@ -73,6 +81,21 @@ func (t *Trojan) StreamConn(c net.Conn, metadata *C.Metadata) (net.Conn, error) 
 }
 
 func (t *Trojan) DialContext(ctx context.Context, metadata *C.Metadata) (net.Conn, error) {
+	// gun transport
+	if t.transport != nil {
+		c, err := gun.StreamGunWithTransport(t.transport, t.gunConfig)
+		if err != nil {
+			return nil, err
+		}
+
+		if err = t.instance.WriteHeader(c, trojan.CommandTCP, serializesSocksAddr(metadata)); err != nil {
+			c.Close()
+			return nil, err
+		}
+		sc := stats.NewStatsConn(c)
+		return t.StreamConn(sc, metadata)
+	}
+
 	c, err := dialer.DialContext(ctx, "tcp", t.addr)
 	if err != nil {
 		return nil, fmt.Errorf("%s connect error: %w", t.addr, err)
@@ -83,17 +106,27 @@ func (t *Trojan) DialContext(ctx context.Context, metadata *C.Metadata) (net.Con
 }
 
 // TODO: grpc transport
-func (t *Trojan) DialUDP(metadata *C.Metadata) (net.PacketConn, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
-	defer cancel()
-	c, err := dialer.DialContext(ctx, "tcp", t.addr)
-	if err != nil {
-		return nil, fmt.Errorf("%s connect error: %w", t.addr, err)
-	}
-	tcpKeepAlive(c)
-	c, err = t.instance.StreamConn(c)
-	if err != nil {
-		return nil, fmt.Errorf("%s connect error: %w", t.addr, err)
+func (t *Trojan) DialUDP(metadata *C.Metadata) (_ net.PacketConn, err error) {
+	var c net.Conn
+
+	// grpc transport
+	if t.transport != nil {
+		c, err = gun.StreamGunWithTransport(t.transport, t.gunConfig)
+		if err != nil {
+			return nil, fmt.Errorf("%s connect error: %w", t.addr, err)
+		}
+	} else {
+		ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
+		defer cancel()
+		c, err := dialer.DialContext(ctx, "tcp", t.addr)
+		if err != nil {
+			return nil, fmt.Errorf("%s connect error: %w", t.addr, err)
+		}
+		tcpKeepAlive(c)
+		c, err = t.instance.StreamConn(c)
+		if err != nil {
+			return nil, fmt.Errorf("%s connect error: %w", t.addr, err)
+		}
 	}
 
 	err = t.instance.WriteHeader(c, trojan.CommandUDP, serializesSocksAddr(metadata))
@@ -126,7 +159,7 @@ func NewTrojan(option *TrojanOption) (*Trojan, error) {
 		tOption.ServerName = option.SNI
 	}
 
-	return &Trojan{
+	t := &Trojan{
 		Base: &Base{
 			name: option.Name,
 			addr: addr,
@@ -134,5 +167,31 @@ func NewTrojan(option *TrojanOption) (*Trojan, error) {
 		},
 		instance: trojan.New(tOption),
 		option:   option,
-	}, nil
+	}
+
+	// if option.Network == "grpc" {
+	// 	dialFn := func(network, addr string) (net.Conn, error) {
+	// 		c, err := dialer.DialContext(context.Background(), "tcp", t.addr)
+	// 		if err != nil {
+	// 			return nil, fmt.Errorf("%s connect error: %s", t.addr, err.Error())
+	// 		}
+	// 		tcpKeepAlive(c)
+	// 		return c, nil
+	// 	}
+
+	// 	tlsConfig := &tls.Config{
+	// 		NextProtos:         option.ALPN,
+	// 		MinVersion:         tls.VersionTLS12,
+	// 		InsecureSkipVerify: tOption.SkipCertVerify,
+	// 		ServerName:         tOption.ServerName,
+	// 	}
+	// 	t.transport = gun.NewHTTP2Client(dialFn, tlsConfig)
+	// 	t.gunTLSConfig = tlsConfig
+	// 	t.gunConfig = &gun.Config{
+	// 		ServiceName: option.GrpcOpts.GrpcServiceName,
+	// 		Host:        tOption.ServerName,
+	// 	}
+	// }
+
+	return t, nil
 }

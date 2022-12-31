@@ -26,7 +26,7 @@ var upgrader = websocket.Upgrader{}
 
 func ServeFile(port int) error {
 	// TODO: Mobile UI
-	http.Handle("/", http.FileServer(http.FS(guiStatic)))
+	http.HandleFunc("/", serverFile)
 	http.HandleFunc("/test", updateTest)
 	http.HandleFunc("/getSubscriptionLink", getSubscriptionLink)
 	http.HandleFunc("/getSubscription", getSubscription)
@@ -45,6 +45,12 @@ func ServeFile(port int) error {
 // 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 // 	return err
 // }
+
+func serverFile(w http.ResponseWriter, r *http.Request) {
+	h := http.FileServer(http.FS(guiStatic))
+	r.URL.Path = "gui/dist" + r.URL.Path
+	h.ServeHTTP(w, r)
+}
 
 func updateTest(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
@@ -76,7 +82,7 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					continue
 				}
-				key := fmt.Sprintf("%s%d%s%s", cfg.Server, cfg.Port, cfg.Password, cfg.Protocol)
+				key := fmt.Sprintf("%s%d%s%s%s", cfg.Server, cfg.Port, cfg.Password, cfg.Protocol, cfg.SNI)
 				if _, ok := uniqueMap[key]; !ok {
 					uniqueLinks = append(uniqueLinks, link)
 					uniqueMap[key] = struct{}{}

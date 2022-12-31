@@ -139,6 +139,13 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 				}
 			}
 		}
+		// grpc
+		if trojanOption.Network == "grpc" {
+			query = append(query, "type=grpc")
+			if len(trojanOption.GrpcOpts.GrpcServiceName) > 0 {
+				query = append(query, fmt.Sprintf("serviceName=%s", trojanOption.GrpcOpts.GrpcServiceName))
+			}
+		}
 
 		if len(query) > 0 {
 			link = fmt.Sprintf("%s?%s", link, strings.Join(query, "&"))

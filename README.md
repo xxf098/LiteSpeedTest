@@ -50,10 +50,13 @@ Run as a http/socks5 proxy:
 
 ### Build
 ```bash
-    #require go>=1.18.1
+    # require go>=1.18.1, nodejs >= 14
+    # build frontend
+    cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./web/gui/wasm_exec.js
+    npm install --prefix web/gui build
+    npm run --prefix web/gui build
     GOOS=js GOARCH=wasm go get -u ./...
-    cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./web/wasm_exec.js
-    GOOS=js GOARCH=wasm go build -o ./web/main.wasm ./wasm
+    GOOS=js GOARCH=wasm go build -o ./web/gui/dist/main.wasm ./wasm
     go build -o lite
 ```
 

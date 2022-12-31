@@ -1,0 +1,126 @@
+.el-scrollbar__wrap {
+    overflow-x: hidden!important;
+}
+
+.truncate_remark {
+    width: 330px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;   
+}
+
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: fixed;
+    top: 68px;
+    right: 4.5%;
+    width: 22%;
+    z-index: 1000;
+    transition: all 0.5s;
+}
+
+.dashboard.collapsed {
+    width: 6%;
+}
+
+/* .dashboard .progress:hover,
+.dashboard .category:hover {
+    transform: scale(1.05);
+    transition: 0.2s;
+} */
+
+.dashboard .progress {
+    position: relative;
+}
+
+.dashboard  .icon {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, 100%);
+    left: 0px;
+    z-index: 9999;
+
+}
+
+.dashboard .icon i {
+    font-size: 30px;
+    padding: 10x;
+    border-radius: 50%;
+    text-align: center;
+    box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard .icon:hover i {
+    color: #66b1ff;
+}
+
+.dashboard .progress .progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background-color: #66b1ff;
+}
+
+.dashboard .progress div {
+    z-index: 1;
+}
+
+.dashboard .progress .progress-inner {
+    display: flex;
+    justify-content: space-between;
+}
+
+
+.dashboard .progress .progress-inner i,
+.dashboard .traffic i,
+.dashboard .time i {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    font-size: 1.8rem;
+    font-weight: 500;
+    z-index: 1;
+}
+
+.progress-item div,
+.dashboard .traffic div,
+.dashboard .time div {
+    color: #555;
+}
+
+.progress-item span,
+.dashboard .traffic span,
+.dashboard .time span {
+    font-size: 1.5rem;
+    font-weight: bolder;
+    color: black;
+}
+
+.dashboard ul {
+    display: flex;
+    list-style: none;
+    justify-content: space-between;
+    padding: 0;
+    margin: 0;
+}
+
+.dashboard ul li {
+    padding: 0;
+    margin: 0;
+}
+
+.dashboard ul li div {
+    margin-bottom: 4px;
+    color: #666;
+}
+
+.dashboard ul li span {
+    font-size: 1.5rem;
+    font-weight: bolder;
+    color: black;
+}

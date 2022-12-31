@@ -39,29 +39,28 @@ jobs:
         echo "::set-output name=ASSET_NAME::$_NAME"
         echo "ASSET_NAME=$_NAME" >> $GITHUB_ENV    
     
-    # Setup Go
-    - name: Setup Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: ^1.18.1 # The Go version to download (if necessary) and use.
-    
     - name: Check out code into the Go module directory
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
-    - name: Cache go module
-      uses: actions/cache@v2
+    - name: Setup Go
+      uses: actions/setup-go@v3
       with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-      
+        go-version: 1.19
+        cache: true
+        
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16      
     
     # Install all the dependencies
     - name: Install dependencies
       run: |
         go version
+        cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./web/gui/wasm_exec.js
+        npm install --prefix web/gui build
+        NODE_ENV=production  npm run --prefix web/gui build
         GOOS=js GOARCH=wasm go get -u ./...
-        GOOS=js GOARCH=wasm go build -o ./web/main.wasm ./wasm
+        GOOS=js GOARCH=wasm go build -o ./web/gui/dist/main.wasm ./wasm
     
         
     # Run build of the application

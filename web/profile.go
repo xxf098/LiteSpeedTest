@@ -53,12 +53,22 @@ func getSubscriptionLinks(link string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	dataStr := string(data)
 	if isYamlFile(link) {
-		return parseClash(string(data))
+		return parseClash(dataStr)
 	}
-	msg, err := utils.DecodeB64(string(data))
+	msg, err := utils.DecodeB64(dataStr)
 	if err != nil {
-		return parseClash(string(data))
+		if strings.Contains(dataStr, "proxies:") {
+			return parseClash(dataStr)
+		} else if strings.Contains(dataStr, "vmess://") ||
+			strings.Contains(dataStr, "trojan://") ||
+			strings.Contains(dataStr, "ssr://") ||
+			strings.Contains(dataStr, "ss://") {
+			return parseProfiles(dataStr)
+		} else {
+			return []string{}, err
+		}
 	}
 	return ParseLinks(msg)
 }
@@ -457,15 +467,22 @@ func (p *ProfileTest) testAll(ctx context.Context) (render.Nodes, error) {
 	// for i := range p.Links {
 	// 	p.WriteMessage(gotserverMsg(i, p.Links[i], p.Options.GroupName))
 	// }
+	step := 9
+	if linksCount > 200 {
+		step = linksCount / 20
+		if step > 50 {
+			step = 50
+		}
+	}
 	for i := 0; i < linksCount; {
-		end := i + 9
+		end := i + step
 		if end > linksCount {
 			end = linksCount
 		}
 		links := p.Links[i:end]
 		msg := gotserversMsg(i, links, p.Options.GroupName)
 		p.WriteMessage(msg)
-		i += 9
+		i += step
 	}
 	guard := make(chan int, p.Options.Concurrency)
 	nodeChan := make(chan render.Node, linksCount)
@@ -571,6 +588,7 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 		remarks = fmt.Sprintf("Profile %d", index)
 	}
 	elapse, err := p.pingLink(index, link)
+	log.Printf("%d %s elapse: %dms", index, remarks, elapse)
 	if err != nil {
 		node := render.Node{
 			Id:       index,
@@ -607,7 +625,7 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 				if max < speed {
 					max = speed
 				}
-				log.Printf("%s recv: %s", remarks, download.ByteCountIEC(speed))
+				log.Printf("%d %s recv: %s", index, remarks, download.ByteCountIEC(speed))
 				err = p.WriteMessage(getMsgByte(index, "gotspeed", avg, max, speed))
 				if trafficChan != nil {
 					trafficChan <- speed
