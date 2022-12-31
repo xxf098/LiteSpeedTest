@@ -588,7 +588,7 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 		remarks = fmt.Sprintf("Profile %d", index)
 	}
 	elapse, err := p.pingLink(index, link)
-	log.Printf("%s elapse: %dms", remarks, elapse)
+	log.Printf("%d %s elapse: %dms", index, remarks, elapse)
 	if err != nil {
 		node := render.Node{
 			Id:       index,
@@ -625,7 +625,7 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 				if max < speed {
 					max = speed
 				}
-				log.Printf("%s recv: %s", remarks, download.ByteCountIEC(speed))
+				log.Printf("%d %s recv: %s", index, remarks, download.ByteCountIEC(speed))
 				err = p.WriteMessage(getMsgByte(index, "gotspeed", avg, max, speed))
 				if trafficChan != nil {
 					trafficChan <- speed
