@@ -49,14 +49,15 @@ func getSubscriptionLinks(link string) ([]string, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+	if isYamlFile(link) {
+		scanner := bufio.NewScanner(resp.Body)
+		return scanClashProxies(scanner, true)
+	}
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 	dataStr := string(data)
-	if isYamlFile(link) {
-		return parseClash(dataStr)
-	}
 	msg, err := utils.DecodeB64(dataStr)
 	if err != nil {
 		if strings.Contains(dataStr, "proxies:") {
