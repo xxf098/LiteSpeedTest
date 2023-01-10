@@ -192,19 +192,17 @@ func scanClashProxies(scanner *bufio.Scanner, greedy bool) ([]string, error) {
 	for scanner.Scan() {
 		b := scanner.Bytes()
 		trimLine := strings.TrimSpace(string(b))
-		if trimLine == "proxy-groups:" || trimLine == "rules:" || trimLine == "Proxy Group:" {
-			break
-		}
-		if proxiesStart {
-			if _, err := config.ParseBaseProxy(trimLine); err != nil {
-				continue
-			}
-		}
 		if !proxiesStart && (trimLine == "proxies:" || trimLine == "Proxy:") {
 			proxiesStart = true
 			b = []byte("proxies:")
 		}
 		if proxiesStart {
+			if trimLine == "proxy-groups:" || trimLine == "rules:" || trimLine == "Proxy Group:" {
+				break
+			}
+			if _, err := config.ParseBaseProxy(trimLine); err != nil {
+				continue
+			}
 			data = append(data, b...)
 			data = append(data, byte('\n'))
 		}
