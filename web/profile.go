@@ -50,8 +50,7 @@ func getSubscriptionLinks(link string) ([]string, error) {
 	}
 	defer resp.Body.Close()
 	if isYamlFile(link) {
-		scanner := bufio.NewScanner(resp.Body)
-		return scanClashProxies(scanner, true)
+		return scanClashProxies(resp.Body, true)
 	}
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -141,14 +140,13 @@ func parseClashProxies(input string) ([]string, error) {
 	if !strings.Contains(input, "{") {
 		return []string{}, nil
 	}
-	scanner := bufio.NewScanner(strings.NewReader(input))
-	return scanClashProxies(scanner, true)
+	return scanClashProxies(strings.NewReader(input), true)
 }
 
-//
-func scanClashProxies(scanner *bufio.Scanner, greedy bool) ([]string, error) {
+func scanClashProxies(r io.Reader, greedy bool) ([]string, error) {
 	proxiesStart := false
 	data := []byte{}
+	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		b := scanner.Bytes()
 		trimLine := strings.TrimSpace(string(b))
@@ -177,8 +175,7 @@ func parseClashFileByLine(filepath string) ([]string, error) {
 		return nil, err
 	}
 	defer file.Close()
-	scanner := bufio.NewScanner(file)
-	return scanClashProxies(scanner, false)
+	return scanClashProxies(file, false)
 }
 
 func parseClashByte(data []byte) ([]string, error) {
