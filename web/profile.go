@@ -167,7 +167,7 @@ func scanClashProxies(scanner *bufio.Scanner, greedy bool) ([]string, error) {
 	return parseClashByte(data)
 }
 
-func parseClashByLine(filepath string) ([]string, error) {
+func parseClashFileByLine(filepath string) ([]string, error) {
 	file, err := os.Open(filepath)
 	if err != nil {
 		return nil, err
@@ -192,7 +192,7 @@ func parseFile(filepath string) ([]string, error) {
 	}
 	// clash
 	if isYamlFile(filepath) {
-		return parseClashByLine(filepath)
+		return parseClashFileByLine(filepath)
 	}
 	data, err := ioutil.ReadFile(filepath)
 	if err != nil {
@@ -203,7 +203,7 @@ func parseFile(filepath string) ([]string, error) {
 	if err != nil && len(data) > 2048 {
 		preview := string(data[:2048])
 		if strings.Contains(preview, "proxies:") {
-			return parseClashByLine(filepath)
+			return parseClashFileByLine(filepath)
 		}
 		if strings.Contains(preview, "vmess://") ||
 			strings.Contains(preview, "trojan://") ||

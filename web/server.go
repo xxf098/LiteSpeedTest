@@ -396,7 +396,7 @@ func getSubscription(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeClash(filePath string) ([]byte, error) {
-	links, err := parseClashByLine(filePath)
+	links, err := parseClashFileByLine(filePath)
 	if err != nil {
 		//
 		return nil, err
