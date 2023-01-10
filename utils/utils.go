@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"runtime"
 	"strconv"
+	"strings"
 	"unsafe"
 
 	"github.com/xxf098/lite-proxy/common"
@@ -63,6 +64,18 @@ func U16toa(i uint16) string {
 func IsUrl(message string) bool {
 	matched, err := regexp.MatchString(`^(?:https?:\/\/)(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)`, message)
 	return matched && err == nil
+}
+
+func IsFilePath(message string) bool {
+	if len(message) < 1024 &&
+		!strings.HasPrefix(message, "vmess://") &&
+		!strings.HasPrefix(message, "trojan://") &&
+		!strings.HasPrefix(message, "ssr://") &&
+		!strings.HasPrefix(message, "ss://") {
+		_, err := os.Stat(message)
+		return err == nil
+	}
+	return false
 }
 
 func UnsafeGetBytes(s string) []byte {

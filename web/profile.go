@@ -82,6 +82,10 @@ func ParseLinks(message string) ([]string, error) {
 	if utils.IsUrl(message) {
 		return getSubscriptionLinks(message)
 	}
+	// check is file path
+	if utils.IsFilePath(message) {
+		return parseFile(message)
+	}
 	var links []string
 	var err error
 	for _, fn := range []parseFunc{parseProfiles, parseBase64, parseClash, parseFile} {
