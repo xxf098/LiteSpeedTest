@@ -2,6 +2,7 @@ package web
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -234,7 +235,7 @@ func parseFile(filepath string) ([]string, error) {
 	if err != nil && len(data) > 2048 {
 		preview := string(data[:2048])
 		if strings.Contains(preview, "proxies:") {
-			return parseClashFileByLine(filepath)
+			return scanClashProxies(bytes.NewReader(data), true)
 		}
 		if strings.Contains(preview, "vmess://") ||
 			strings.Contains(preview, "trojan://") ||
