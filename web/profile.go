@@ -35,6 +35,17 @@ const (
 	JSON_OUTPUT
 )
 
+type PAESE_TYPE int
+
+const (
+	PARSE_ANY PAESE_TYPE = iota
+	PARSE_URL
+	PARSE_FILE
+	PARSE_BASE64
+	PARSE_CLASH
+	PARSE_PROFILE
+)
+
 // support proxy
 // concurrency setting
 // as subscription server
@@ -75,15 +86,34 @@ func getSubscriptionLinks(link string) ([]string, error) {
 
 type parseFunc func(string) ([]string, error)
 
+type ParseOption struct {
+	Type PAESE_TYPE
+}
+
 // api
 func ParseLinks(message string) ([]string, error) {
+	opt := ParseOption{Type: PARSE_ANY}
+	return ParseLinksWithOption(message, opt)
+}
+
+// api
+func ParseLinksWithOption(message string, opt ParseOption) ([]string, error) {
 	// matched, err := regexp.MatchString(`^(?:https?:\/\/)(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)`, message)
-	if utils.IsUrl(message) {
+	if opt.Type == PARSE_URL || utils.IsUrl(message) {
 		return getSubscriptionLinks(message)
 	}
 	// check is file path
-	if utils.IsFilePath(message) {
+	if opt.Type == PARSE_FILE || utils.IsFilePath(message) {
 		return parseFile(message)
+	}
+	if opt.Type == PARSE_BASE64 {
+		return parseBase64(message)
+	}
+	if opt.Type == PARSE_CLASH {
+		return parseClash(message)
+	}
+	if opt.Type == PARSE_PROFILE {
+		return parseProfiles(message)
 	}
 	var links []string
 	var err error
