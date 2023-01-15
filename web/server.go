@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -33,7 +34,7 @@ func ServeFile(port int) error {
 	http.HandleFunc("/generateResult", generateResult)
 	log.Printf("Start server at http://127.0.0.1:%d\n", port)
 	if ipAddr, err := localIP(); err == nil {
-		log.Printf("Start server at http://%s:%d", ipAddr.String(), port)
+		log.Printf("Start server at http://%s", net.JoinHostPort(ipAddr.String(), strconv.Itoa(port)))
 	}
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	return err
