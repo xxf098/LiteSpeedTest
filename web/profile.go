@@ -101,6 +101,7 @@ func ParseLinks(message string) ([]string, error) {
 func ParseLinksWithOption(message string, opt ParseOption) ([]string, error) {
 	// matched, err := regexp.MatchString(`^(?:https?:\/\/)(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)`, message)
 	if opt.Type == PARSE_URL || utils.IsUrl(message) {
+		log.Println(message)
 		return getSubscriptionLinks(message)
 	}
 	// check is file path
