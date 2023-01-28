@@ -18,7 +18,7 @@
                                     <el-form-item label="链接：" v-if="option<2">
                                         <el-col :span="8">
                                             <el-input v-model="subscription" style="width: 800px"
-                                            @keyup.enter.native="submit" placeholder="支持 V2Ray/Trojan/SS/SSR/Clash 订阅链接，多个节点链接及文件路径的批量测速"
+                                            @keyup.enter.native="submit" placeholder="支持 V2Ray/Trojan/SS/SSR/Clash 订阅链接，订阅文件及节点链接的批量测速"
                                             :disabled="loading||upload" clearable></el-input>
                                         </el-col>
                                         <el-col :span="12" ></el-col>
