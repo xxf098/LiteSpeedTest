@@ -60,6 +60,9 @@ func (hc *httpConn) Write(b []byte) (int, error) {
 	u := fmt.Sprintf("http://%s%s", host, path)
 	req, _ := http.NewRequest("GET", u, bytes.NewBuffer(b))
 	for key, list := range hc.cfg.Headers {
+		if list == nil {
+			continue
+		}
 		req.Header.Set(key, list[rand.Intn(len(list))])
 	}
 	req.ContentLength = int64(len(b))
