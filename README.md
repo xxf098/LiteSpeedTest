@@ -1,7 +1,14 @@
 # LiteSpeedTest
 
 LiteSpeedTest is a simple tool for batch test ss/ssr/v2ray/trojan/clash servers.   
-Support tested by single link, multiple links, subscription link and file path.
+Feature
+- 支持ss/ssr/v2ray/trojan/clash订阅链接
+- 支持ss/ssr/v2ray/trojan/clash节点链接
+- 支持ss/ssr/v2ray/trojan/clash订阅或节点文件
+- support ss/ssr/v2ray/trojan/clash subscription url,
+- support ss/ssr/v2ray/trojan/clash profile links
+- support ss/ssr/v2ray/trojan/clash subscription or profile file, 
+
 
  ![build](https://github.com/xxf098/LiteSpeedTest/actions/workflows/test.yaml/badge.svg?branch=master&event=push) 
 
