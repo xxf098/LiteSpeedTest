@@ -333,14 +333,14 @@ func ShadowrocketVmessLinkToVmessConfig(link string, resolveip bool) (*VmessConf
 
 	mhp := strings.SplitN(string(b), ":", 3)
 	if len(mhp) != 3 {
-		return nil, fmt.Errorf("vmess unreconized: method:host:port -- %v", mhp)
+		return nil, fmt.Errorf("vmess unrecognized: method:host:port -- %v", mhp)
 	}
 	config.Security = mhp[0]
 	// mhp[0] is the encryption method
 	config.Port = []byte(mhp[2])
 	idadd := strings.SplitN(mhp[1], "@", 2)
 	if len(idadd) != 2 {
-		return nil, fmt.Errorf("vmess unreconized: id@addr -- %v", idadd)
+		return nil, fmt.Errorf("vmess unrecognized: id@addr -- %v", idadd)
 	}
 	config.ID = idadd[0]
 	config.Add = idadd[1]
