@@ -1,7 +1,6 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -204,11 +203,7 @@ func parseProxies(cfg *ClashRawConfig) ([]string, error) {
 	for idx, mapping := range cfg.Proxy {
 		link, err := ParseProxy(mapping, cfg.NamePrefix)
 		if err != nil {
-			if b, err1 := json.Marshal(mapping); err1 == nil {
-				log.Printf("parseProxies %d: %s | %s", idx, err.Error(), string(b))
-			} else {
-				log.Printf("parseProxies %d: %s", idx, err.Error())
-			}
+			log.Printf("parseProxies %d: %s", idx, err.Error())
 			continue
 		}
 		proxyList = append(proxyList, link)

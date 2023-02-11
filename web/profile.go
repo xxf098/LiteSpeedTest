@@ -27,7 +27,10 @@ import (
 	"github.com/xxf098/lite-proxy/web/render"
 )
 
-var ErrInvalidData = errors.New("invalid data")
+var (
+	ErrInvalidData = errors.New("invalid data")
+	regProfile     = regexp.MustCompile(`((?i)vmess://(\S+?)@(\S+?):([0-9]{2,5})/([?#][^\s]+))|((?i)vmess://[a-zA-Z0-9+_/=-]+([?#][^\s]+)?)|((?i)ssr://[a-zA-Z0-9+_/=-]+)|((?i)(vless|ss|trojan)://(\S+?)@(\S+?):([0-9]{2,5})([?#][^\s]+))|((?i)(ss)://[a-zA-Z0-9+_/=-]+([?#][^\s]+))`)
+)
 
 const (
 	PIC_BASE64 = iota
@@ -141,8 +144,8 @@ func parseProfiles(data string) ([]string, error) {
 		}
 		data = strings.Join(links, "\n")
 	}
-	reg := regexp.MustCompile(`((?i)vmess://[a-zA-Z0-9+_/=-]+([?#][^\s]+)?)|((?i)ssr://[a-zA-Z0-9+_/=-]+)|((?i)(vless|ss|trojan)://(\S+?)@(\S+?):([0-9]{2,5})([?#][^\s]+))|((?i)(ss)://[a-zA-Z0-9+_/=-]+([?#][^\s]+))`)
-	matches := reg.FindAllStringSubmatch(data, -1)
+	// reg := regexp.MustCompile(`((?i)vmess://(\S+?)@(\S+?):([0-9]{2,5})/([?#][^\s]+))|((?i)vmess://[a-zA-Z0-9+_/=-]+([?#][^\s]+)?)|((?i)ssr://[a-zA-Z0-9+_/=-]+)|((?i)(vless|ss|trojan)://(\S+?)@(\S+?):([0-9]{2,5})([?#][^\s]+))|((?i)(ss)://[a-zA-Z0-9+_/=-]+([?#][^\s]+))`)
+	matches := regProfile.FindAllStringSubmatch(data, -1)
 	linksLen, matchesLen := len(links), len(matches)
 	if linksLen < matchesLen {
 		links = make([]string, matchesLen)
@@ -150,7 +153,13 @@ func parseProfiles(data string) ([]string, error) {
 		links = links[:len(matches)]
 	}
 	for index, match := range matches {
-		links[index] = match[0]
+		link := match[0]
+		if config.RegShadowrocketVmess.MatchString(link) {
+			if l, err := config.ShadowrocketLinkToVmessLink(link); err == nil {
+				link = l
+			}
+		}
+		links[index] = link
 	}
 	return links, nil
 }
