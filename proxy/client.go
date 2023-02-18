@@ -21,11 +21,10 @@ func (c Client) DialConn(addr *tunnel.Address, _ tunnel.Tunnel) (net.Conn, error
 		networkType = C.UDP
 	}
 	meta := &C.Metadata{
-		NetWork:  networkType,
-		Type:     0,
-		SrcPort:  "",
-		AddrType: int(addr.AddressType),
-		DstPort:  fmt.Sprintf("%d", addr.Port),
+		NetWork: networkType,
+		Type:    0,
+		SrcPort: "",
+		DstPort: fmt.Sprintf("%d", addr.Port),
 	}
 	switch addr.AddressType {
 	case tunnel.IPv4:

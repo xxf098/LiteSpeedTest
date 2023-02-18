@@ -5,14 +5,12 @@ import (
 	"net"
 	"strconv"
 	"time"
+
+	"github.com/xxf098/lite-proxy/transport/socks5"
 )
 
 // Socks addr type
 const (
-	AtypIPv4       = 1
-	AtypDomainName = 3
-	AtypIPv6       = 4
-
 	TCP NetWork = iota
 	UDP
 
@@ -64,15 +62,14 @@ func (t Type) MarshalJSON() ([]byte, error) {
 
 // Metadata is used to store connection address
 type Metadata struct {
-	NetWork  NetWork `json:"network"` // tcp =3 udp = 4
-	Type     Type    `json:"type"`
-	SrcIP    net.IP  `json:"sourceIP"`
-	DstIP    net.IP  `json:"destinationIP"`
-	SrcPort  string  `json:"sourcePort"`
-	DstPort  string  `json:"destinationPort"`
-	AddrType int     `json:"-"` // IPv4=1 DomainName=3 IPv6=4
-	Host     string  `json:"host"`
-	Timeout  time.Duration
+	NetWork NetWork `json:"network"` // tcp =3 udp = 4
+	Type    Type    `json:"type"`
+	SrcIP   net.IP  `json:"sourceIP"`
+	DstIP   net.IP  `json:"destinationIP"`
+	SrcPort string  `json:"sourcePort"`
+	DstPort string  `json:"destinationPort"`
+	Host    string  `json:"host"`
+	Timeout time.Duration
 }
 
 func (m *Metadata) RemoteAddress() string {
@@ -81,6 +78,18 @@ func (m *Metadata) RemoteAddress() string {
 
 func (m *Metadata) SourceAddress() string {
 	return net.JoinHostPort(m.SrcIP.String(), m.SrcPort)
+}
+
+// IPv4=1 DomainName=3 IPv6=4
+func (m *Metadata) AddrType() int {
+	switch true {
+	case m.Host != "" || m.DstIP == nil:
+		return socks5.AtypDomainName
+	case m.DstIP.To4() != nil:
+		return socks5.AtypIPv4
+	default:
+		return socks5.AtypIPv6
+	}
 }
 
 func (m *Metadata) Resolved() bool {
