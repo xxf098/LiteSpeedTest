@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -107,7 +107,7 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 }
 
 func readConfig(configPath string) (*ProfileTestOptions, error) {
-	data, err := ioutil.ReadFile(configPath)
+	data, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, err
 	}
@@ -218,7 +218,7 @@ func generateResult(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Please send a request body", 400)
 		return
 	}
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Please send a request body", 400)
 		return
@@ -315,7 +315,7 @@ func getSubscriptionLink(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid Parameter", 400)
 		return
 	}
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Invalid Parameter", 400)
 		return
@@ -375,7 +375,7 @@ func getSubscription(w http.ResponseWriter, r *http.Request) {
 		w.Write(data)
 		return
 	}
-	data, err := ioutil.ReadFile(filePath)
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return

@@ -4,9 +4,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -485,7 +485,7 @@ func VmessLinkToVmessConfigIP(link string, resolveip bool) (*VmessConfig, error)
 }
 
 func ToVmessOption(path string) (*outbound.VmessOption, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
