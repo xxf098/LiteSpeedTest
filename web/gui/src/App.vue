@@ -1054,6 +1054,7 @@ export default {
                     break;
                 case "eof":
                     this.loading = false;
+                    this.$notify.success("测试完成");
                     console.log(this.result)
                     break;
                 case "retest":
