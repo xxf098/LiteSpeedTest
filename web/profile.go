@@ -584,9 +584,17 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 		link = p.Links[index]
 		link = strings.SplitN(link, "^", 2)[0]
 	}
-	protocol, remarks, err := GetRemarks(link)
+	cfg, err := config.Link2Config(link)
+	if err != nil {
+		return err
+	}
+	remarks := cfg.Remarks
 	if err != nil || remarks == "" {
 		remarks = fmt.Sprintf("Profile %d", index)
+	}
+	protocol := cfg.Protocol
+	if (cfg.Protocol == "vmess" || cfg.Protocol == "trojan") && cfg.Net != "" {
+		protocol = fmt.Sprintf("%s/%s", cfg.Protocol, cfg.Net)
 	}
 	elapse, err := p.pingLink(index, link)
 	log.Printf("%d %s elapse: %dms", index, remarks, elapse)
