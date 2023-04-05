@@ -37,6 +37,7 @@ const (
 	PIC_PATH
 	PIC_NONE
 	JSON_OUTPUT
+	TEXT_OUTPUT
 )
 
 type PAESE_TYPE int
@@ -319,7 +320,8 @@ type ProfileTestOptions struct {
 	FontSize        int           `json:"fontSize"`
 	Theme           string        `json:"theme"`
 	Unique          bool          `json:"unique"`
-	GeneratePicMode int           `json:"generatePicMode"` // 0: base64 1:pic path 2: no pic 3: json
+	GeneratePicMode int           `json:"generatePicMode"` // 0: base64 1:pic path 2: no pic 3: json @deprecated use outputMode
+	OutputMode      int           `json:"outputMode"`
 }
 
 type JSONOutput struct {
@@ -525,15 +527,17 @@ func (p *ProfileTest) testAll(ctx context.Context) (render.Nodes, error) {
 	}
 	close(nodeChan)
 
-	if p.Options.GeneratePicMode == PIC_NONE {
+	if p.Options.OutputMode == PIC_NONE {
 		return nodes, nil
 	}
 
 	// sort nodes
 	nodes.Sort(p.Options.SortMethod)
 	// save json
-	if p.Options.GeneratePicMode == JSON_OUTPUT {
+	if p.Options.OutputMode == JSON_OUTPUT {
 		p.saveJSON(nodes, traffic, duration, successCount, linksCount)
+	} else if p.Options.OutputMode == TEXT_OUTPUT {
+		p.saveText(nodes)
 	} else {
 		// render the result to pic
 		p.renderPic(nodes, traffic, duration, successCount, linksCount)
@@ -550,7 +554,7 @@ func (p *ProfileTest) renderPic(nodes render.Nodes, traffic int64, duration stri
 	}
 	// msg := fmt.Sprintf("Total Traffic : %s. Total Time : %s. Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
 	msg := table.FormatTraffic(download.ByteCountIECTrim(traffic), duration, fmt.Sprintf("%d/%d", successCount, linksCount))
-	if p.Options.GeneratePicMode == PIC_PATH {
+	if p.Options.OutputMode == PIC_PATH {
 		table.Draw("out.png", msg)
 		p.WriteMessage(getMsgByte(-1, "picdata", "out.png"))
 		return nil
@@ -574,7 +578,16 @@ func (p *ProfileTest) saveJSON(nodes render.Nodes, traffic int64, duration strin
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile("out.json", data, 0644)
+	return ioutil.WriteFile("output.json", data, 0644)
+}
+
+func (p *ProfileTest) saveText(nodes render.Nodes) error {
+	links := []string{}
+	for _, node := range nodes {
+		links = append(links, node.Link)
+	}
+	data := []byte(strings.Join(links, "\n"))
+	return ioutil.WriteFile("output.txt", data, 0644)
 }
 
 func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeChan chan<- render.Node, trafficChan chan<- int64) error {
