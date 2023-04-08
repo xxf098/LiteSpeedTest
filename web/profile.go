@@ -584,7 +584,9 @@ func (p *ProfileTest) saveJSON(nodes render.Nodes, traffic int64, duration strin
 func (p *ProfileTest) saveText(nodes render.Nodes) error {
 	links := []string{}
 	for _, node := range nodes {
-		links = append(links, node.Link)
+		if node.Ping != "0" || node.AvgSpeed > 0 || node.MaxSpeed > 0 {
+			links = append(links, node.Link)
+		}
 	}
 	data := []byte(strings.Join(links, "\n"))
 	return ioutil.WriteFile("output.txt", data, 0644)
