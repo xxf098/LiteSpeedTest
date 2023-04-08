@@ -21,18 +21,18 @@ func main() {
 		log.Fatal("link required")
 	}
 	opts := web.ProfileTestOptions{
-		GroupName:       "Default",
-		SpeedTestMode:   *mode,        //  pingonly speedonly all
-		PingMethod:      "googleping", // googleping
-		SortMethod:      "rspeed",     // speed rspeed ping rping
-		Concurrency:     2,
-		TestMode:        2, // 2: ALLTEST 3: RETEST
-		Subscription:    *link,
-		Language:        "en", // en cn
-		FontSize:        24,
-		Theme:           "rainbow",
-		Timeout:         10 * time.Second,
-		GeneratePicMode: 0, // 0: base64 1:file path 2: no pic
+		GroupName:     "Default",
+		SpeedTestMode: *mode,        //  pingonly speedonly all
+		PingMethod:    "googleping", // googleping
+		SortMethod:    "rspeed",     // speed rspeed ping rping
+		Concurrency:   2,
+		TestMode:      2, // 2: ALLTEST 3: RETEST
+		Subscription:  *link,
+		Language:      "en", // en cn
+		FontSize:      24,
+		Theme:         "rainbow",
+		Timeout:       10 * time.Second,
+		OutputMode:    0, // 0: base64 1:file path 2: no pic 3: json 4: txt
 	}
 	ctx := context.Background()
 	var err error
