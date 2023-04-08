@@ -51,7 +51,7 @@ jobs:
 
     - name: test link
       run: |
-        echo '{"group": "cronjob", "speedtestMode": "all", "pingMethod": "googleping", "sortMethod": "rspeed", "concurrency": 2, "testMode": 2, "subscription": "https://raw.githubusercontent.com/freefq/free/master/v2", "timeout": 16, "language": "en", "fontSize": 24, "theme": "rainbow", "generatePicMode": 3}' > config.json
+        echo '{"group": "cronjob", "speedtestMode": "all", "pingMethod": "googleping", "sortMethod": "rspeed", "concurrency": 2, "testMode": 2, "subscription": "https://raw.githubusercontent.com/freefq/free/master/v2", "timeout": 16, "language": "en", "fontSize": 24, "theme": "rainbow", "outputMode": 3}' > config.json
         ./lite --config config.json --test https://raw.githubusercontent.com/freefq/free/master/v2
         ls
 
