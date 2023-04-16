@@ -417,7 +417,7 @@ func writeShadowrocket(data []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	newLinks := []string{}
+	var newLinks []string
 	for _, link := range links {
 		if strings.HasPrefix(link, "vmess://") && strings.Contains(link, "&") {
 			if newLink, err := config.ShadowrocketLinkToVmessLink(link); err == nil {

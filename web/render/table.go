@@ -79,7 +79,7 @@ type Node struct {
 
 func getNodeHeaders(language string) ([]string, map[string]string) {
 	kvs := map[string]string{}
-	keys := []string{}
+	var keys []string
 	t := reflect.TypeOf(Node{})
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)

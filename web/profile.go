@@ -192,7 +192,7 @@ func parseClashProxies(input string) ([]string, error) {
 
 func scanClashProxies(r io.Reader, greedy bool) ([]string, error) {
 	proxiesStart := false
-	data := []byte{}
+	var data []byte
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		b := scanner.Bytes()
@@ -582,7 +582,7 @@ func (p *ProfileTest) saveJSON(nodes render.Nodes, traffic int64, duration strin
 }
 
 func (p *ProfileTest) saveText(nodes render.Nodes) error {
-	links := []string{}
+	var links []string
 	for _, node := range nodes {
 		if node.Ping != "0" || node.AvgSpeed > 0 || node.MaxSpeed > 0 {
 			links = append(links, node.Link)
