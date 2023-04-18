@@ -1054,8 +1054,7 @@ export default {
                     break;
                 case "eof":
                     this.loading = false;
-                    this.$notify.success("测试完成");
-                    console.log(this.result)
+                    this.$notify.success(`${this.result.length}个节点测试完成`);
                     break;
                 case "retest":
                     item = this.result[id];
