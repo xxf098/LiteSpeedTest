@@ -21,8 +21,9 @@ Run as a speed test tool:
     ./lite -p 10889
     
     # test in command line only mode
-    ./lite --config ./config.json --test https://raw.githubusercontent.com/freefq/free/master/v2
+    ./lite --test https://raw.githubusercontent.com/freefq/free/master/v2
     # test in command line only mode with custom config.
+    ./lite --config config.json --test https://raw.githubusercontent.com/freefq/free/master/v2
     # details can find here https://github.com/xxf098/LiteSpeedTest/blob/master/config.json
     # all config options:
     #       "group":"job",   // group name
@@ -38,7 +39,6 @@ Run as a speed test tool:
 	#       "unique": true,  // remove duplicated value
 	#       "theme":"rainbow", 
 	#       "outputMode": 1  // 0: base64 1: pic path 2: no pic 3: json 4: txt
-    ./lite --config config.json --test https://raw.githubusercontent.com/freefq/free/master/v2
 
 
 Run as a grpc server:
