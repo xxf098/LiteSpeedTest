@@ -105,7 +105,8 @@ type BaseProxy struct {
 
 func ParseBaseProxy(profile string) (*BaseProxy, error) {
 	idx := strings.IndexByte(profile, byte('{'))
-	if idx < 0 {
+	idxLast := strings.LastIndexByte(profile, byte('}'))
+	if idx < 0 || idxLast <= idx {
 		// multiple lines form
 		return nil, nil
 	}

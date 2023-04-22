@@ -4,7 +4,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/xxf098/lite-proxy/common/structure"
@@ -31,7 +33,7 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 			break
 		}
 		auth := fmt.Sprintf("%s:%s", ssOption.Cipher, ssOption.Password)
-		link = fmt.Sprintf("ss://%s@%s:%d", base64.StdEncoding.EncodeToString([]byte(auth)), ssOption.Server, ssOption.Port)
+		link = fmt.Sprintf("ss://%s@%s", base64.StdEncoding.EncodeToString([]byte(auth)), net.JoinHostPort(ssOption.Server, strconv.Itoa(ssOption.Port)))
 		if len(ssOption.Name) > 0 {
 			link = fmt.Sprintf("%s#%s", link, url.QueryEscape(ssOption.Name))
 		}
@@ -42,7 +44,7 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 			break
 		}
 		password := base64.StdEncoding.EncodeToString([]byte(ssrOption.Password))
-		link = fmt.Sprintf("%s:%d:%s:%s:%s:%s", ssrOption.Server, ssrOption.Port, ssrOption.Protocol, ssrOption.Cipher, ssrOption.Obfs, password)
+		link = fmt.Sprintf("%s:%s:%s:%s:%s", net.JoinHostPort(ssrOption.Server, strconv.Itoa(ssrOption.Port)), ssrOption.Protocol, ssrOption.Cipher, ssrOption.Obfs, password)
 		remarks := base64.StdEncoding.EncodeToString([]byte(ssrOption.Name))
 
 		obfsParam := base64.StdEncoding.EncodeToString([]byte(ssrOption.ObfsParam))
@@ -118,7 +120,7 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 			break
 		}
 
-		link = fmt.Sprintf("trojan://%s@%s:%d", trojanOption.Password, trojanOption.Server, trojanOption.Port)
+		link = fmt.Sprintf("trojan://%s@%s", trojanOption.Password, net.JoinHostPort(trojanOption.Server, strconv.Itoa(trojanOption.Port)))
 		query := []string{}
 		// allowInsecure
 		if trojanOption.SkipCertVerify {
@@ -162,7 +164,7 @@ func ParseProxy(mapping map[string]interface{}, namePrefix string) (string, erro
 		if err != nil {
 			break
 		}
-		link = fmt.Sprintf("http://%s@%s:%d", httpOption.Password, httpOption.Server, httpOption.Port)
+		link = fmt.Sprintf("http://%s@%s", httpOption.Password, net.JoinHostPort(httpOption.Server, strconv.Itoa(httpOption.Port)))
 		query := []string{}
 		query = append(query, fmt.Sprintf("tls=%t", httpOption.TLS))
 		if len(httpOption.UserName) > 0 {

@@ -43,12 +43,11 @@ func PingVmess(vmessOption *outbound.VmessOption) (int64, error) {
 		return 0, err
 	}
 	meta := &C.Metadata{
-		NetWork:  0,
-		Type:     0,
-		SrcPort:  "",
-		DstPort:  "80",
-		AddrType: 3,
-		Host:     remoteHost,
+		NetWork: 0,
+		Type:    0,
+		SrcPort: "",
+		DstPort: "80",
+		Host:    remoteHost,
 	}
 	remoteConn, err := vmess.DialContext(ctx, meta)
 	if err != nil {
@@ -134,12 +133,11 @@ func PingTrojan(trojanOption *outbound.TrojanOption) (int64, error) {
 		return 0, err
 	}
 	meta := &C.Metadata{
-		NetWork:  0,
-		Type:     0,
-		SrcPort:  "",
-		DstPort:  "80",
-		AddrType: 3,
-		Host:     remoteHost,
+		NetWork: 0,
+		Type:    0,
+		SrcPort: "",
+		DstPort: "80",
+		Host:    remoteHost,
 	}
 	remoteConn, err := trojan.DialContext(ctx, meta)
 	if err != nil {
@@ -156,12 +154,11 @@ func PingSS(ssOption *outbound.ShadowSocksOption) (int64, error) {
 		return 0, err
 	}
 	meta := &C.Metadata{
-		NetWork:  0,
-		Type:     0,
-		SrcPort:  "",
-		DstPort:  "80",
-		AddrType: 3,
-		Host:     remoteHost,
+		NetWork: 0,
+		Type:    0,
+		SrcPort: "",
+		DstPort: "80",
+		Host:    remoteHost,
 	}
 	remoteConn, err := ss.DialContext(ctx, meta)
 	if err != nil {
@@ -178,12 +175,11 @@ func PingSSR(ssrOption *outbound.ShadowSocksROption) (int64, error) {
 		return 0, err
 	}
 	meta := &C.Metadata{
-		NetWork:  0,
-		Type:     0,
-		SrcPort:  "",
-		DstPort:  "80",
-		AddrType: 3,
-		Host:     remoteHost,
+		NetWork: 0,
+		Type:    0,
+		SrcPort: "",
+		DstPort: "80",
+		Host:    remoteHost,
 	}
 	remoteConn, err := ssr.DialContext(ctx, meta)
 	if err != nil {
@@ -266,13 +262,12 @@ func PingContext(ctx context.Context, option interface{}) (int64, error) {
 	var d outbound.ContextDialer
 	var err error
 	meta := &C.Metadata{
-		NetWork:  0,
-		Type:     C.TEST,
-		SrcPort:  "",
-		DstPort:  "80",
-		AddrType: 3,
-		Host:     remoteHost,
-		Timeout:  tcpTimeout,
+		NetWork: 0,
+		Type:    C.TEST,
+		SrcPort: "",
+		DstPort: "80",
+		Host:    remoteHost,
+		Timeout: tcpTimeout,
 	}
 	if ssOption, ok := option.(*outbound.ShadowSocksOption); ok {
 		d, err = outbound.NewShadowSocks(ssOption)

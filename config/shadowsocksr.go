@@ -2,7 +2,7 @@ package config
 
 import (
 	"errors"
-	"fmt"
+	"net"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -77,7 +77,7 @@ func SSRLinkToSSROption(link string) (*outbound.ShadowSocksROption, error) {
 		remarks, err := utils.DecodeB64(rawQuery.Get("remarks"))
 		if err == nil {
 			if remarks == "" {
-				remarks = fmt.Sprintf("%s:%d", ssrOption.Server, ssrOption.Port)
+				remarks = net.JoinHostPort(ssrOption.Server, strconv.Itoa(ssrOption.Port))
 			}
 			ssrOption.Remarks = remarks
 			ssrOption.Name = remarks

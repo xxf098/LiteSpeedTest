@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
+	"strconv"
 	"time"
 
 	"github.com/xxf098/lite-proxy/config"
@@ -52,7 +54,7 @@ func StartInstance(c Config) (*proxy.Proxy, error) {
 				Attempts: c.Ping,
 				TimeOut:  1200 * time.Millisecond,
 			}
-			info := fmt.Sprintf("%s %s:%d", cfg.Remarks, cfg.Server, cfg.Port)
+			info := fmt.Sprintf("%s %s", cfg.Remarks, net.JoinHostPort(cfg.Server, strconv.Itoa(cfg.Port)))
 			if elapse, err := request.PingLinkInternal(link, opt); err == nil {
 				info = fmt.Sprintf("%s \033[32m%dms\033[0m", info, elapse)
 			} else {

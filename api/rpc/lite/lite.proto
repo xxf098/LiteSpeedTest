@@ -43,7 +43,7 @@ message TestRequest {
   uint32 FontSize = 9;
   string Theme = 10;
   int64 Timeout = 11;
-  uint32 GeneratePicMode = 12; // 0: base64 1:file path 2: no pic
+  uint32 OutputMode = 12; // 0: base64 1:file path 2: no pic 3: json 4: txt
 }
 
 // reply message

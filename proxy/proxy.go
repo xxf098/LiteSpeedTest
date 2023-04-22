@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strconv"
 	"time"
 
 	"github.com/xxf098/lite-proxy/common"
@@ -60,7 +61,7 @@ func (p *Proxy) relayConnLoop() {
 				if networkType == "" {
 					networkType = "tcp"
 				}
-				add := fmt.Sprintf("%s:%d", addr.IP.String(), addr.Port)
+				add := net.JoinHostPort(addr.IP.String(), strconv.Itoa(addr.Port))
 				outbound, err = net.Dial(networkType, add)
 			} else {
 				outbound, err = p.sink.DialConn(addr, nil)

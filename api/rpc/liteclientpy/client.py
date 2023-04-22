@@ -35,7 +35,7 @@ class LiteClient(object):
             FontSize=24,
             Theme="rainbow",
             Timeout=10,
-            GeneratePicMode=0
+            OutputMode=0
             )
         print(f'{message}')
         for response in self.stub.StartTest(message):

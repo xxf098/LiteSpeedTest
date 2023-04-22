@@ -2,6 +2,7 @@ package web
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -26,13 +27,28 @@ import (
 	"github.com/xxf098/lite-proxy/web/render"
 )
 
-var ErrInvalidData = errors.New("invalid data")
+var (
+	ErrInvalidData = errors.New("invalid data")
+	regProfile     = regexp.MustCompile(`((?i)vmess://(\S+?)@(\S+?):([0-9]{2,5})/([?#][^\s]+))|((?i)vmess://[a-zA-Z0-9+_/=-]+([?#][^\s]+)?)|((?i)ssr://[a-zA-Z0-9+_/=-]+)|((?i)(vless|ss|trojan)://(\S+?)@(\S+?):([0-9]{2,5})/?([?#][^\s]+))|((?i)(ss)://[a-zA-Z0-9+_/=-]+([?#][^\s]+))`)
+)
 
 const (
 	PIC_BASE64 = iota
 	PIC_PATH
 	PIC_NONE
 	JSON_OUTPUT
+	TEXT_OUTPUT
+)
+
+type PAESE_TYPE int
+
+const (
+	PARSE_ANY PAESE_TYPE = iota
+	PARSE_URL
+	PARSE_FILE
+	PARSE_BASE64
+	PARSE_CLASH
+	PARSE_PROFILE
 )
 
 // support proxy
@@ -49,14 +65,14 @@ func getSubscriptionLinks(link string) ([]string, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+	if isYamlFile(link) {
+		return scanClashProxies(resp.Body, true)
+	}
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 	dataStr := string(data)
-	if isYamlFile(link) {
-		return parseClash(dataStr)
-	}
 	msg, err := utils.DecodeB64(dataStr)
 	if err != nil {
 		if strings.Contains(dataStr, "proxies:") {
@@ -75,11 +91,35 @@ func getSubscriptionLinks(link string) ([]string, error) {
 
 type parseFunc func(string) ([]string, error)
 
+type ParseOption struct {
+	Type PAESE_TYPE
+}
+
 // api
 func ParseLinks(message string) ([]string, error) {
+	opt := ParseOption{Type: PARSE_ANY}
+	return ParseLinksWithOption(message, opt)
+}
+
+// api
+func ParseLinksWithOption(message string, opt ParseOption) ([]string, error) {
 	// matched, err := regexp.MatchString(`^(?:https?:\/\/)(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)`, message)
-	if utils.IsUrl(message) {
+	if opt.Type == PARSE_URL || utils.IsUrl(message) {
+		log.Println(message)
 		return getSubscriptionLinks(message)
+	}
+	// check is file path
+	if opt.Type == PARSE_FILE || utils.IsFilePath(message) {
+		return parseFile(message)
+	}
+	if opt.Type == PARSE_BASE64 {
+		return parseBase64(message)
+	}
+	if opt.Type == PARSE_CLASH {
+		return parseClash(message)
+	}
+	if opt.Type == PARSE_PROFILE {
+		return parseProfiles(message)
 	}
 	var links []string
 	var err error
@@ -90,51 +130,6 @@ func ParseLinks(message string) ([]string, error) {
 		}
 	}
 	return links, err
-}
-
-// FIXME: return the top n links
-func PeekClash(input string, n int) ([]string, error) {
-	scanner := bufio.NewScanner(strings.NewReader(input))
-	proxiesStart := false
-	data := []byte{}
-	linkCount := 0
-	for scanner.Scan() {
-		b := scanner.Bytes()
-		trimLine := strings.TrimSpace(string(b))
-		if trimLine == "proxy-groups:" || trimLine == "rules:" || trimLine == "Proxy Group:" {
-			break
-		}
-		if proxiesStart {
-			if _, err := config.ParseBaseProxy(trimLine); err != nil {
-				continue
-			}
-			if strings.HasPrefix(trimLine, "-") {
-				if linkCount >= n {
-					break
-				}
-				linkCount += 1
-			}
-			data = append(data, b...)
-			data = append(data, byte('\n'))
-			continue
-		}
-		if !proxiesStart && (trimLine == "proxies:" || trimLine == "Proxy:") {
-			proxiesStart = true
-			b = []byte("proxies:")
-		}
-		data = append(data, b...)
-		data = append(data, byte('\n'))
-	}
-	// fmt.Println(string(data))
-	links, err := parseClashByte(data)
-	if err != nil || len(links) < 1 {
-		return []string{}, err
-	}
-	endIndex := n
-	if endIndex > len(links) {
-		endIndex = len(links)
-	}
-	return links[:endIndex], nil
 }
 
 func parseProfiles(data string) ([]string, error) {
@@ -150,11 +145,22 @@ func parseProfiles(data string) ([]string, error) {
 		}
 		data = strings.Join(links, "\n")
 	}
-	reg := regexp.MustCompile(`((?i)vmess://[a-zA-Z0-9+_/=-]+([?#][^\s]+)?)|((?i)ssr://[a-zA-Z0-9+_/=-]+)|((?i)(vless|ss|trojan)://(\S+?)@(\S+?):([0-9]{2,5})([?#][^\s]+))|((?i)(ss)://[a-zA-Z0-9+_/=-]+([?#][^\s]+))`)
-	matches := reg.FindAllStringSubmatch(data, -1)
-	links = make([]string, len(matches))
+	// reg := regexp.MustCompile(`((?i)vmess://(\S+?)@(\S+?):([0-9]{2,5})/([?#][^\s]+))|((?i)vmess://[a-zA-Z0-9+_/=-]+([?#][^\s]+)?)|((?i)ssr://[a-zA-Z0-9+_/=-]+)|((?i)(vless|ss|trojan)://(\S+?)@(\S+?):([0-9]{2,5})([?#][^\s]+))|((?i)(ss)://[a-zA-Z0-9+_/=-]+([?#][^\s]+))`)
+	matches := regProfile.FindAllStringSubmatch(data, -1)
+	linksLen, matchesLen := len(links), len(matches)
+	if linksLen < matchesLen {
+		links = make([]string, matchesLen)
+	} else if linksLen > matchesLen {
+		links = links[:len(matches)]
+	}
 	for index, match := range matches {
-		links[index] = match[0]
+		link := match[0]
+		if config.RegShadowrocketVmess.MatchString(link) {
+			if l, err := config.ShadowrocketLinkToVmessLink(link); err == nil {
+				link = l
+			}
+		}
+		links[index] = link
 	}
 	return links, nil
 }
@@ -181,30 +187,27 @@ func parseClashProxies(input string) ([]string, error) {
 	if !strings.Contains(input, "{") {
 		return []string{}, nil
 	}
-	scanner := bufio.NewScanner(strings.NewReader(input))
-	return scanClashProxies(scanner, true)
+	return scanClashProxies(strings.NewReader(input), true)
 }
 
-//
-func scanClashProxies(scanner *bufio.Scanner, greedy bool) ([]string, error) {
+func scanClashProxies(r io.Reader, greedy bool) ([]string, error) {
 	proxiesStart := false
-	data := []byte{}
+	var data []byte
+	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		b := scanner.Bytes()
 		trimLine := strings.TrimSpace(string(b))
 		if trimLine == "proxy-groups:" || trimLine == "rules:" || trimLine == "Proxy Group:" {
 			break
 		}
-		if proxiesStart {
-			if _, err := config.ParseBaseProxy(trimLine); err != nil {
-				continue
-			}
-		}
 		if !proxiesStart && (trimLine == "proxies:" || trimLine == "Proxy:") {
 			proxiesStart = true
 			b = []byte("proxies:")
 		}
 		if proxiesStart {
+			if _, err := config.ParseBaseProxy(trimLine); err != nil {
+				continue
+			}
 			data = append(data, b...)
 			data = append(data, byte('\n'))
 		}
@@ -213,14 +216,13 @@ func scanClashProxies(scanner *bufio.Scanner, greedy bool) ([]string, error) {
 	return parseClashByte(data)
 }
 
-func parseClashByLine(filepath string) ([]string, error) {
+func parseClashFileByLine(filepath string) ([]string, error) {
 	file, err := os.Open(filepath)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
-	scanner := bufio.NewScanner(file)
-	return scanClashProxies(scanner, false)
+	return scanClashProxies(file, false)
 }
 
 func parseClashByte(data []byte) ([]string, error) {
@@ -238,7 +240,7 @@ func parseFile(filepath string) ([]string, error) {
 	}
 	// clash
 	if isYamlFile(filepath) {
-		return parseClashByLine(filepath)
+		return parseClashFileByLine(filepath)
 	}
 	data, err := ioutil.ReadFile(filepath)
 	if err != nil {
@@ -249,7 +251,7 @@ func parseFile(filepath string) ([]string, error) {
 	if err != nil && len(data) > 2048 {
 		preview := string(data[:2048])
 		if strings.Contains(preview, "proxies:") {
-			return parseClashByLine(filepath)
+			return scanClashProxies(bytes.NewReader(data), true)
 		}
 		if strings.Contains(preview, "vmess://") ||
 			strings.Contains(preview, "trojan://") ||
@@ -318,7 +320,8 @@ type ProfileTestOptions struct {
 	FontSize        int           `json:"fontSize"`
 	Theme           string        `json:"theme"`
 	Unique          bool          `json:"unique"`
-	GeneratePicMode int           `json:"generatePicMode"` // 0: base64 1:pic path 2: no pic 3: json
+	GeneratePicMode int           `json:"generatePicMode"` // 0: base64 1:pic path 2: no pic 3: json @deprecated use outputMode
+	OutputMode      int           `json:"outputMode"`
 }
 
 type JSONOutput struct {
@@ -524,15 +527,17 @@ func (p *ProfileTest) testAll(ctx context.Context) (render.Nodes, error) {
 	}
 	close(nodeChan)
 
-	if p.Options.GeneratePicMode == PIC_NONE {
+	if p.Options.OutputMode == PIC_NONE {
 		return nodes, nil
 	}
 
 	// sort nodes
 	nodes.Sort(p.Options.SortMethod)
 	// save json
-	if p.Options.GeneratePicMode == JSON_OUTPUT {
+	if p.Options.OutputMode == JSON_OUTPUT {
 		p.saveJSON(nodes, traffic, duration, successCount, linksCount)
+	} else if p.Options.OutputMode == TEXT_OUTPUT {
+		p.saveText(nodes)
 	} else {
 		// render the result to pic
 		p.renderPic(nodes, traffic, duration, successCount, linksCount)
@@ -549,7 +554,7 @@ func (p *ProfileTest) renderPic(nodes render.Nodes, traffic int64, duration stri
 	}
 	// msg := fmt.Sprintf("Total Traffic : %s. Total Time : %s. Working Nodes: [%d/%d]", download.ByteCountIECTrim(traffic), duration, successCount, linksCount)
 	msg := table.FormatTraffic(download.ByteCountIECTrim(traffic), duration, fmt.Sprintf("%d/%d", successCount, linksCount))
-	if p.Options.GeneratePicMode == PIC_PATH {
+	if p.Options.OutputMode == PIC_PATH {
 		table.Draw("out.png", msg)
 		p.WriteMessage(getMsgByte(-1, "picdata", "out.png"))
 		return nil
@@ -573,7 +578,18 @@ func (p *ProfileTest) saveJSON(nodes render.Nodes, traffic int64, duration strin
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile("out.json", data, 0644)
+	return ioutil.WriteFile("output.json", data, 0644)
+}
+
+func (p *ProfileTest) saveText(nodes render.Nodes) error {
+	var links []string
+	for _, node := range nodes {
+		if node.Ping != "0" || node.AvgSpeed > 0 || node.MaxSpeed > 0 {
+			links = append(links, node.Link)
+		}
+	}
+	data := []byte(strings.Join(links, "\n"))
+	return ioutil.WriteFile("output.txt", data, 0644)
 }
 
 func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeChan chan<- render.Node, trafficChan chan<- int64) error {
@@ -583,9 +599,17 @@ func (p *ProfileTest) testOne(ctx context.Context, index int, link string, nodeC
 		link = p.Links[index]
 		link = strings.SplitN(link, "^", 2)[0]
 	}
-	protocol, remarks, err := GetRemarks(link)
+	cfg, err := config.Link2Config(link)
+	if err != nil {
+		return err
+	}
+	remarks := cfg.Remarks
 	if err != nil || remarks == "" {
 		remarks = fmt.Sprintf("Profile %d", index)
+	}
+	protocol := cfg.Protocol
+	if (cfg.Protocol == "vmess" || cfg.Protocol == "trojan") && cfg.Net != "" {
+		protocol = fmt.Sprintf("%s/%s", cfg.Protocol, cfg.Net)
 	}
 	elapse, err := p.pingLink(index, link)
 	log.Printf("%d %s elapse: %dms", index, remarks, elapse)
@@ -701,4 +725,49 @@ func png2base64(path string) (string, error) {
 
 func isYamlFile(filePath string) bool {
 	return strings.HasSuffix(filePath, ".yaml") || strings.HasSuffix(filePath, ".yml")
+}
+
+// api
+func PeekClash(input string, n int) ([]string, error) {
+	scanner := bufio.NewScanner(strings.NewReader(input))
+	proxiesStart := false
+	data := []byte{}
+	linkCount := 0
+	for scanner.Scan() {
+		b := scanner.Bytes()
+		trimLine := strings.TrimSpace(string(b))
+		if trimLine == "proxy-groups:" || trimLine == "rules:" || trimLine == "Proxy Group:" {
+			break
+		}
+		if proxiesStart {
+			if _, err := config.ParseBaseProxy(trimLine); err != nil {
+				continue
+			}
+			if strings.HasPrefix(trimLine, "-") {
+				if linkCount >= n {
+					break
+				}
+				linkCount += 1
+			}
+			data = append(data, b...)
+			data = append(data, byte('\n'))
+			continue
+		}
+		if !proxiesStart && (trimLine == "proxies:" || trimLine == "Proxy:") {
+			proxiesStart = true
+			b = []byte("proxies:")
+		}
+		data = append(data, b...)
+		data = append(data, byte('\n'))
+	}
+	// fmt.Println(string(data))
+	links, err := parseClashByte(data)
+	if err != nil || len(links) < 1 {
+		return []string{}, err
+	}
+	endIndex := n
+	if endIndex > len(links) {
+		endIndex = len(links)
+	}
+	return links[:endIndex], nil
 }

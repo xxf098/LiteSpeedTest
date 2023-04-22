@@ -1,7 +1,14 @@
 # LiteSpeedTest
 
 LiteSpeedTest is a simple tool for batch test ss/ssr/v2ray/trojan/clash servers.   
-Support tested by single link, multiple links, subscription link and file path.
+Feature
+- 支持ss/ssr/v2ray/trojan/clash订阅链接
+- 支持ss/ssr/v2ray/trojan/clash节点链接
+- 支持ss/ssr/v2ray/trojan/clash订阅或节点文件
+- support ss/ssr/v2ray/trojan/clash subscription url,
+- support ss/ssr/v2ray/trojan/clash profile links
+- support ss/ssr/v2ray/trojan/clash subscription or profile file, 
+
 
  ![build](https://github.com/xxf098/LiteSpeedTest/actions/workflows/test.yaml/badge.svg?branch=master&event=push) 
 
@@ -16,6 +23,7 @@ Run as a speed test tool:
     # test in command line only mode
     ./lite --test https://raw.githubusercontent.com/freefq/free/master/v2
     # test in command line only mode with custom config.
+    ./lite --config config.json --test https://raw.githubusercontent.com/freefq/free/master/v2
     # details can find here https://github.com/xxf098/LiteSpeedTest/blob/master/config.json
     # all config options:
     #       "group":"job",   // group name
@@ -30,8 +38,7 @@ Run as a speed test tool:
 	#       "fontSize":24,
 	#       "unique": true,  // remove duplicated value
 	#       "theme":"rainbow", 
-	#       "generatePicMode": 1  // 0: base64 1: pic path 2: no pic 3: json
-    ./lite --config config.json --test https://raw.githubusercontent.com/freefq/free/master/v2
+	#       "outputMode": 1  // 0: base64 1: pic path 2: no pic 3: json 4: txt
 
 
 Run as a grpc server:
@@ -97,7 +104,7 @@ func testPing() error {
 		Theme:         "rainbow",
         Unique:        true,
 		Timeout:       10 * time.Second,
-		GeneratePicMode:  0,
+		OutputMode:  0,
 	}
     nodes, err := web.TestContext(ctx, opts, &web.EmptyMessageWriter{})
     if err != nil {

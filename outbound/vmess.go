@@ -15,6 +15,7 @@ import (
 	"github.com/xxf098/lite-proxy/stats"
 	"github.com/xxf098/lite-proxy/transport/dialer"
 	"github.com/xxf098/lite-proxy/transport/resolver"
+	"github.com/xxf098/lite-proxy/transport/socks5"
 	"github.com/xxf098/lite-proxy/transport/vmess"
 	"github.com/xxf098/lite-proxy/utils"
 )
@@ -253,16 +254,16 @@ func NewVmess(option *VmessOption) (*Vmess, error) {
 func parseVmessAddr(metadata *C.Metadata) *vmess.DstAddr {
 	var addrType byte
 	var addr []byte
-	switch metadata.AddrType {
-	case C.AtypIPv4:
+	switch metadata.AddrType() {
+	case socks5.AtypIPv4:
 		addrType = byte(vmess.AtypIPv4)
 		addr = make([]byte, net.IPv4len)
 		copy(addr[:], metadata.DstIP.To4())
-	case C.AtypIPv6:
+	case socks5.AtypIPv6:
 		addrType = byte(vmess.AtypIPv6)
 		addr = make([]byte, net.IPv6len)
 		copy(addr[:], metadata.DstIP.To16())
-	case C.AtypDomainName:
+	case socks5.AtypDomainName:
 		addrType = byte(vmess.AtypDomainName)
 		addr = make([]byte, len(metadata.Host)+1)
 		addr[0] = byte(len(metadata.Host))

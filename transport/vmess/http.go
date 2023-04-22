@@ -58,7 +58,10 @@ func (hc *httpConn) Write(b []byte) (int, error) {
 	}
 
 	u := fmt.Sprintf("http://%s%s", host, path)
-	req, _ := http.NewRequest("GET", u, bytes.NewBuffer(b))
+	req, err := http.NewRequest("GET", u, bytes.NewBuffer(b))
+	if err != nil {
+		return 0, err
+	}
 	for key, list := range hc.cfg.Headers {
 		req.Header.Set(key, list[rand.Intn(len(list))])
 	}

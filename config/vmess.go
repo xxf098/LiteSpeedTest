@@ -4,8 +4,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"net"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -13,6 +14,8 @@ import (
 	"github.com/xxf098/lite-proxy/outbound"
 	"github.com/xxf098/lite-proxy/utils"
 )
+
+var RegShadowrocketVmess = regexp.MustCompile(`(?i)vmess://(\S+?)@(\S+?):([0-9]{2,5})/?([?#][^\s]+)`)
 
 type User struct {
 	Email    string `json:"Email"`
@@ -315,8 +318,8 @@ func ShadowrocketLinkToVmessLink(link string) (string, error) {
 }
 
 func ShadowrocketVmessLinkToVmessConfig(link string, resolveip bool) (*VmessConfig, error) {
-	if !strings.HasPrefix(link, "vmess://") {
-		return nil, fmt.Errorf("vmess unreconized: %s", link)
+	if !RegShadowrocketVmess.MatchString(link) {
+		return nil, fmt.Errorf("not a vmess link: %s", link)
 	}
 	url, err := url.Parse(link)
 	if err != nil {
@@ -328,19 +331,19 @@ func ShadowrocketVmessLinkToVmessConfig(link string, resolveip bool) (*VmessConf
 	b64 := url.Host
 	b, err := utils.DecodeB64Bytes(b64)
 	if err != nil {
-		return nil, err
+		return shadowrocketVmessURLToVmessConfig(link, resolveip)
 	}
 
 	mhp := strings.SplitN(string(b), ":", 3)
 	if len(mhp) != 3 {
-		return nil, fmt.Errorf("vmess unreconized: method:host:port -- %v", mhp)
+		return nil, fmt.Errorf("vmess unrecognized: method:host:port -- %v", mhp)
 	}
 	config.Security = mhp[0]
 	// mhp[0] is the encryption method
 	config.Port = []byte(mhp[2])
 	idadd := strings.SplitN(mhp[1], "@", 2)
 	if len(idadd) != 2 {
-		return nil, fmt.Errorf("vmess unreconized: id@addr -- %v", idadd)
+		return nil, fmt.Errorf("vmess unrecognized: id@addr -- %v", idadd)
 	}
 	config.ID = idadd[0]
 	config.Add = idadd[1]
@@ -376,13 +379,84 @@ func ShadowrocketVmessLinkToVmessConfig(link string, resolveip bool) (*VmessConf
 	return &config, nil
 }
 
-func VmessLinkToVmessConfigIP(link string, resolveip bool) (*VmessConfig, error) {
-	config, err := VmessLinkToVmessConfig(link, resolveip)
+func shadowrocketVmessURLToVmessConfig(link string, resolveip bool) (*VmessConfig, error) {
+	u, err := url.Parse(link)
 	if err != nil {
+		return nil, err
+	}
+	if u.Scheme != "vmess" {
+		return nil, fmt.Errorf("not a vmess link: %s", link)
+	}
+	pass := u.User.Username()
+	hostport := u.Host
+	host, _, err := net.SplitHostPort(hostport)
+	if err != nil {
+		return nil, err
+	}
+	_, err = strconv.Atoi(u.Port())
+	if err != nil {
+		return nil, err
+	}
+
+	config := VmessConfig{
+		V:      []byte("2"),
+		ID:     pass,
+		Add:    host,
+		Port:   []byte(u.Port()),
+		Ps:     u.Fragment,
+		Net:    "tcp",
+		Aid:    []byte("0"),
+		Type:   "auto",
+		TLSRaw: []byte("false"),
+	}
+
+	vals, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		return nil, err
+	}
+	if v := vals.Get("type"); v != "" {
+		config.Net = v
+	}
+
+	if v := vals.Get("encryption"); v != "" {
+		config.Encryption = v
+	}
+
+	if v := vals.Get("host"); v != "" {
+		config.Host = v
+	}
+
+	if v := vals.Get("path"); v != "" {
+		config.Path = v
+	}
+
+	if v := vals.Get("security"); v != "" {
+		config.TLS = v
+		config.TLSRaw = json.RawMessage("true")
+	}
+
+	if v := vals.Get("sni"); v != "" {
+		config.ServerName = v
+	}
+
+	if v := vals.Get("aid"); v != "" {
+		config.Aid = []byte(v)
+	}
+
+	config.ResolveIP = resolveip
+	return &config, nil
+}
+
+func VmessLinkToVmessConfigIP(link string, resolveip bool) (*VmessConfig, error) {
+	var config *VmessConfig
+	var err error
+	if strings.Contains(link, "&") {
 		config, err = ShadowrocketVmessLinkToVmessConfig(link, resolveip)
-		if err != nil {
-			return nil, err
-		}
+	} else {
+		config, err = VmessLinkToVmessConfig(link, resolveip)
+	}
+	if err != nil {
+		return nil, err
 	}
 	port, err := rawMessageToInt(config.Port)
 	if err != nil {
@@ -411,7 +485,7 @@ func VmessLinkToVmessConfigIP(link string, resolveip bool) (*VmessConfig, error)
 }
 
 func ToVmessOption(path string) (*outbound.VmessOption, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

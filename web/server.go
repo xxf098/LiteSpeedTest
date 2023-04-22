@@ -7,12 +7,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -33,7 +34,7 @@ func ServeFile(port int) error {
 	http.HandleFunc("/generateResult", generateResult)
 	log.Printf("Start server at http://127.0.0.1:%d\n", port)
 	if ipAddr, err := localIP(); err == nil {
-		log.Printf("Start server at http://%s:%d", ipAddr.String(), port)
+		log.Printf("Start server at http://%s", net.JoinHostPort(ipAddr.String(), strconv.Itoa(port)))
 	}
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	return err
@@ -106,7 +107,7 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 }
 
 func readConfig(configPath string) (*ProfileTestOptions, error) {
-	data, err := ioutil.ReadFile(configPath)
+	data, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, err
 	}
@@ -146,10 +147,14 @@ func TestFromCMD(subscription string, configPath *string) error {
 		Theme:           "rainbow",
 		Timeout:         15 * time.Second,
 		GeneratePicMode: PIC_PATH,
+		OutputMode:      PIC_PATH,
 	}
 	if configPath != nil {
 		if opt, err := readConfig(*configPath); err == nil {
 			options = *opt
+			if options.GeneratePicMode != 0 {
+				options.OutputMode = options.GeneratePicMode
+			}
 			// options.GeneratePic = true
 		}
 	}
@@ -217,7 +222,7 @@ func generateResult(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Please send a request body", 400)
 		return
 	}
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Please send a request body", 400)
 		return
@@ -314,7 +319,7 @@ func getSubscriptionLink(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid Parameter", 400)
 		return
 	}
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Invalid Parameter", 400)
 		return
@@ -374,7 +379,7 @@ func getSubscription(w http.ResponseWriter, r *http.Request) {
 		w.Write(data)
 		return
 	}
-	data, err := ioutil.ReadFile(filePath)
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
@@ -396,7 +401,7 @@ func getSubscription(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeClash(filePath string) ([]byte, error) {
-	links, err := parseClashByLine(filePath)
+	links, err := parseClashFileByLine(filePath)
 	if err != nil {
 		//
 		return nil, err
@@ -412,7 +417,7 @@ func writeShadowrocket(data []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	newLinks := []string{}
+	newLinks := make([]string, 0, len(links))
 	for _, link := range links {
 		if strings.HasPrefix(link, "vmess://") && strings.Contains(link, "&") {
 			if newLink, err := config.ShadowrocketLinkToVmessLink(link); err == nil {

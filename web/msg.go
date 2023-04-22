@@ -3,6 +3,8 @@ package web
 import (
 	"encoding/json"
 	"fmt"
+	"net"
+	"strconv"
 	"strings"
 
 	"github.com/xxf098/lite-proxy/config"
@@ -48,7 +50,7 @@ func gotserverMsg(id int, link string, groupName string) []byte {
 	if err == nil {
 		msg.Group = groupName
 		msg.Remarks = cfg.Remarks
-		msg.Server = fmt.Sprintf("%s:%d", cfg.Server, cfg.Port)
+		msg.Server = net.JoinHostPort(cfg.Server, strconv.Itoa(cfg.Port))
 		msg.Protocol = cfg.Protocol
 		if cfg.Protocol == "vmess" && cfg.Net != "" {
 			msg.Protocol = fmt.Sprintf("%s/%s", cfg.Protocol, cfg.Net)
@@ -68,7 +70,7 @@ func gotserversMsg(startID int, links []string, groupName string) []byte {
 		if err == nil {
 			msg.Group = groupName
 			msg.Remarks = cfg.Remarks
-			msg.Server = fmt.Sprintf("%s:%d", cfg.Server, cfg.Port)
+			msg.Server = net.JoinHostPort(cfg.Server, strconv.Itoa(cfg.Port))
 			msg.Protocol = cfg.Protocol
 			if (cfg.Protocol == "vmess" || cfg.Protocol == "trojan") && cfg.Net != "" {
 				msg.Protocol = fmt.Sprintf("%s/%s", cfg.Protocol, cfg.Net)

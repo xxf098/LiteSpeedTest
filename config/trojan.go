@@ -71,6 +71,9 @@ func TrojanLinkToTrojanOption(link string) (*outbound.TrojanOption, error) {
 		}
 
 	}
+	if len(trojanOption.Remarks) < 1 {
+		trojanOption.Remarks = trojanOption.Server
+	}
 	return &trojanOption, nil
 }
 
