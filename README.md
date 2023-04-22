@@ -21,7 +21,7 @@ Run as a speed test tool:
     ./lite -p 10889
     
     # test in command line only mode
-    ./lite --test https://raw.githubusercontent.com/freefq/free/master/v2
+    ./lite --config ./config.json --test https://raw.githubusercontent.com/freefq/free/master/v2
     # test in command line only mode with custom config.
     # details can find here https://github.com/xxf098/LiteSpeedTest/blob/master/config.json
     # all config options:
