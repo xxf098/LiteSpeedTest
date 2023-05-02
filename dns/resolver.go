@@ -155,7 +155,7 @@ func (r *Resolver) batchExchange(clients []dnsClient, m *D.Msg) (msg *D.Msg, err
 	if elm == nil {
 		err := errors.New("all DNS requests failed")
 		if fErr := fast.Error(); fErr != nil {
-			err = fmt.Errorf("%w, first error: %s", err, fErr.Error())
+			err = fmt.Errorf("%w, first error: %v", err, fErr)
 		}
 		return nil, err
 	}

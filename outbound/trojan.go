@@ -173,7 +173,7 @@ func NewTrojan(option *TrojanOption) (*Trojan, error) {
 	// 	dialFn := func(network, addr string) (net.Conn, error) {
 	// 		c, err := dialer.DialContext(context.Background(), "tcp", t.addr)
 	// 		if err != nil {
-	// 			return nil, fmt.Errorf("%s connect error: %s", t.addr, err.Error())
+	// 			return nil, fmt.Errorf("%s connect error: %v", t.addr, err)
 	// 		}
 	// 		tcpKeepAlive(c)
 	// 		return c, nil

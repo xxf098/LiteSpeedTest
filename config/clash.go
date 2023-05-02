@@ -203,7 +203,7 @@ func parseProxies(cfg *ClashRawConfig) ([]string, error) {
 	for idx, mapping := range cfg.Proxy {
 		link, err := ParseProxy(mapping, cfg.NamePrefix)
 		if err != nil {
-			log.Printf("parseProxies %d: %s", idx, err.Error())
+			log.Printf("parseProxies %d: %v", idx, err)
 			continue
 		}
 		proxyList = append(proxyList, link)
@@ -238,7 +238,7 @@ func parseNameServer(servers []string) ([]dns.NameServer, error) {
 		}
 		u, err := url.Parse(server)
 		if err != nil {
-			return nil, fmt.Errorf("DNS NameServer[%d] format error: %s", idx, err.Error())
+			return nil, fmt.Errorf("DNS NameServer[%d] format error: %v", idx, err)
 		}
 
 		var addr, dnsNetType string
@@ -261,7 +261,7 @@ func parseNameServer(servers []string) ([]dns.NameServer, error) {
 		}
 
 		if err != nil {
-			return nil, fmt.Errorf("DNS NameServer[%d] format error: %s", idx, err.Error())
+			return nil, fmt.Errorf("DNS NameServer[%d] format error: %v", idx, err)
 		}
 
 		nameservers = append(
@@ -281,7 +281,7 @@ func parseFallbackIPCIDR(ips []string) ([]*net.IPNet, error) {
 	for idx, ip := range ips {
 		_, ipnet, err := net.ParseCIDR(ip)
 		if err != nil {
-			return nil, fmt.Errorf("DNS FallbackIP[%d] format error: %s", idx, err.Error())
+			return nil, fmt.Errorf("DNS FallbackIP[%d] format error: %v", idx, err)
 		}
 		ipNets = append(ipNets, ipnet)
 	}

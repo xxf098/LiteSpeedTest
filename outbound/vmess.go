@@ -178,7 +178,7 @@ func (v *Vmess) DialContext(ctx context.Context, metadata *C.Metadata) (net.Conn
 	log.I("start dial from", v.addr, "to", metadata.RemoteAddress())
 	c, err := dialer.DialContext(ctx, "tcp", v.addr)
 	if err != nil {
-		return nil, fmt.Errorf("%s connect error: %s", v.addr, err.Error())
+		return nil, fmt.Errorf("%s connect error: %v", v.addr, err)
 	}
 	tcpKeepAlive(c)
 	if metadata.Type == C.TEST {
@@ -206,7 +206,7 @@ func (v *Vmess) DialUDP(metadata *C.Metadata) (net.PacketConn, error) {
 	defer cancel()
 	c, err := dialer.DialContext(ctx, "tcp", v.addr)
 	if err != nil {
-		return nil, fmt.Errorf("%s connect error: %s", v.addr, err.Error())
+		return nil, fmt.Errorf("%s connect error: %v", v.addr, err)
 	}
 	tcpKeepAlive(c)
 	sc := stats.NewConn(c)

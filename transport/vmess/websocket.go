@@ -138,7 +138,7 @@ func (wsedc *websocketWithEarlyDataConn) Dial(earlyData []byte) error {
 
 	earlyDataBuf := bytes.NewBuffer(earlyData)
 	if _, err := base64EarlyDataEncoder.Write(earlyDataBuf.Next(wsedc.config.MaxEarlyData)); err != nil {
-		return errors.New("failed to encode early data: " + err.Error())
+		return fmt.Errorf("failed to encode early data: %v", err)
 	}
 
 	if errc := base64EarlyDataEncoder.Close(); errc != nil {
