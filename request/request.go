@@ -82,10 +82,10 @@ func parseFirstLine(buf []byte) (int, error) {
 		return 0, fmt.Errorf("unexpected char at the end of status code. Response %q", buf)
 	}
 
-	if statusCode == 204 || statusCode == 200 {
+	if statusCode == http.StatusNoContent || statusCode == http.StatusOK {
 		return len(buf) - len(bNext), nil
 	}
-	return 0, errors.New("Wrong Status Code")
+	return 0, errors.New("wrong status code")
 }
 
 func nextLine(b []byte) ([]byte, []byte, error) {
@@ -335,7 +335,7 @@ func pingHTTPClient(ctx context.Context, url string, timeout time.Duration, dial
 	}
 	elapse := now.Sub(start).Milliseconds()
 	defer response.Body.Close()
-	if response.StatusCode != 204 && response.StatusCode != 200 {
+	if response.StatusCode != http.StatusNoContent && response.StatusCode != http.StatusOK {
 		return 0, fmt.Errorf("wrong status code %d", response.StatusCode)
 	}
 	return elapse, nil
