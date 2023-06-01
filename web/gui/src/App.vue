@@ -131,6 +131,7 @@
                                             <el-dropdown-item @click.native="handleCopySub()">复制订阅链接</el-dropdown-item>
                                             <el-dropdown-item v-if="!loading && result.length" @click.native="handleCopyAvailable()">复制可用节点</el-dropdown-item>
                                             <el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">复制节点</el-dropdown-item>
+                                            <el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">运行节点</el-dropdown-item>
                                             <el-dropdown-item v-if="multipleSelection.length" @click.native="handleSave()">导出节点</el-dropdown-item>
                                             <!-- <el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item> -->
                                             <el-dropdown-item v-if="multipleSelection.length" @click.native="handleQRCode()">显示二维码</el-dropdown-item>
