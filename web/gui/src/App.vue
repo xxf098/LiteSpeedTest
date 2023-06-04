@@ -45,6 +45,10 @@
                                         <el-input v-model="timeout" style="width: 235px" type="number" min="5" max="60"
                                             @keyup.enter.native="submit" :disabled="loading"></el-input>
                                     </el-form-item>
+                                    <el-form-item label="代理端口：" v-if="option===1">
+                                        <el-input v-model="proxyPort" style="width: 235px" type="number" min="80" max="65535"
+                                            @keyup.enter.native="submit" :disabled="loading"></el-input>
+                                    </el-form-item>
                                     <el-form-item label="去除重复节点：" v-if="option===1">
                                         <el-checkbox v-model="unique">去重</el-checkbox>
                                     </el-form-item>
@@ -130,9 +134,9 @@
                                         <el-dropdown-menu slot="dropdown">
                                             <el-dropdown-item @click.native="handleCopySub()">复制订阅链接</el-dropdown-item>
                                             <el-dropdown-item v-if="!loading && result.length" @click.native="handleCopyAvailable()">复制可用节点</el-dropdown-item>
-                                            <el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">复制节点</el-dropdown-item>
-                                            <el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">运行节点</el-dropdown-item>
-                                            <el-dropdown-item v-if="multipleSelection.length" @click.native="handleSave()">导出节点</el-dropdown-item>
+                                            <el-dropdown-item v-if="multipleSelection.length" @click.native="handleCopy()">复制选择节点</el-dropdown-item>
+                                            <el-dropdown-item v-if="multipleSelection.length" @click.native="handleStartProxy()">启动选择节点</el-dropdown-item>
+                                            <el-dropdown-item v-if="multipleSelection.length" @click.native="handleSave()">导出选择节点</el-dropdown-item>
                                             <!-- <el-dropdown-item @click.native="handleRetest()">重新测试</el-dropdown-item> -->
                                             <el-dropdown-item v-if="multipleSelection.length" @click.native="handleQRCode()">显示二维码</el-dropdown-item>
                                             <el-dropdown-item v-if="multipleSelection.length" @click.native="handleExportResult()">导出结果</el-dropdown-item>
@@ -327,6 +331,7 @@ export default {
             subscription: "",
             concurrency: 2,
             timeout: 15,
+            proxyPort: 8090,
             unique: true,
             groupname: "",
             loadingContent: "",
@@ -666,6 +671,25 @@ export default {
             } catch (err) {
                 this.$message.error("Copy link failed!");
             }
+        },
+        handleStartProxy: function () {
+            const links = this.multipleSelection.map(elem => elem.link).filter(elem => !!elem)
+            const requestOptions = {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({links, port: this.proxyPort})
+            };
+            const url = `${window.location.protocol}//${window.location.host}/startProxy`
+            fetch(url, requestOptions)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network error');
+                    }
+                    return response.text();
+                })
+                .then(() => this.$message.success("Start proxy succeed!"))
+                .catch(err => this.$message.error("Start proxy failed!"))
+         
         },
         handleCopyAvailable: async function () {
             try {
