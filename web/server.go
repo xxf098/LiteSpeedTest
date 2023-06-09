@@ -19,17 +19,23 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/xxf098/lite-proxy/config"
+	"github.com/xxf098/lite-proxy/core"
+	"github.com/xxf098/lite-proxy/proxy"
 	"github.com/xxf098/lite-proxy/utils"
 	"github.com/xxf098/lite-proxy/web/render"
 )
 
-var upgrader = websocket.Upgrader{}
+var (
+	upgrader  = websocket.Upgrader{}
+	prevProxy *proxy.Proxy
+)
 
 func ServeFile(port int) error {
 	// TODO: Mobile UI
 	http.HandleFunc("/", serverFile)
 	http.HandleFunc("/test", updateTest)
 	http.HandleFunc("/getSubscriptionLink", getSubscriptionLink)
+	http.HandleFunc("/startProxy", startProxy)
 	http.HandleFunc("/getSubscription", getSubscription)
 	http.HandleFunc("/generateResult", generateResult)
 	log.Printf("Start server at http://127.0.0.1:%d\n", port)
@@ -343,7 +349,6 @@ func getSubscriptionLink(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, subscriptionLink)
 }
 
-// POST
 func getSubscription(w http.ResponseWriter, r *http.Request) {
 	queries := r.URL.Query()
 	key := queries.Get("key")
@@ -398,6 +403,60 @@ func getSubscription(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(data)
+}
+
+type StartProxyBody struct {
+	Links []string `json:"links"`
+	Port  uint16   `json:"port"`
+}
+
+func startProxy(w http.ResponseWriter, r *http.Request) {
+	body := StartProxyBody{}
+	if r.Body == nil {
+		http.Error(w, "Invalid Parameter", 400)
+		return
+	}
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Invalid Parameter", 400)
+		return
+	}
+	if err = json.Unmarshal(data, &body); err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	if len(body.Links) == 0 || body.Port < 80 || body.Port > 65535 {
+		http.Error(w, "Invalid Parameter", 400)
+		return
+	}
+	// close previous proxy
+	if prevProxy != nil {
+		prevProxy.Close()
+	}
+	// start proxy
+	for _, link := range body.Links {
+		ch := make(chan int64, 1)
+		c := core.Config{
+			LocalHost: "0.0.0.0",
+			LocalPort: int(body.Port),
+			Link:      link,
+			Ping:      2,
+			PingCh:    ch,
+		}
+		p, err := core.StartInstance(c)
+		if err != nil {
+			continue
+		}
+		elapse := <-ch
+		if elapse == 0 {
+			continue
+		}
+		go p.Run()
+		prevProxy = p
+		w.Write([]byte("Start Proxy"))
+		return
+	}
+	http.Error(w, "Start Proxy Failed", 400)
 }
 
 func writeClash(filePath string) ([]byte, error) {

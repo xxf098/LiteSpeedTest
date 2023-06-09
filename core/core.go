@@ -55,12 +55,17 @@ func StartInstance(c Config) (*proxy.Proxy, error) {
 				TimeOut:  1200 * time.Millisecond,
 			}
 			info := fmt.Sprintf("%s %s", cfg.Remarks, net.JoinHostPort(cfg.Server, strconv.Itoa(cfg.Port)))
+			elp := int64(0)
 			if elapse, err := request.PingLinkInternal(link, opt); err == nil {
 				info = fmt.Sprintf("%s \033[32m%dms\033[0m", info, elapse)
+				elp = elapse
 			} else {
 				info = fmt.Sprintf("\033[31m%s\033[0m", err.Error())
 			}
 			log.Print(info)
+			if c.PingCh != nil {
+				c.PingCh <- elp
+			}
 		}
 	}(c.Link)
 	setDefaultResolver()
