@@ -386,6 +386,11 @@ func getSubscription(w http.ResponseWriter, r *http.Request) {
 	}
 	data, err := os.ReadFile(filePath)
 	if err != nil {
+		// return raw data
+		if len(filePath) > 4096 {
+			w.Write([]byte(filePath))
+			return
+		}
 		http.Error(w, err.Error(), 400)
 		return
 	}
