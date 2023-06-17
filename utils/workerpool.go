@@ -71,7 +71,7 @@ func (wp *WorkerPool) Start() {
 
 func (wp *WorkerPool) Stop() {
 	if wp.stopCh == nil {
-		panic("BUG: workerPool wasn't started")
+		return
 	}
 	close(wp.stopCh)
 	wp.stopCh = nil

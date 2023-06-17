@@ -437,6 +437,7 @@ func startProxy(w http.ResponseWriter, r *http.Request) {
 	// close previous proxy
 	if prevProxy != nil {
 		prevProxy.Close()
+		prevProxy = nil
 	}
 	// start proxy
 	for _, link := range body.Links {
@@ -454,6 +455,9 @@ func startProxy(w http.ResponseWriter, r *http.Request) {
 		}
 		elapse := <-ch
 		if elapse == 0 {
+			if p != nil {
+				p.Close()
+			}
 			continue
 		}
 		go p.Run()
