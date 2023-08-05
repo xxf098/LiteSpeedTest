@@ -129,3 +129,7 @@ lint:
 
 clean:
 	rm $(BINDIR)/*
+
+uibuild:
+	cd ./web/gui && \
+	yarn run build
