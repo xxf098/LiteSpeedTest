@@ -59,6 +59,10 @@
                                             </el-option>
                                         </el-select>
                                     </el-form-item>
+                                    <el-form-item label="订阅代理：" v-if="option==1">
+                                        <el-input v-model="subscribeProxy" style="width: 235px" placeholder="http://127.0.0.1:8090"
+                                            @keyup.enter.native="submit" :disabled="loading" clearable></el-input>
+                                    </el-form-item>  
                                     <el-form-item label="自定义组名：" v-if="option<2">
                                         <el-input v-model="groupname" style="width: 235px" 
                                             @keyup.enter.native="submit" :disabled="loading" clearable></el-input>
@@ -334,6 +338,7 @@ export default {
             proxyPort: 8090,
             unique: true,
             groupname: "",
+            subscribeProxy: "",
             loadingContent: "",
             speedtestMode: "all",
             pingMethod: "googleping",
@@ -924,6 +929,7 @@ export default {
                 language: self.language,
                 fontSize: parseInt(self.fontSize),
                 theme: self.theme,
+                subscribeProxy: self.subscribeProxy.trim(),
             }
         },
         getOptions() {

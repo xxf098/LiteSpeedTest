@@ -58,9 +58,23 @@ const (
 // clash to vmess local subscription
 func getSubscriptionLinks(link string) ([]string, error) {
 	c := http.Client{
-		Timeout: 20 * time.Second,
+		Timeout: 24 * time.Second,
 	}
-	resp, err := c.Get(link)
+	if rawURL, ok := lookupProxy(); ok && len(rawURL) > 0 {
+		if uri, err := url.Parse(rawURL); err == nil {
+			c.Transport = &http.Transport{
+				Proxy: http.ProxyURL(uri),
+			}
+		}
+	}
+
+	req, err := http.NewRequest("GET", link, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", "ClashforWindows/0.19.24")
+	resp, err := c.Do(req)
+	// return timeout error
 	if err != nil {
 		return nil, err
 	}
@@ -93,6 +107,22 @@ type parseFunc func(string) ([]string, error)
 
 type ParseOption struct {
 	Type PAESE_TYPE
+}
+
+func lookupProxy() (rawURL string, ok bool) {
+	if rawURL, ok = os.LookupEnv("http_proxy"); ok {
+		return
+	}
+	if rawURL, ok = os.LookupEnv("https_proxy"); ok {
+		return
+	}
+	if rawURL, ok = os.LookupEnv("HTTP_PROXY"); ok {
+		return
+	}
+	if rawURL, ok = os.LookupEnv("HTTPS_PROXY"); ok {
+		return
+	}
+	return
 }
 
 // api
@@ -322,6 +352,7 @@ type ProfileTestOptions struct {
 	Unique          bool          `json:"unique"`
 	GeneratePicMode int           `json:"generatePicMode"` // 0: base64 1:pic path 2: no pic 3: json @deprecated use outputMode
 	OutputMode      int           `json:"outputMode"`
+	SubscribeProxy  string        `json:"subscribeProxy"`
 }
 
 type JSONOutput struct {
@@ -353,6 +384,11 @@ func parseMessage(message []byte) ([]string, *ProfileTestOptions, error) {
 		return options.Links, options, nil
 	}
 	options.TestMode = ALLTEST
+	if len(options.SubscribeProxy) > 0 {
+		if _, err := url.Parse(options.SubscribeProxy); err == nil {
+			os.Setenv("http_proxy", options.SubscribeProxy)
+		}
+	}
 	links, err := ParseLinks(options.Subscription)
 	if err != nil {
 		return nil, nil, err
