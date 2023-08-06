@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -37,6 +38,7 @@ func ServeFile(port int) error {
 	http.HandleFunc("/getSubscriptionLink", getSubscriptionLink)
 	http.HandleFunc("/startProxy", startProxy)
 	http.HandleFunc("/getSubscription", getSubscription)
+	http.HandleFunc("/getUserConfig", getUserConfig)
 	http.HandleFunc("/generateResult", generateResult)
 	log.Printf("Start server at http://127.0.0.1:%d\n", port)
 	if ipAddr, err := localIP(); err == nil {
@@ -104,6 +106,7 @@ func updateTest(w http.ResponseWriter, r *http.Request) {
 			Options:     options,
 		}
 		go p.testAll(ctx)
+		saveUserOptions(options, strings.Split(r.RemoteAddr, ":")[0])
 		// err = c.WriteMessage(mt, getMsgByte(0, "gotspeed"))
 		// if err != nil {
 		// 	log.Println("write:", err)
@@ -408,6 +411,44 @@ func getSubscription(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(data)
+}
+
+func getUserConfig(w http.ResponseWriter, r *http.Request) {
+	// p, err := getUserConfigFilepath(base64.RawStdEncoding.EncodeToString([]byte(r.RemoteAddr)))
+	p, err := getUserConfigFilepath(strings.Split(r.RemoteAddr, ":")[0])
+	if err != nil {
+		http.Error(w, "fail to get user config file path", 400)
+		return
+	}
+	data, err := os.ReadFile(p)
+	if err != nil {
+		http.Error(w, "fail to read user config file ", 400)
+		return
+	}
+	w.Write(data)
+}
+
+func getUserConfigFilepath(suffix string) (string, error) {
+	ex, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(filepath.Dir(ex), fmt.Sprintf("userConfig%s.json", suffix)), nil
+}
+
+func saveUserOptions(options *ProfileTestOptions, suffix string) {
+	p, err := getUserConfigFilepath(suffix)
+	if err != nil {
+		return
+	}
+	f, err := os.OpenFile(p, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	if data, err := json.Marshal(options); err == nil {
+		f.Write(data)
+	}
 }
 
 type StartProxyBody struct {

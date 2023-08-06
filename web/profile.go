@@ -342,9 +342,9 @@ type ProfileTestOptions struct {
 	SortMethod      string        `json:"sortMethod"`    // speed rspeed ping rping
 	Concurrency     int           `json:"concurrency"`
 	TestMode        int           `json:"testMode"` // 2: ALLTEST 3: RETEST
-	TestIDs         []int         `json:"testids"`
+	TestIDs         []int         `json:"testids,omitempty"`
 	Timeout         time.Duration `json:"timeout"`
-	Links           []string      `json:"links"`
+	Links           []string      `json:"links,omitempty"`
 	Subscription    string        `json:"subscription"`
 	Language        string        `json:"language"`
 	FontSize        int           `json:"fontSize"`

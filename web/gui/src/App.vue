@@ -437,6 +437,25 @@ export default {
         this.rowSelection = 'multiple';     
         this.domLayout = 'autoHeight';
     },
+    beforeMount() {
+        const url = `${window.location.protocol}//${window.location.host}/getUserConfig`
+        const requestOptions = { method: "GET", headers: { "Content-Type": "application/json" } };
+        fetch(url, requestOptions)
+            .then(resp => resp.json())
+            .then(data => {
+                this.group = data.group || "Default"
+                this.speedtestMode = data.speedtestMode || "all"
+                this.pingMethod = data.pingMethod || "googleping"
+                this.sortMethod = data.sortMethod || "rspeed"
+                this.concurrency = data.concurrency || 2
+                this.language = data.language || "en"
+                this.fontSize = data.fontSize || 24
+                this.theme = data.theme || "rainbow"
+                this.unique = data.unique || true
+                this.subscribeProxy = data.subscribeProxy || ""
+            })
+        // this.subscribeProxy = "http://127.0.0.1:8090"
+    },
     methods: {
         updateRow(id, newData) {
             const rowNode = this.gridApi.getRowNode(id);
