@@ -451,8 +451,9 @@ export default {
                 this.language = data.language || "en"
                 this.fontSize = data.fontSize || 24
                 this.theme = data.theme || "rainbow"
-                this.unique = data.unique || true
+                this.unique = data.unique || true                
                 this.subscribeProxy = data.subscribeProxy || ""
+                this.subscription = /^https?:\/\//i.test(data.subscription) ? data.subscription : ""
             })
         // this.subscribeProxy = "http://127.0.0.1:8090"
     },
