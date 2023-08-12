@@ -40,9 +40,11 @@ func ServeFile(port int) error {
 	http.HandleFunc("/getSubscription", getSubscription)
 	http.HandleFunc("/getUserConfig", getUserConfig)
 	http.HandleFunc("/generateResult", generateResult)
-	log.Printf("Start server at http://127.0.0.1:%d\n", port)
-	if ipAddr, err := localIP(); err == nil {
-		log.Printf("Start server at http://%s", net.JoinHostPort(ipAddr.String(), strconv.Itoa(port)))
+	// log.Printf("Start server at http://127.0.0.1:%d\n", port)
+	if ipAddrs, err := listAddresses(); err == nil {
+		for _, ipAddr := range ipAddrs {
+			log.Printf("Start server at http://%s", net.JoinHostPort(ipAddr, strconv.Itoa(port)))
+		}
 	}
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	return err
@@ -286,33 +288,39 @@ func isPrivateIP(ip net.IP) bool {
 	return false
 }
 
-func localIP() (net.IP, error) {
+func localIP() (string, error) {
+	addresses, err := listAddresses()
+	if err != nil {
+		return "", err
+	}
+	if len(addresses) < 1 {
+		return "", errors.New("IP not found")
+	}
+
+	return addresses[0], nil
+}
+
+func listAddresses() ([]string, error) {
 	ifaces, err := net.Interfaces()
 	if err != nil {
 		return nil, err
 	}
-	for _, i := range ifaces {
-		addrs, err := i.Addrs()
-		if err != nil {
-			return nil, err
-		}
 
-		for _, addr := range addrs {
-			var ip net.IP
-			switch v := addr.(type) {
+	addresses := make([]string, 0, len(ifaces))
+
+	for _, iface := range ifaces {
+		ifAddrs, _ := iface.Addrs()
+		for _, ifAddr := range ifAddrs {
+			switch v := ifAddr.(type) {
 			case *net.IPNet:
-				ip = v.IP
+				addresses = append(addresses, v.IP.String())
 			case *net.IPAddr:
-				ip = v.IP
-			}
-
-			if isPrivateIP(ip) {
-				return ip, nil
+				addresses = append(addresses, v.IP.String())
 			}
 		}
 	}
 
-	return nil, errors.New("no IP")
+	return addresses, nil
 }
 
 type GetSubscriptionLink struct {
@@ -348,7 +356,7 @@ func getSubscriptionLink(w http.ResponseWriter, r *http.Request) {
 	}
 	md5Hash := fmt.Sprintf("%x", md5.Sum([]byte(body.FilePath)))
 	subscriptionLinkMap[md5Hash] = body.FilePath
-	subscriptionLink := fmt.Sprintf("http://%s:10888/getSubscription?key=%s&group=%s", ipAddr.String(), md5Hash, body.Group)
+	subscriptionLink := fmt.Sprintf("http://%s:10888/getSubscription?key=%s&group=%s", ipAddr, md5Hash, body.Group)
 	fmt.Fprint(w, subscriptionLink)
 }
 
