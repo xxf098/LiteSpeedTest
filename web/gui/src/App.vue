@@ -362,6 +362,7 @@ export default {
             // agGrid
             columns: this.columns,
             gridApi: null,
+            gridColumnApi: null,
             getRowId: null,
             domLayout: null,
             rowSelection: null,
@@ -498,7 +499,7 @@ export default {
         },
         onGridReady(params) {
             this.gridApi = params.api;
-            // this.gridColumnApi = params.columnApi;
+            this.gridColumnApi = params.columnApi;
         },
         onSelectionChanged() {
             const selectedRows = this.gridApi.getSelectedRows();
@@ -597,8 +598,9 @@ export default {
                 this.totalTime = 0;
                 this.picdata = "";
                 this.result = [];
+                this.gridColumnApi.resetColumnState();
                 this.incrTotalTime()
-                this.loadingContent = "等待后端响应……";
+                this.loadingContent = "等待后端响应……";                
                 this.starttest();
             }
         },
