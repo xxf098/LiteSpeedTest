@@ -289,8 +289,8 @@
 
 <script>
 
-import "ag-grid-community/dist/styles/ag-grid.css";
-import "ag-grid-community/dist/styles/ag-theme-alpine.css";
+import "ag-grid-community/styles//ag-grid.css";
+import "ag-grid-community/styles//ag-theme-alpine.css";
 import { AgGridVue } from 'ag-grid-vue3';
 
 const go = new Go();

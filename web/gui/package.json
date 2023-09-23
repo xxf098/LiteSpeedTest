@@ -9,9 +9,10 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.0.10",
-    "ag-grid-vue3": "^28.2.1",
-    "element-plus": "^2.2.26",
-    "vue": "^3.2.45"
+    "ag-grid-vue3": "^30.1.0",
+    "ag-grid-community": "^30.1.0",
+    "element-plus": "^2.2.36",
+    "vue": "^3.2.47"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.0.0",
