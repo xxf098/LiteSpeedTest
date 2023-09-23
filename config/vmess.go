@@ -353,6 +353,9 @@ func ShadowrocketVmessLinkToVmessConfig(link string, resolveip bool) (*VmessConf
 	if v := vals.Get("remarks"); v != "" {
 		config.Ps = v
 	}
+	if v := vals.Get("remark"); v != "" {
+		config.Ps = v
+	}
 	if v := vals.Get("path"); v != "" {
 		config.Path = v
 	}
