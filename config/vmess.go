@@ -15,7 +15,8 @@ import (
 	"github.com/xxf098/lite-proxy/utils"
 )
 
-var RegShadowrocketVmess = regexp.MustCompile(`(?i)vmess://(\S+?)@(\S+?):([0-9]{2,5})/?([?#][^\s]+)`)
+var regShadowrocketVmess = regexp.MustCompile(`(?i)vmess://(\S+?)@(\S+?):([0-9]{2,5})/?([?#][^\s]+)`)
+var regShadowrocketVmess1 = regexp.MustCompile(`(?i)vmess://[A-Za-z0-9+-=/_]+([?][^\s]+)`)
 
 type User struct {
 	Email    string `json:"Email"`
@@ -318,8 +319,8 @@ func ShadowrocketLinkToVmessLink(link string) (string, error) {
 }
 
 func ShadowrocketVmessLinkToVmessConfig(link string, resolveip bool) (*VmessConfig, error) {
-	if !RegShadowrocketVmess.MatchString(link) {
-		return nil, fmt.Errorf("not a vmess link: %s", link)
+	if !MatchShadowrocketVmess(link) {
+		return nil, fmt.Errorf("invalid vmess link: %s", link)
 	}
 	url, err := url.Parse(link)
 	if err != nil {
@@ -380,6 +381,10 @@ func ShadowrocketVmessLinkToVmessConfig(link string, resolveip bool) (*VmessConf
 	}
 	config.ResolveIP = resolveip
 	return &config, nil
+}
+
+func MatchShadowrocketVmess(link string) bool {
+	return strings.HasPrefix(link, "vmess://") && (regShadowrocketVmess.MatchString(link) || regShadowrocketVmess1.MatchString(link))
 }
 
 func shadowrocketVmessURLToVmessConfig(link string, resolveip bool) (*VmessConfig, error) {

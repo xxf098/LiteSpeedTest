@@ -185,7 +185,7 @@ func parseProfiles(data string) ([]string, error) {
 	}
 	for index, match := range matches {
 		link := match[0]
-		if config.RegShadowrocketVmess.MatchString(link) {
+		if config.MatchShadowrocketVmess(link) {
 			if l, err := config.ShadowrocketLinkToVmessLink(link); err == nil {
 				link = l
 			}
